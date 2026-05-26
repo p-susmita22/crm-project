@@ -41,14 +41,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    // Always clear local state first — never leave a stale token
+    localStorage.removeItem('crm_token');
+    localStorage.removeItem('crm_session_start');
+    setUser(null);
     try {
-      await api.post('/auth/logout');
-      localStorage.removeItem('crm_token');
-      localStorage.removeItem('crm_session_start');
-      setUser(null);
+      await api.post('/auth/logout'); // clear server-side cookie too
       toast.success('Logged out successfully');
-    } catch (error) {
-      toast.error('Logout failed');
+    } catch {
+      // Even if server call fails, user is already logged out locally
+      toast.success('Logged out successfully');
     }
   };
 
