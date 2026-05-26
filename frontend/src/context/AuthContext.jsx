@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
         setUser(data);
       } catch (error) {
         setUser(null);
+        localStorage.removeItem('crm_token'); // clear stale token
       } finally {
         setLoading(false);
       }
@@ -26,6 +27,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password, loginType = 'Admin') => {
     try {
       const { data } = await api.post('/auth/login', { email, password, loginType });
+      // Store token in localStorage for cross-domain auth (production)
+      if (data.token) {
+        localStorage.setItem('crm_token', data.token);
+      }
       setUser(data);
       toast.success('Logged in successfully!');
       return true;
@@ -38,7 +43,8 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await api.post('/auth/logout');
-      localStorage.removeItem('crm_session_start'); // reset timer for next login
+      localStorage.removeItem('crm_token');
+      localStorage.removeItem('crm_session_start');
       setUser(null);
       toast.success('Logged out successfully');
     } catch (error) {

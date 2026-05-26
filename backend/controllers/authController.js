@@ -29,7 +29,7 @@ const authUser = asyncHandler(async (req, res) => {
       throw new Error('Access denied. Admins cannot sign in to the Employee Dashboard.');
     }
 
-    generateToken(res, user._id);
+    const token = generateToken(res, user._id);
 
     res.json({
       _id: user._id,
@@ -39,7 +39,8 @@ const authUser = asyncHandler(async (req, res) => {
       phone: user.phone,
       employeeId: user.employeeId,
       customerFile: user.customerFile,
-      assignedCallsCount: user.assignedCallsCount
+      assignedCallsCount: user.assignedCallsCount,
+      token,
     });
   } else {
     res.status(401);
@@ -133,12 +134,13 @@ const registerAdmin = asyncHandler(async (req, res) => {
   });
 
   if (user) {
-    generateToken(res, user._id); // Auto login
+    const token = generateToken(res, user._id); // Auto login
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
+      token,
     });
   } else {
     res.status(400);
