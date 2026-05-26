@@ -28,6 +28,7 @@ app.use(cors({
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:5174',
+      'https://crm-project-git-main-p-susmita22s-projects.vercel.app',
       'https://crm-project-ten-green.vercel.app',
       process.env.FRONTEND_URL,
     ].filter(Boolean);
