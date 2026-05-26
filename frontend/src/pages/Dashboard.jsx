@@ -1,0 +1,206 @@
+import React, { useState, useEffect, useContext } from 'react';
+import { useLocation } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import api from '../api/axios';
+import StatCard from '../components/StatCard';
+import EmployeeCallingPanel from '../components/EmployeeCallingPanel';
+import { FiUsers, FiTarget, FiTrendingUp, FiXCircle } from 'react-icons/fi';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend
+} from 'recharts';
+import { toast } from 'react-hot-toast';
+
+const Dashboard = () => {
+  const { user } = useContext(AuthContext);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const isEmployeePanel = location.pathname.startsWith('/employee');
+
+  useEffect(() => {
+    // Only fetch dashboard stats for Admin view. 
+    // Employees get their data in the EmployeeCallingPanel.
+    if (isEmployeePanel) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchDashboardStats = async () => {
+      try {
+        const { data } = await api.get('/dashboard');
+        setStats(data);
+      } catch (error) {
+        toast.error('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (isEmployeePanel) {
+    return <EmployeeCallingPanel />;
+  }
+
+  const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
+
+  const customerData = stats?.customerStatusData?.map(item => ({
+    name: item._id,
+    value: item.count
+  })) || [];
+
+  const leadData = stats?.leadStatusData?.map(item => ({
+    name: item._id,
+    value: item.count
+  })) || [];
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex justify-between items-end">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Dashboard Overview</h2>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Welcome back, {user?.name}</p>
+        </div>
+        <div className="text-sm bg-primary/10 text-primary px-3 py-1 rounded-full font-medium">
+          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard 
+          title="Total Customers" 
+          value={stats?.totalCustomers || 0} 
+          icon={<FiUsers className="text-2xl" />} 
+          color="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+          trend={12}
+        />
+        <StatCard 
+          title="Total Leads" 
+          value={stats?.totalLeads || 0} 
+          icon={<FiTarget className="text-2xl" />} 
+          color="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400"
+          trend={8}
+        />
+        <StatCard 
+          title="Converted Leads" 
+          value={stats?.convertedLeads || 0} 
+          icon={<FiTrendingUp className="text-2xl" />} 
+          color="bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+          trend={24}
+        />
+        <StatCard 
+          title="Rejected Customers" 
+          value={stats?.rejectedCustomers || 0} 
+          icon={<FiXCircle className="text-2xl" />} 
+          color="bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+          trend={-5}
+        />
+      </div>
+
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-6">Customer Status Distribution</h3>
+          <div className="h-72 min-h-0">
+            {customerData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={customerData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {customerData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-gray-400">No data available</div>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-6">Lead Status Overview</h3>
+          <div className="h-72 min-h-0">
+            {leadData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={leadData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" opacity={0.2} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                  <YAxis axisLine={false} tickLine={false} />
+                  <Tooltip 
+                    cursor={{ fill: 'rgba(107, 114, 128, 0.1)' }}
+                    contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                    {leadData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-gray-400">No data available</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Admin specific: Employee Performance */}
+      {user?.role === 'Admin' && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-6">Employee Performance</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
+                  <th className="py-3 px-4">Employee</th>
+                  <th className="py-3 px-4">Customers</th>
+                  <th className="py-3 px-4">Leads</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {stats?.employeePerformance?.map((emp) => (
+                  <tr key={emp._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <td className="py-3 px-4 text-sm font-medium text-gray-800 dark:text-gray-200">{emp.name}</td>
+                    <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{emp.customerCount}</td>
+                    <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{emp.leadCount}</td>
+                  </tr>
+                ))}
+                {(!stats?.employeePerformance || stats.employeePerformance.length === 0) && (
+                  <tr>
+                    <td colSpan="3" className="py-4 text-center text-sm text-gray-500">No employee data found</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Dashboard;
