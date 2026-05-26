@@ -21,7 +21,12 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'], // Vite default ports
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://crm-project-ten-green.vercel.app',
+    process.env.FRONTEND_URL, // optional extra override via .env
+  ].filter(Boolean),
   credentials: true,
 }));
 app.use(cookieParser());
