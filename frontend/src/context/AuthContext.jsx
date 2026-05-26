@@ -9,14 +9,22 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on mount
     const checkUser = async () => {
+      const token = localStorage.getItem('crm_token');
+
+      // No token = definitely not logged in, skip API call
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data } = await api.get('/auth/profile');
         setUser(data);
       } catch (error) {
+        // Token is invalid/expired — clear it
         setUser(null);
-        localStorage.removeItem('crm_token'); // clear stale token
+        localStorage.removeItem('crm_token');
       } finally {
         setLoading(false);
       }
