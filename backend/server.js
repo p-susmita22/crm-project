@@ -59,9 +59,9 @@ import reportRoutes from './routes/reportRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 // Base Route
-app.get('/', (req, res) => {
-  res.send('API is running...');
-});
+app.get('/', (req, res) => res.send('API is running...'));
+// Health check / keep-alive ping (prevents Render free tier from sleeping)
+app.get('/ping', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
 // API Routes
 app.use('/api/auth', authRoutes);

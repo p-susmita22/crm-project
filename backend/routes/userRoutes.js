@@ -132,21 +132,8 @@ router.put('/:id', protect, admin, upload.single('customerFile'), asyncHandler(a
   }
 
   if (req.file) {
-    // If there's an existing file, delete it from disk
-    if (user.customerFile && user.customerFile.filePath) {
-      if (fs.existsSync(user.customerFile.filePath)) {
-        try {
-          fs.unlinkSync(user.customerFile.filePath);
-        } catch (err) {
-          console.error('Error deleting old customer file:', err);
-        }
-      }
-    }
-
     user.customerFile = {
-      fileName: req.file.filename,
       originalName: req.file.originalname,
-      filePath: req.file.path,
       uploadedAt: new Date()
     };
   }
@@ -155,7 +142,7 @@ router.put('/:id', protect, admin, upload.single('customerFile'), asyncHandler(a
 
   if (req.file) {
     try {
-      await importCustomersFromFile(req.file.path, updatedUser._id);
+      await importCustomersFromFile(req.file.buffer, updatedUser._id);
       updatedUser = await User.findById(updatedUser._id);
     } catch (err) {
       console.error('Failed to import customers on update:', err);
@@ -191,17 +178,9 @@ router.post('/:id/upload-tasks', protect, admin, upload.single('customerFile'), 
 
   const taskDate = req.body.taskDate || new Date().toISOString().split('T')[0];
 
-  // Update latest file reference on user (for display only)
-  if (user.customerFile && user.customerFile.filePath) {
-    if (fs.existsSync(user.customerFile.filePath)) {
-      try { fs.unlinkSync(user.customerFile.filePath); } catch (e) { /* ignore */ }
-    }
-  }
-
+  // Store file metadata (no disk path — using memory storage)
   user.customerFile = {
-    fileName: req.file.filename,
     originalName: req.file.originalname,
-    filePath: req.file.path,
     uploadedAt: new Date()
   };
 
@@ -212,7 +191,7 @@ router.post('/:id/upload-tasks', protect, admin, upload.single('customerFile'), 
   let updatedUser = await user.save();
 
   try {
-    await importCustomersFromFile(req.file.path, updatedUser._id, taskDate);
+    await importCustomersFromFile(req.file.buffer, updatedUser._id, taskDate);
     updatedUser = await User.findById(updatedUser._id);
   } catch (err) {
     console.error('Failed to import customers from task upload:', err);

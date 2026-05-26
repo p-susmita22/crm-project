@@ -15,12 +15,14 @@ const getValue = (row, possibleKeys) => {
   return '';
 };
 
-export const importCustomersFromFile = async (filePath, employeeId, taskDate) => {
+export const importCustomersFromFile = async (filePathOrBuffer, employeeId, taskDate) => {
   try {
     const today = taskDate || new Date().toISOString().split('T')[0];
 
-    // 1. Read sheet data
-    const workbook = xlsx.readFile(filePath);
+    // 1. Read sheet data — supports both Buffer (memory storage) and file path (disk)
+    const workbook = Buffer.isBuffer(filePathOrBuffer)
+      ? xlsx.read(filePathOrBuffer, { type: 'buffer' })
+      : xlsx.readFile(filePathOrBuffer);
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     const rawData = xlsx.utils.sheet_to_json(worksheet);

@@ -64,9 +64,7 @@ const registerUser = asyncHandler(async (req, res) => {
   let customerFile = undefined;
   if (req.file) {
     customerFile = {
-      fileName: req.file.filename,
       originalName: req.file.originalname,
-      filePath: req.file.path,
       uploadedAt: new Date()
     };
   }
@@ -90,7 +88,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (user) {
     if (req.file) {
       try {
-        await importCustomersFromFile(req.file.path, user._id);
+        await importCustomersFromFile(req.file.buffer, user._id);
         user = await User.findById(user._id);
       } catch (err) {
         console.error('Failed to import customers on register:', err);
