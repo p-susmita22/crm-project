@@ -327,7 +327,7 @@ const Team = () => {
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {loading ? (
                 <tr>
-                  <td colSpan="8" className="py-10 text-center">
+                  <td colSpan="9" className="py-10 text-center">
                     <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                   </td>
                 </tr>
@@ -347,11 +347,6 @@ const Team = () => {
                         <div>
                           <p className="font-semibold text-sm text-gray-800 dark:text-gray-100">{emp.name}</p>
                           <p className="text-xs text-gray-400">{emp.email}</p>
-                          {emp.customerFile?.originalName && (
-                            <span className="inline-flex items-center gap-1 mt-1 text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                              📎 {emp.customerFile.originalName}
-                            </span>
-                          )}
                         </div>
                       </div>
                     </td>
@@ -406,6 +401,7 @@ const Team = () => {
                               <thead>
                                 <tr className="text-xs font-semibold text-gray-400 uppercase">
                                   <th className="text-left pb-2 pr-4">Date</th>
+                                  <th className="text-left pb-2 px-3">File Name</th>
                                   <th className="text-center pb-2 px-3">Total</th>
                                   <th className="text-center pb-2 px-3">Pending</th>
                                   <th className="text-center pb-2 px-3 text-green-600">Interested</th>
@@ -419,22 +415,18 @@ const Team = () => {
                                 {taskHistory[emp._id].map(row => {
                                   const pct = row.total > 0 ? Math.round((row.completed / row.total) * 100) : 0;
                                   return (
-                                    <tr key={row.date} className="hover:bg-white dark:hover:bg-gray-800 transition-colors">
-                                      <td className="py-2 pr-4">
-                                        <div className="flex items-center gap-3">
-                                          <div className="font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
-                                            {new Date(row.date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                                          </div>
-                                          {row.files && row.files.length > 0 && (
-                                            <div className="flex flex-wrap items-center gap-2">
-                                              {row.files.map((f, i) => (
-                                                <span key={i} className="inline-flex items-center gap-1 text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
-                                                  📎 {f}
-                                                </span>
-                                              ))}
-                                            </div>
-                                          )}
-                                        </div>
+                                    <tr key={`${row.date}-${row.file}`} className="hover:bg-white dark:hover:bg-gray-800 transition-colors">
+                                      <td className="py-2 pr-4 font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                                        {new Date(row.date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                      </td>
+                                      <td className="py-2 px-3">
+                                        {row.file ? (
+                                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                            📎 {row.file}
+                                          </span>
+                                        ) : (
+                                          <span className="text-xs text-gray-400">—</span>
+                                        )}
                                       </td>
                                       <td className="py-2 px-3 text-center font-bold">{row.total}</td>
                                       <td className="py-2 px-3 text-center text-yellow-600 font-semibold">{row.pending}</td>
@@ -489,7 +481,7 @@ const Team = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="py-10 text-center text-gray-400">No employees found. Add your first employee above!</td>
+                  <td colSpan="9" className="py-10 text-center text-gray-400">No employees found. Add your first employee above!</td>
                 </tr>
               )}
             </tbody>

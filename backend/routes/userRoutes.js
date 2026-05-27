@@ -211,31 +211,30 @@ router.post('/:id/upload-tasks', protect, admin, upload.single('customerFile'), 
 router.get('/:id/task-history', protect, admin, asyncHandler(async (req, res) => {
   const Customer = (await import('../models/Customer.js')).default;
 
-  // Aggregate customers by taskDate for this employee
+  // Aggregate customers by taskDate + sourceFile for this employee (one row per file per date)
   const history = await Customer.aggregate([
     { $match: { assignedTo: (await import('mongoose')).default.Types.ObjectId.createFromHexString(req.params.id) } },
     {
       $group: {
-        _id: '$taskDate',
-        total:     { $sum: 1 },
-        pending:   { $sum: { $cond: [{ $eq: ['$status', 'Pending'] },  1, 0] } },
-        agree:     { $sum: { $cond: [{ $eq: ['$status', 'Agree'] },    1, 0] } },
-        reject:    { $sum: { $cond: [{ $eq: ['$status', 'Reject'] },   1, 0] } },
-        others:    { $sum: { $cond: [{ $eq: ['$status', 'Others'] },   1, 0] } },
-        files:     { $addToSet: '$sourceFile' }
+        _id:     { date: '$taskDate', file: { $ifNull: ['$sourceFile', ''] } },
+        total:   { $sum: 1 },
+        pending: { $sum: { $cond: [{ $eq: ['$status', 'Pending'] },  1, 0] } },
+        agree:   { $sum: { $cond: [{ $eq: ['$status', 'Agree'] },    1, 0] } },
+        reject:  { $sum: { $cond: [{ $eq: ['$status', 'Reject'] },   1, 0] } },
+        others:  { $sum: { $cond: [{ $eq: ['$status', 'Others'] },   1, 0] } },
       },
     },
-    { $sort: { _id: -1 } }, // newest date first
+    { $sort: { '_id.date': -1, '_id.file': 1 } }, // newest date first, then by file name
   ]);
 
   res.json(history.map(h => ({
-    date:    h._id,
-    files:   h.files ? h.files.filter(Boolean) : [],
-    total:   h.total,
-    pending: h.pending,
-    agree:   h.agree,
-    reject:  h.reject,
-    others:  h.others,
+    date:      h._id.date,
+    file:      h._id.file || '',
+    total:     h.total,
+    pending:   h.pending,
+    agree:     h.agree,
+    reject:    h.reject,
+    others:    h.others,
     completed: h.agree + h.reject + h.others,
   })));
 }));
