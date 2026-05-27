@@ -54,6 +54,12 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
     // 3. Map keys and save customers
     let importCount = 0;
     for (const row of rawData) {
+      // Skip completely empty rows
+      const hasData = Object.values(row).some(val => val !== undefined && val !== null && String(val).trim() !== '');
+      if (!hasData) {
+        continue;
+      }
+
       const name = getValue(row, ['name', 'customername', 'fullname', 'clientname', 'firstname', 'client', 'contactname', 'contactperson', 'person', 'leadname', 'namedesignation', 'buyer', 'seller', 'party']);
       const phone = getValue(row, ['phone', 'phonenumber', 'mobile', 'contact', 'mobilenumber', 'mobileno', 'phoneno', 'telephone', 'contactnumber', 'phno', 'ph', 'tel', 'whatsapp', 'whatsappnumber', 'whatsappno', 'task', 'tasks']);
       const email = getValue(row, ['email', 'emailaddress', 'mail', 'emailid']);
