@@ -97,9 +97,12 @@ const Team = () => {
   const deleteHistoryDate = async (empId, date) => {
     if (!window.confirm(`Are you sure you want to permanently delete all tasks for ${date}?`)) return;
     try {
-      await api.delete(`/users/${empId}/tasks/${date}`);
-      toast.success('Tasks deleted successfully');
-      // Refresh task history for this employee
+      const res = await api.delete(`/users/${empId}/tasks/${date}`);
+      const newCount = res.data?.assignedCallsCount ?? '';
+      toast.success(`Tasks deleted! Assigned Calls updated to ${newCount}`);
+      // Refresh the employee row (to update assignedCallsCount badge)
+      await fetchEmployees();
+      // Refresh task history panel for this employee
       const { data } = await api.get(`/users/${empId}/task-history`);
       setTaskHistory(prev => ({ ...prev, [empId]: data }));
     } catch {
