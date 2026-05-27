@@ -3,12 +3,16 @@ import Customer from '../models/Customer.js';
 import User from '../models/User.js';
 import { reindexCustomers } from './reindexer.js';
 
+// Helper to normalize keys by removing all spaces, underscores, and special characters
+const normalizeKey = (key) => String(key).replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
 // Helper to find a value in a case-insensitive way with alternative column names
 const getValue = (row, possibleKeys) => {
   const rowKeys = Object.keys(row);
   for (const pKey of possibleKeys) {
-    const matchedKey = rowKeys.find(k => k.trim().toLowerCase() === pKey.toLowerCase());
-    if (matchedKey && row[matchedKey] !== undefined && row[matchedKey] !== null) {
+    const normalizedPKey = normalizeKey(pKey);
+    const matchedKey = rowKeys.find(k => normalizeKey(k) === normalizedPKey);
+    if (matchedKey && row[matchedKey] !== undefined && row[matchedKey] !== null && String(row[matchedKey]).trim() !== '') {
       return String(row[matchedKey]).trim();
     }
   }
@@ -50,15 +54,15 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
     // 3. Map keys and save customers
     let importCount = 0;
     for (const row of rawData) {
-      const name = getValue(row, ['name', 'customer name', 'fullname', 'full name', 'client name', 'customer_name', 'first name', 'client', 'name / designation', 'name/designation', 'contact name']);
-      const phone = getValue(row, ['phone', 'phone number', 'mobile', 'contact', 'phone_number', 'mobile number', 'mobile_no', 'phone_no', 'mobileno', 'phoneno', 'telephone']);
-      const email = getValue(row, ['email', 'email address', 'email_address', 'mail', 'email id']);
-      const companyName = getValue(row, ['company', 'company name', 'company_name', 'organization', 'firm', 'business']);
-      const address = getValue(row, ['address', 'location', 'city', 'street', 'district']);
-      const pincode = getValue(row, ['pincode', 'pin', 'pin code', 'zip', 'zipcode', 'zip code', 'pin number']);
-      const state = getValue(row, ['state', 'region', 'province']);
+      const name = getValue(row, ['name', 'customername', 'fullname', 'clientname', 'firstname', 'client', 'contactname', 'contactperson', 'person', 'leadname', 'namedesignation', 'buyer', 'seller', 'party']);
+      const phone = getValue(row, ['phone', 'phonenumber', 'mobile', 'contact', 'mobilenumber', 'mobileno', 'phoneno', 'telephone', 'contactnumber', 'phno', 'ph', 'tel', 'whatsapp', 'whatsappnumber', 'whatsappno']);
+      const email = getValue(row, ['email', 'emailaddress', 'mail', 'emailid']);
+      const companyName = getValue(row, ['company', 'companyname', 'organization', 'firm', 'business', 'agency']);
+      const address = getValue(row, ['address', 'location', 'city', 'street', 'district', 'area', 'region']);
+      const pincode = getValue(row, ['pincode', 'pin', 'zip', 'zipcode', 'pinnumber']);
+      const state = getValue(row, ['state', 'province']);
 
-      // Skip rows without name and phone (or email)
+      // Skip rows without name and phone
       if (!name || !phone) {
         continue;
       }
