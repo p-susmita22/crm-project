@@ -27,13 +27,26 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
     if (dataRows.length === 0) return 0;
 
     // Detect if the first row is a header row
-    const possibleHeaders = ['name', 'customer', 'client', 'phone', 'mobile', 'contact', 'task', 'email'];
-    const firstRowStr = dataRows[0].join(' ').toLowerCase();
-    const hasHeaders = possibleHeaders.some(h => firstRowStr.includes(h));
+    // Scan the first 10 rows to find the actual header row (ignoring title rows)
+    let headerRowIndex = -1;
+    for (let i = 0; i < Math.min(dataRows.length, 10); i++) {
+      const normalizedCells = dataRows[i].map(c => normalizeKey(c));
+      // Require an exact match on common header columns to prevent false positives
+      const isHeaderRow = normalizedCells.some(c => 
+        ['name', 'customername', 'fullname', 'firstname', 'clientname', 'contactname', 'phone', 'phonenumber', 'mobile', 'mobileno', 'contactno', 'contactnumber', 'phno', 'task', 'tasks'].includes(c)
+      );
+      if (isHeaderRow) {
+        headerRowIndex = i;
+        break;
+      }
+    }
 
     let headerRow = [];
+    const hasHeaders = headerRowIndex !== -1;
     if (hasHeaders) {
-      headerRow = dataRows.shift(); // Remove the header row from data
+      headerRow = dataRows[headerRowIndex];
+      // Discard all title rows AND the header row, leaving only true data rows
+      dataRows.splice(0, headerRowIndex + 1);
     }
 
     // 2. Delete only the customers for this employee on this specific date (preserve other dates)
