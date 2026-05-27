@@ -3,9 +3,8 @@ import nodemailer from 'nodemailer';
 const sendEmail = async ({ to, subject, html }) => {
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: false,       // false = STARTTLS on port 587 (Gmail standard)
-    requireTLS: true,    // force STARTTLS upgrade
+    port: Number(process.env.SMTP_PORT) || 465,
+    secure: true,       // true for 465, false for other ports
     auth: {
       user: process.env.SMTP_EMAIL || 'paridasusmita2003@gmail.com',
       pass: process.env.SMTP_PASSWORD || 'jxefavrtcwlvivel',
@@ -37,6 +36,7 @@ const sendEmail = async ({ to, subject, html }) => {
     console.log(`📧 Subject : ${subject}`);
     console.log(`📧 Content : ${html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}`);
     console.log(`📧 ─────────────────────────────────────────────\n`);
+    throw err; // Throw error so frontend knows it actually failed
   }
 };
 
