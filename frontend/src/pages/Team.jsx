@@ -34,7 +34,6 @@ const Team = () => {
 
   const openUploadModal = (emp) => {
     setUploadFile(null);
-    setUploadCalls(emp.assignedCallsCount || 0);
     setUploadDate(new Date().toISOString().split('T')[0]);
     setUploadModal({ open: true, employee: emp });
   };
@@ -61,7 +60,6 @@ const Team = () => {
     try {
       const fd = new FormData();
       fd.append('customerFile', uploadFile);
-      fd.append('assignedCallsCount', uploadCalls);
       fd.append('taskDate', uploadDate);
       await api.post(`/users/${uploadModal.employee._id}/upload-tasks`, fd);
       toast.success(`Daily tasks uploaded for ${uploadModal.employee.name}!`);
@@ -515,19 +513,6 @@ const Team = () => {
             </div>
 
             <form onSubmit={handleUploadTask} className="p-6 space-y-5">
-              {/* Assigned Calls */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  Assigned Calls Target for Today
-                </label>
-                <input
-                  type="number" min="0" required
-                  value={uploadCalls}
-                  onChange={e => setUploadCalls(Number(e.target.value))}
-                  className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
-                  placeholder="e.g. 50"
-                />
-              </div>
 
               {/* File Upload */}
               <div>

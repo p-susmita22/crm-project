@@ -184,9 +184,7 @@ router.post('/:id/upload-tasks', protect, admin, upload.single('customerFile'), 
     uploadedAt: new Date()
   };
 
-  if (req.body.assignedCallsCount !== undefined) {
-    user.assignedCallsCount = Number(req.body.assignedCallsCount) || 0;
-  }
+
 
   let updatedUser = await user.save();
 
