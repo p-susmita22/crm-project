@@ -88,6 +88,12 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
     for (const row of dataRows) {
       const name = nameIdx !== -1 && row[nameIdx] !== undefined ? String(row[nameIdx]).trim() : '';
       const phone = phoneIdx !== -1 && row[phoneIdx] !== undefined ? String(row[phoneIdx]).trim() : '';
+      
+      // Only count rows that actually have a contact number
+      if (!phone) {
+        continue;
+      }
+
       const email = emailIdx !== -1 && row[emailIdx] !== undefined ? String(row[emailIdx]).trim() : '';
       const companyName = companyIdx !== -1 && row[companyIdx] !== undefined ? String(row[companyIdx]).trim() : '';
       const address = addressIdx !== -1 && row[addressIdx] !== undefined ? String(row[addressIdx]).trim() : '';
@@ -95,7 +101,7 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
       const state = stateIdx !== -1 && row[stateIdx] !== undefined ? String(row[stateIdx]).trim() : '';
 
       const finalName = name || `Customer ${startCount + importCount + 1}`;
-      const finalPhone = phone || 'Not Provided';
+      const finalPhone = phone;
       const finalEmail = email || `customer${startCount + importCount + 1}@temp.com`;
 
       const customerId = `cus-${String(startCount + importCount + 1).padStart(3, '0')}`;
