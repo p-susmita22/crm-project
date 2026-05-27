@@ -71,7 +71,7 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
     if (hasHeaders) {
       const getIdx = (keys) => headerRow.findIndex(h => keys.includes(normalizeKey(h)));
       nameIdx = getIdx(['name', 'customername', 'fullname', 'clientname', 'firstname', 'client', 'contactname', 'contactperson', 'person', 'leadname', 'namedesignation', 'buyer', 'seller', 'party']);
-      phoneIdx = getIdx(['phone', 'phonenumber', 'mobile', 'contact', 'mobilenumber', 'mobileno', 'phoneno', 'telephone', 'contactnumber', 'phno', 'ph', 'tel', 'whatsapp', 'whatsappnumber', 'whatsappno', 'task', 'tasks']);
+      phoneIdx = getIdx(['phone', 'phonenumber', 'mobile', 'contact', 'mobilenumber', 'mobileno', 'contactno', 'phoneno', 'telephone', 'contactnumber', 'phno', 'ph', 'tel', 'whatsapp', 'whatsappnumber', 'whatsappno', 'task', 'tasks']);
       emailIdx = getIdx(['email', 'emailaddress', 'mail', 'emailid']);
       companyIdx = getIdx(['company', 'companyname', 'organization', 'firm', 'business', 'agency']);
       addressIdx = getIdx(['address', 'location', 'city', 'street', 'district', 'area', 'region']);
