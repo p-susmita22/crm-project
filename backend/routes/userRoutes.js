@@ -244,11 +244,25 @@ router.get('/:id/task-history', protect, admin, asyncHandler(async (req, res) =>
 // @access  Private/Admin
 router.delete('/:id/tasks/:date', protect, admin, asyncHandler(async (req, res) => {
   const Customer = (await import('../models/Customer.js')).default;
-  const result = await Customer.deleteMany({
-    assignedTo: (await import('mongoose')).default.Types.ObjectId.createFromHexString(req.params.id),
+  const mongoose = (await import('mongoose')).default;
+  const empObjectId = mongoose.Types.ObjectId.createFromHexString(req.params.id);
+
+  // Count how many tasks will be deleted so we can subtract from assignedCallsCount
+  const toDeleteCount = await Customer.countDocuments({
+    assignedTo: empObjectId,
     taskDate: req.params.date
   });
-  res.json({ message: `Deleted ${result.deletedCount} tasks for ${req.params.date}` });
+
+  await Customer.deleteMany({ assignedTo: empObjectId, taskDate: req.params.date });
+
+  // Decrement assignedCallsCount by the exact number deleted (floor at 0)
+  const emp = await User.findById(req.params.id);
+  if (emp) {
+    emp.assignedCallsCount = Math.max(0, (emp.assignedCallsCount || 0) - toDeleteCount);
+    await emp.save();
+  }
+
+  res.json({ message: `Deleted ${toDeleteCount} tasks for ${req.params.date}`, deletedCount: toDeleteCount });
 }));
 
 // @desc    Delete employee
