@@ -62,19 +62,18 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
       const pincode = getValue(row, ['pincode', 'pin', 'zip', 'zipcode', 'pinnumber']);
       const state = getValue(row, ['state', 'province']);
 
-      // Skip rows without name and phone (or task)
-      if (!name || !phone) {
-        continue;
-      }
+      const finalName = name || `Customer ${startCount + importCount + 1}`;
+      const finalPhone = phone || 'Not Provided';
+      const finalEmail = email || `customer${startCount + importCount + 1}@temp.com`;
 
       const customerId = `cus-${String(startCount + importCount + 1).padStart(3, '0')}`;
 
       try {
         await Customer.create({
           customerId,
-          name,
-          phone,
-          email: email || `${phone}@temp.com`,
+          name: finalName,
+          phone: finalPhone,
+          email: finalEmail,
           companyName,
           address,
           pincode,
