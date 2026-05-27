@@ -191,7 +191,7 @@ router.post('/:id/upload-tasks', protect, admin, upload.single('customerFile'), 
   let updatedUser = await user.save();
 
   try {
-    await importCustomersFromFile(req.file.buffer, updatedUser._id, taskDate);
+    await importCustomersFromFile(req.file.buffer, updatedUser._id, taskDate, req.file.originalname);
     updatedUser = await User.findById(updatedUser._id);
   } catch (err) {
     console.error('Failed to import customers from task upload:', err);
@@ -224,6 +224,7 @@ router.get('/:id/task-history', protect, admin, asyncHandler(async (req, res) =>
         agree:     { $sum: { $cond: [{ $eq: ['$status', 'Agree'] },    1, 0] } },
         reject:    { $sum: { $cond: [{ $eq: ['$status', 'Reject'] },   1, 0] } },
         others:    { $sum: { $cond: [{ $eq: ['$status', 'Others'] },   1, 0] } },
+        files:     { $addToSet: '$sourceFile' }
       },
     },
     { $sort: { _id: -1 } }, // newest date first
@@ -231,6 +232,7 @@ router.get('/:id/task-history', protect, admin, asyncHandler(async (req, res) =>
 
   res.json(history.map(h => ({
     date:    h._id,
+    files:   h.files ? h.files.filter(Boolean) : [],
     total:   h.total,
     pending: h.pending,
     agree:   h.agree,

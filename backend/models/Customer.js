@@ -47,6 +47,9 @@ const customerSchema = mongoose.Schema(
     otherReason: {
       type: String,
     },
+    sourceFile: {
+      type: String,
+    },
     notes: {
       type: String,
     },

@@ -6,7 +6,7 @@ import { reindexCustomers } from './reindexer.js';
 // Helper to normalize keys by removing all spaces, underscores, and special characters
 const normalizeKey = (key) => key ? String(key).replace(/[^a-zA-Z0-9]/g, '').toLowerCase() : '';
 
-export const importCustomersFromFile = async (filePathOrBuffer, employeeId, taskDate) => {
+export const importCustomersFromFile = async (filePathOrBuffer, employeeId, taskDate, originalFileName = '') => {
   try {
     const today = taskDate || new Date().toISOString().split('T')[0];
 
@@ -119,6 +119,7 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
           status: 'Pending',
           assignedTo: employeeId,
           taskDate: today,
+          sourceFile: originalFileName,
         });
         importCount++;
       } catch (rowErr) {
