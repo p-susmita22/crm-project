@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
-import { FiPlus, FiEdit2, FiTrash2, FiUsers, FiSearch, FiFilter, FiDownload, FiFileText, FiEye, FiXCircle, FiCalendar } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiUsers, FiSearch, FiFilter, FiDownload, FiFileText, FiEye, FiXCircle, FiCalendar, FiRefreshCw } from 'react-icons/fi';
 
 const indianStates = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", 
@@ -18,6 +18,8 @@ const Customers = () => {
   const [customers, setCustomers] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDate, setFilterDate] = useState(''); // YYYY-MM-DD
   const [selectedViewCustomer, setSelectedViewCustomer] = useState(null);
@@ -28,7 +30,9 @@ const Customers = () => {
     customerId: '', name: '', phone: '', email: '', companyName: '', address: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: ''
   });
 
-  const fetchData = async () => {
+  const fetchData = async (silent = false) => {
+    if (!silent) setLoading(true);
+    else setRefreshing(true);
     try {
       const [custRes, empRes] = await Promise.all([
         api.get('/customers'),
@@ -38,17 +42,19 @@ const Customers = () => {
       if (user?.role === 'Admin') {
         setEmployees(empRes.data.filter(e => e.role === 'Employee'));
       }
+      setLastRefreshed(new Date());
     } catch (error) {
       toast.error('Failed to load customers');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
     fetchData();
     // Auto-refresh every 30 seconds so admin sees employee-added customers
-    const interval = setInterval(fetchData, 30000);
+    const interval = setInterval(() => fetchData(true), 30000);
     return () => clearInterval(interval);
   }, [user]);
 
@@ -502,15 +508,31 @@ const Customers = () => {
         </div>
         
         {user?.role === 'Admin' && (
-          <button 
-            onClick={() => {
-              setFormData({ customerId: '', name: '', phone: '', email: '', companyName: '', address: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: '' });
-              setIsModalOpen(true);
-            }}
-            className="bg-primary hover:bg-primary-dark text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center shadow-sm"
-          >
-            <FiPlus className="mr-2" /> Add Customer
-          </button>
+          <div className="flex items-center gap-3">
+            {lastRefreshed && (
+              <span className="text-xs text-gray-400 hidden sm:block">
+                Updated: {lastRefreshed.toLocaleTimeString()}
+              </span>
+            )}
+            <button
+              onClick={() => fetchData(true)}
+              disabled={refreshing}
+              className="flex items-center gap-1.5 px-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              title="Refresh customer list"
+            >
+              <FiRefreshCw size={14} className={refreshing ? 'animate-spin text-primary' : ''} />
+              <span className="text-sm font-medium">Refresh</span>
+            </button>
+            <button 
+              onClick={() => {
+                setFormData({ customerId: '', name: '', phone: '', email: '', companyName: '', address: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: '' });
+                setIsModalOpen(true);
+              }}
+              className="bg-primary hover:bg-primary-dark text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center shadow-sm"
+            >
+              <FiPlus className="mr-2" /> Add Customer
+            </button>
+          </div>
         )}
         {user?.role === 'Employee' && (
           <div className="flex items-center gap-3">
