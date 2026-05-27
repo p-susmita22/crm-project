@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import Customer from '../models/Customer.js';
+import User from '../models/User.js';
 import { reindexCustomers } from '../utils/reindexer.js';
 import xlsx from 'xlsx';
 import axios from 'axios';
@@ -51,6 +52,8 @@ const createCustomer = asyncHandler(async (req, res) => {
   const count = await Customer.countDocuments();
   const finalId = `cus-${String(count + 1).padStart(3, '0')}`;
 
+  const today = new Date().toISOString().split('T')[0];
+
   const customer = new Customer({
     customerId: finalId,
     name,
@@ -59,16 +62,24 @@ const createCustomer = asyncHandler(async (req, res) => {
     companyName,
     address,
     notes,
-    assignedTo: assignedTo || req.user._id, // Assign to creator by default if not specified
+    assignedTo: assignedTo || req.user._id,
     job,
     otherReason,
     status,
     followUpDate,
     pincode,
-    state
+    state,
+    taskDate: today,
+    sourceFile: 'Manual Entry'
   });
 
   const createdCustomer = await customer.save();
+
+  // Recalculate assignedCallsCount for the assigned employee
+  const assignedEmpId = assignedTo || req.user._id;
+  const totalCount = await Customer.countDocuments({ assignedTo: assignedEmpId });
+  await User.findByIdAndUpdate(assignedEmpId, { assignedCallsCount: totalCount });
+
   res.status(201).json(createdCustomer);
 });
 
