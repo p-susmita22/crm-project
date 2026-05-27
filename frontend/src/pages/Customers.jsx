@@ -47,6 +47,9 @@ const Customers = () => {
 
   useEffect(() => {
     fetchData();
+    // Auto-refresh every 30 seconds so admin sees employee-added customers
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
   }, [user]);
 
   const handleSubmit = async (e) => {
