@@ -26,7 +26,7 @@ import Reports from './pages/Reports';
 const RootRedirect = () => {
   const { user, loading } = useContext(AuthContext);
   if (loading) return null;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/admin/login" replace />;
   if (user.role === 'Admin') return <Navigate to="/admin/dashboard" replace />;
   return <Navigate to="/employee/dashboard" replace />;
 };
@@ -38,7 +38,6 @@ function App() {
       <Routes>
         {/* Public Routes (Auth) */}
         <Route element={<AuthLayout />}>
-          <Route path="/login" element={<Login />} />
           <Route path="/admin/login" element={<Login />} />
           <Route path="/employee/login" element={<Login />} />
           <Route path="/admin-signup" element={<AdminSignup />} />

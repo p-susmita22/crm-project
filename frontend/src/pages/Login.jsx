@@ -11,22 +11,15 @@ const Login = () => {
   const navigate = useNavigate();
   const { login, user } = useContext(AuthContext);
 
-  // Detect portal from URL: /admin/login → 'Admin', /employee/login → 'Employee', /login → null (tabbed)
+  // Detect portal from URL: /admin/login → 'Admin', /employee/login → 'Employee'
   const isAdminPath    = location.pathname === '/admin/login';
-  const isEmployeePath = location.pathname === '/employee/login';
-  const forcedType     = isAdminPath ? 'Admin' : isEmployeePath ? 'Employee' : null;
-
-  const [loginType, setLoginType]   = useState(forcedType || 'Admin');
+  const loginType      = isAdminPath ? 'Admin' : 'Employee';
   const [email, setEmail]           = useState('');
   const [password, setPassword]     = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const from = location.state?.from?.pathname;
 
-  // Sync tab if user navigates between /admin/login and /employee/login
-  useEffect(() => {
-    if (forcedType) setLoginType(forcedType);
-  }, [forcedType]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -41,12 +34,7 @@ const Login = () => {
     }
   }, [user, navigate, from]);
 
-  const handleTabChange = (type) => {
-    if (forcedType) return; // locked — ignore if URL forces a type
-    setLoginType(type);
-    setEmail('');
-    setPassword('');
-  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -104,60 +92,29 @@ const Login = () => {
         <div className="mb-8 text-center md:text-left">
           <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Welcome Back</h2>
           <p className="text-gray-500 dark:text-gray-400">
-            {forcedType
-              ? `Sign in to the ${forcedType} Portal`
-              : 'Please sign in to your dashboard'}
+            Sign in to the {loginType} Portal
           </p>
         </div>
 
-        {/* Tabs — shown only on /login (no forced type) */}
-        {!forcedType && (
-          <div className="flex bg-gray-100 dark:bg-gray-700/50 p-1 rounded-xl mb-8">
-            <button
-              type="button"
-              onClick={() => handleTabChange('Admin')}
-              className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${
-                loginType === 'Admin'
-                  ? 'bg-white dark:bg-gray-800 text-primary shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-              }`}
-            >
-              Admin Portal
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTabChange('Employee')}
-              className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${
-                loginType === 'Employee'
-                  ? 'bg-white dark:bg-gray-800 text-primary shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-              }`}
-            >
-              Employee Portal
-            </button>
-          </div>
-        )}
 
-        {/* Locked portal badge — shown when URL forces a type */}
-        {forcedType && (
-          <div className={`flex items-center gap-2 mb-8 px-4 py-3 rounded-xl border text-sm font-semibold ${
-            isAdmin
-              ? 'bg-primary/5 border-primary/20 text-primary'
-              : 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-400'
-          }`}>
-            {isAdmin ? <FiShield /> : <FiUsers />}
-            {isAdmin ? 'Admin Portal' : 'Employee Portal'}
-            {/* Only admins can switch to the employee view — employees cannot access admin login */}
-            {isAdmin && (
-              <Link
-                to="/employee/login"
-                className="ml-auto text-xs underline opacity-60 hover:opacity-100 transition-opacity font-normal"
-              >
-                Switch to Employee
-              </Link>
-            )}
-          </div>
-        )}
+
+        <div className={`flex items-center gap-2 mb-8 px-4 py-3 rounded-xl border text-sm font-semibold ${
+          isAdminPath
+            ? 'bg-primary/5 border-primary/20 text-primary'
+            : 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-400'
+        }`}>
+          {isAdminPath ? <FiShield /> : <FiUsers />}
+          {isAdminPath ? 'Admin Portal' : 'Employee Portal'}
+          {/* Only admins can switch to the employee view — employees cannot access admin login */}
+          {isAdminPath && (
+            <Link
+              to="/employee/login"
+              className="ml-auto text-xs underline opacity-60 hover:opacity-100 transition-opacity font-normal"
+            >
+              Switch to Employee
+            </Link>
+          )}
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -174,7 +131,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="block w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
-                placeholder={isAdmin ? 'admin@crm.com' : 'employee@crm.com'}
+                placeholder={isAdminPath ? 'admin@crm.com' : 'employee@crm.com'}
               />
             </div>
           </div>
