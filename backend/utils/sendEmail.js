@@ -1,27 +1,19 @@
 import nodemailer from 'nodemailer';
-import dns from 'dns';
 
 const sendEmail = async ({ to, subject, html }) => {
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    family: 4, // Force IPv4 to prevent ENETUNREACH IPv6 errors
+    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+    port: Number(process.env.SMTP_PORT) || 2525, // Port 2525 bypasses Render's firewall!
+    secure: false, // Must be false for port 2525 (uses STARTTLS automatically)
     auth: {
-      user: process.env.SMTP_EMAIL || 'paridasusmita2003@gmail.com',
-      pass: process.env.SMTP_PASSWORD || 'jxefavrtcwlvivel',
+      user: process.env.SMTP_EMAIL,
+      pass: process.env.SMTP_PASSWORD,
     },
     connectionTimeout: 5000,
-    // Bulletproof custom lookup that forces IPv4 only
-    lookup: (hostname, options, callback) => {
-      dns.lookup(hostname, { family: 4 }, (err, address, family) => {
-        callback(err, address, family);
-      });
-    },
   });
 
   const mailOptions = {
-    from: `"${process.env.FROM_NAME || 'CRM Admin'}" <${process.env.FROM_EMAIL || 'paridasusmita2003@gmail.com'}>`,
+    from: `"${process.env.FROM_NAME || 'CRM Admin'}" <${process.env.FROM_EMAIL}>`,
     to,
     subject,
     html,
