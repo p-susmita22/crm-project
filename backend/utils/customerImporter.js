@@ -55,14 +55,14 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
     let importCount = 0;
     for (const row of rawData) {
       const name = getValue(row, ['name', 'customername', 'fullname', 'clientname', 'firstname', 'client', 'contactname', 'contactperson', 'person', 'leadname', 'namedesignation', 'buyer', 'seller', 'party']);
-      const phone = getValue(row, ['phone', 'phonenumber', 'mobile', 'contact', 'mobilenumber', 'mobileno', 'phoneno', 'telephone', 'contactnumber', 'phno', 'ph', 'tel', 'whatsapp', 'whatsappnumber', 'whatsappno']);
+      const phone = getValue(row, ['phone', 'phonenumber', 'mobile', 'contact', 'mobilenumber', 'mobileno', 'phoneno', 'telephone', 'contactnumber', 'phno', 'ph', 'tel', 'whatsapp', 'whatsappnumber', 'whatsappno', 'task', 'tasks']);
       const email = getValue(row, ['email', 'emailaddress', 'mail', 'emailid']);
       const companyName = getValue(row, ['company', 'companyname', 'organization', 'firm', 'business', 'agency']);
       const address = getValue(row, ['address', 'location', 'city', 'street', 'district', 'area', 'region']);
       const pincode = getValue(row, ['pincode', 'pin', 'zip', 'zipcode', 'pinnumber']);
       const state = getValue(row, ['state', 'province']);
 
-      // Skip rows without name and phone
+      // Skip rows without name and phone (or task)
       if (!name || !phone) {
         continue;
       }
