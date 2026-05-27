@@ -421,16 +421,20 @@ const Team = () => {
                                   return (
                                     <tr key={row.date} className="hover:bg-white dark:hover:bg-gray-800 transition-colors">
                                       <td className="py-2 pr-4">
-                                        <div className="font-semibold text-gray-700 dark:text-gray-200">
-                                          {new Date(row.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
-                                        </div>
-                                        {row.files && row.files.length > 0 && (
-                                          <div className="text-[10px] text-gray-400 mt-1 flex flex-col gap-0.5 font-normal">
-                                            {row.files.map((f, i) => (
-                                              <span key={i} className="flex items-center gap-1"><FiFileText size={10}/> {f}</span>
-                                            ))}
+                                        <div className="flex items-center gap-3">
+                                          <div className="font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                                            {new Date(row.date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                                           </div>
-                                        )}
+                                          {row.files && row.files.length > 0 && (
+                                            <div className="flex flex-wrap items-center gap-2">
+                                              {row.files.map((f, i) => (
+                                                <span key={i} className="inline-flex items-center gap-1 text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                                  📎 {f}
+                                                </span>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
                                       </td>
                                       <td className="py-2 px-3 text-center font-bold">{row.total}</td>
                                       <td className="py-2 px-3 text-center text-yellow-600 font-semibold">{row.pending}</td>
