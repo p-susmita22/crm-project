@@ -215,7 +215,6 @@ const Team = () => {
       formDataToSend.append('email', formData.email);
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('role', formData.role);
-      formDataToSend.append('assignedCallsCount', formData.assignedCallsCount);
       if (formData.password) {
         formDataToSend.append('password', formData.password);
       }
@@ -651,16 +650,7 @@ const Team = () => {
                   </p>
                 )}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assigned Calls Target</label>
-                <input
-                  type="number" min="0" required
-                  placeholder="50"
-                  value={formData.assignedCallsCount}
-                  onChange={(e) => setFormData({ ...formData, assignedCallsCount: Number(e.target.value) })}
-                  className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
-                />
-              </div>
+
 
               <div className="pt-4 flex justify-end space-x-3 border-t border-gray-100 dark:border-gray-700">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700">

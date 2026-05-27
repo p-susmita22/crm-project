@@ -82,7 +82,7 @@ const registerUser = asyncHandler(async (req, res) => {
     phone,
     employeeId: nextEmpId,
     customerFile,
-    assignedCallsCount: Number(assignedCallsCount) || 0
+    assignedCallsCount: 0
   });
 
   if (user) {
