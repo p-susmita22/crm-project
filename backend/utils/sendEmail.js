@@ -36,7 +36,6 @@ const sendEmail = async ({ to, subject, html }) => {
     console.log(`📧 Subject : ${subject}`);
     console.log(`📧 Content : ${html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}`);
     console.log(`📧 ─────────────────────────────────────────────\n`);
-    throw err; // Throw error so frontend knows it actually failed
   }
 };
 
