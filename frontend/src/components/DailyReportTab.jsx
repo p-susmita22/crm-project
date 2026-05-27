@@ -29,15 +29,15 @@ const StatBox = ({ icon, label, value, color }) => (
   </div>
 );
 
-const DailyReportTab = ({ customers, sessionSeconds = 0 }) => {
+const DailyReportTab = ({ customers, sessionSeconds = 0, assignedCallsCount = 0 }) => {
   const { user } = useContext(AuthContext);
   const [pastReports, setPastReports] = useState([]);
   const [todayReport, setTodayReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Auto-calculated from customers prop
-  const totalCallsAssigned = customers.length;
+  // Auto-calculated from customers prop and assigned count
+  const totalCallsAssigned = assignedCallsCount;
   const callsDone = customers.filter(c => c.status !== 'Pending').length;
   const positiveResponses = customers.filter(c => c.status === 'Agree').length;
   const negativeResponses = customers.filter(c => c.status === 'Reject').length;
@@ -73,7 +73,7 @@ const DailyReportTab = ({ customers, sessionSeconds = 0 }) => {
     try {
       const { data } = await api.post('/reports', {
         reportDate: today(),
-        totalCallsAssigned,
+        totalCallsAssigned: assignedCallsCount,
         callsDone,
         leadsGenerated: parseInt(form.leadsGenerated) || 0,
         positiveResponses,

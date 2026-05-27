@@ -221,7 +221,11 @@ const EmployeeCallingPanel = () => {
 
       {tab === 'leads' && <LeadManagementSection />}
 
-      {tab === 'report' && <DailyReportTab customers={customers} sessionSeconds={elapsed} />}
+      {tab === 'report' && <DailyReportTab 
+        customers={customers} 
+        sessionSeconds={elapsed} 
+        assignedCallsCount={todayAssignedCount > 0 ? todayAssignedCount : (user?.assignedCallsCount || 0)}
+      />}
     </div>
   );
 };
