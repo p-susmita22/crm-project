@@ -127,8 +127,9 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
       }
     }
 
-    // 4. Update the user's assignedCallsCount to ADD the number of imported customers
-    await User.findByIdAndUpdate(employeeId, { $inc: { assignedCallsCount: importCount } });
+    // 4. Recalculate assignedCallsCount from actual customer records (same as delete logic)
+    const totalRemaining = await Customer.countDocuments({ assignedTo: employeeId });
+    await User.findByIdAndUpdate(employeeId, { assignedCallsCount: totalRemaining });
 
     // Perform a final re-indexing pass
     await reindexCustomers();
