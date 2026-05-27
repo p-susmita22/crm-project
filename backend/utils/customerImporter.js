@@ -4,20 +4,7 @@ import User from '../models/User.js';
 import { reindexCustomers } from './reindexer.js';
 
 // Helper to normalize keys by removing all spaces, underscores, and special characters
-const normalizeKey = (key) => String(key).replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-
-// Helper to find a value in a case-insensitive way with alternative column names
-const getValue = (row, possibleKeys) => {
-  const rowKeys = Object.keys(row);
-  for (const pKey of possibleKeys) {
-    const normalizedPKey = normalizeKey(pKey);
-    const matchedKey = rowKeys.find(k => normalizeKey(k) === normalizedPKey);
-    if (matchedKey && row[matchedKey] !== undefined && row[matchedKey] !== null && String(row[matchedKey]).trim() !== '') {
-      return String(row[matchedKey]).trim();
-    }
-  }
-  return '';
-};
+const normalizeKey = (key) => key ? String(key).replace(/[^a-zA-Z0-9]/g, '').toLowerCase() : '';
 
 export const importCustomersFromFile = async (filePathOrBuffer, employeeId, taskDate) => {
   try {
@@ -29,10 +16,24 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
       : xlsx.readFile(filePathOrBuffer);
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
-    const rawData = xlsx.utils.sheet_to_json(worksheet);
+    const rawData = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
 
     if (!rawData || rawData.length === 0) {
       return 0;
+    }
+
+    // Filter out completely empty rows
+    const dataRows = rawData.filter(row => row.some(cell => cell !== undefined && cell !== null && String(cell).trim() !== ''));
+    if (dataRows.length === 0) return 0;
+
+    // Detect if the first row is a header row
+    const possibleHeaders = ['name', 'customer', 'client', 'phone', 'mobile', 'contact', 'task', 'email'];
+    const firstRowStr = dataRows[0].join(' ').toLowerCase();
+    const hasHeaders = possibleHeaders.some(h => firstRowStr.includes(h));
+
+    let headerRow = [];
+    if (hasHeaders) {
+      headerRow = dataRows.shift(); // Remove the header row from data
     }
 
     // 2. Delete only the customers for this employee on this specific date (preserve other dates)
@@ -51,22 +52,34 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
       }
     }
 
+    // Determine column indices
+    let nameIdx = -1, phoneIdx = -1, emailIdx = -1, companyIdx = -1, addressIdx = -1, pincodeIdx = -1, stateIdx = -1;
+
+    if (hasHeaders) {
+      const getIdx = (keys) => headerRow.findIndex(h => keys.includes(normalizeKey(h)));
+      nameIdx = getIdx(['name', 'customername', 'fullname', 'clientname', 'firstname', 'client', 'contactname', 'contactperson', 'person', 'leadname', 'namedesignation', 'buyer', 'seller', 'party']);
+      phoneIdx = getIdx(['phone', 'phonenumber', 'mobile', 'contact', 'mobilenumber', 'mobileno', 'phoneno', 'telephone', 'contactnumber', 'phno', 'ph', 'tel', 'whatsapp', 'whatsappnumber', 'whatsappno', 'task', 'tasks']);
+      emailIdx = getIdx(['email', 'emailaddress', 'mail', 'emailid']);
+      companyIdx = getIdx(['company', 'companyname', 'organization', 'firm', 'business', 'agency']);
+      addressIdx = getIdx(['address', 'location', 'city', 'street', 'district', 'area', 'region']);
+      pincodeIdx = getIdx(['pincode', 'pin', 'zip', 'zipcode', 'pinnumber']);
+      stateIdx = getIdx(['state', 'province']);
+    } else {
+      // If no headers, guess: Col 0 is Name, Col 1 is Phone
+      nameIdx = 0;
+      phoneIdx = 1;
+    }
+
     // 3. Map keys and save customers
     let importCount = 0;
-    for (const row of rawData) {
-      // Skip completely empty rows
-      const hasData = Object.values(row).some(val => val !== undefined && val !== null && String(val).trim() !== '');
-      if (!hasData) {
-        continue;
-      }
-
-      const name = getValue(row, ['name', 'customername', 'fullname', 'clientname', 'firstname', 'client', 'contactname', 'contactperson', 'person', 'leadname', 'namedesignation', 'buyer', 'seller', 'party']);
-      const phone = getValue(row, ['phone', 'phonenumber', 'mobile', 'contact', 'mobilenumber', 'mobileno', 'phoneno', 'telephone', 'contactnumber', 'phno', 'ph', 'tel', 'whatsapp', 'whatsappnumber', 'whatsappno', 'task', 'tasks']);
-      const email = getValue(row, ['email', 'emailaddress', 'mail', 'emailid']);
-      const companyName = getValue(row, ['company', 'companyname', 'organization', 'firm', 'business', 'agency']);
-      const address = getValue(row, ['address', 'location', 'city', 'street', 'district', 'area', 'region']);
-      const pincode = getValue(row, ['pincode', 'pin', 'zip', 'zipcode', 'pinnumber']);
-      const state = getValue(row, ['state', 'province']);
+    for (const row of dataRows) {
+      const name = nameIdx !== -1 && row[nameIdx] !== undefined ? String(row[nameIdx]).trim() : '';
+      const phone = phoneIdx !== -1 && row[phoneIdx] !== undefined ? String(row[phoneIdx]).trim() : '';
+      const email = emailIdx !== -1 && row[emailIdx] !== undefined ? String(row[emailIdx]).trim() : '';
+      const companyName = companyIdx !== -1 && row[companyIdx] !== undefined ? String(row[companyIdx]).trim() : '';
+      const address = addressIdx !== -1 && row[addressIdx] !== undefined ? String(row[addressIdx]).trim() : '';
+      const pincode = pincodeIdx !== -1 && row[pincodeIdx] !== undefined ? String(row[pincodeIdx]).trim() : '';
+      const state = stateIdx !== -1 && row[stateIdx] !== undefined ? String(row[stateIdx]).trim() : '';
 
       const finalName = name || `Customer ${startCount + importCount + 1}`;
       const finalPhone = phone || 'Not Provided';
