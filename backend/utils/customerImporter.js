@@ -49,8 +49,8 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
       dataRows.splice(0, headerRowIndex + 1);
     }
 
-    // 2. Delete only the customers for this employee on this specific date (preserve other dates)
-    await Customer.deleteMany({ assignedTo: employeeId, taskDate: today });
+    // 2. We no longer delete the existing customers for this date.
+    // The new excel data will be appended to the existing list.
 
     // Re-index remaining database entries to close any gaps from deleted customers
     await reindexCustomers();
@@ -126,8 +126,8 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
       }
     }
 
-    // 4. Update the user's assignedCallsCount to the number of imported customers
-    await User.findByIdAndUpdate(employeeId, { assignedCallsCount: importCount });
+    // 4. Update the user's assignedCallsCount to ADD the number of imported customers
+    await User.findByIdAndUpdate(employeeId, { $inc: { assignedCallsCount: importCount } });
 
     // Perform a final re-indexing pass
     await reindexCustomers();
