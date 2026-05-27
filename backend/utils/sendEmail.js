@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import dns from 'dns';
 
 const sendEmail = async ({ to, subject, html }) => {
   const transporter = nodemailer.createTransport({
@@ -11,6 +12,12 @@ const sendEmail = async ({ to, subject, html }) => {
       pass: process.env.SMTP_PASSWORD || 'jxefavrtcwlvivel',
     },
     connectionTimeout: 5000,
+    // Bulletproof custom lookup that forces IPv4 only
+    lookup: (hostname, options, callback) => {
+      dns.lookup(hostname, { family: 4 }, (err, address, family) => {
+        callback(err, address, family);
+      });
+    },
   });
 
   const mailOptions = {
