@@ -2,21 +2,24 @@ import nodemailer from 'nodemailer';
 
 const sendEmail = async ({ to, subject, html }) => {
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: Number(process.env.SMTP_PORT) || 587,
     secure: false,       // false = STARTTLS on port 587 (Gmail standard)
     requireTLS: true,    // force STARTTLS upgrade
     auth: {
-      user: process.env.SMTP_EMAIL,
-      pass: process.env.SMTP_PASSWORD,
+      user: process.env.SMTP_EMAIL || 'paridasusmita2003@gmail.com',
+      pass: process.env.SMTP_PASSWORD || 'jxefavrtcwlvivel',
     },
     tls: {
       rejectUnauthorized: false, // allow self-signed certs in dev
     },
+    connectionTimeout: 5000, // 5 seconds timeout
+    greetingTimeout: 5000,
+    socketTimeout: 5000,
   });
 
   const mailOptions = {
-    from: `"${process.env.FROM_NAME}" <${process.env.FROM_EMAIL}>`,
+    from: `"${process.env.FROM_NAME || 'CRM Admin'}" <${process.env.FROM_EMAIL || 'paridasusmita2003@gmail.com'}>`,
     to,
     subject,
     html,
