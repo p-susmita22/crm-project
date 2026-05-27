@@ -247,22 +247,14 @@ router.delete('/:id/tasks/:date', protect, admin, asyncHandler(async (req, res) 
   const mongoose = (await import('mongoose')).default;
   const empObjectId = mongoose.Types.ObjectId.createFromHexString(req.params.id);
 
-  // Count how many tasks will be deleted so we can subtract from assignedCallsCount
-  const toDeleteCount = await Customer.countDocuments({
-    assignedTo: empObjectId,
-    taskDate: req.params.date
-  });
+  // Delete all tasks for this employee on this date
+  const result = await Customer.deleteMany({ assignedTo: empObjectId, taskDate: req.params.date });
 
-  await Customer.deleteMany({ assignedTo: empObjectId, taskDate: req.params.date });
+  // Recalculate assignedCallsCount from actual remaining customer records
+  const remainingCount = await Customer.countDocuments({ assignedTo: empObjectId });
+  await User.findByIdAndUpdate(req.params.id, { assignedCallsCount: remainingCount });
 
-  // Decrement assignedCallsCount by the exact number deleted (floor at 0)
-  const emp = await User.findById(req.params.id);
-  if (emp) {
-    emp.assignedCallsCount = Math.max(0, (emp.assignedCallsCount || 0) - toDeleteCount);
-    await emp.save();
-  }
-
-  res.json({ message: `Deleted ${toDeleteCount} tasks for ${req.params.date}`, deletedCount: toDeleteCount });
+  res.json({ message: `Deleted ${result.deletedCount} tasks for ${req.params.date}`, assignedCallsCount: remainingCount });
 }));
 
 // @desc    Delete employee
