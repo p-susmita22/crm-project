@@ -2,9 +2,9 @@ import nodemailer from 'nodemailer';
 
 const sendEmail = async ({ to, subject, html }) => {
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-    port: Number(process.env.SMTP_PORT) || 2525, // Port 2525 bypasses Render's firewall!
-    secure: false, // Must be false for port 2525 (uses STARTTLS automatically)
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: Number(process.env.SMTP_PORT) || 465,
+    secure: true, // Must be true for port 465
     auth: {
       user: process.env.SMTP_EMAIL,
       pass: process.env.SMTP_PASSWORD,
