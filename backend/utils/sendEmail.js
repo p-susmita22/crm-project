@@ -6,7 +6,7 @@ const sendEmail = async ({ to, subject, html }) => {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `${process.env.FROM_NAME || 'Multimaart CRM'} <${process.env.FROM_EMAIL || 'onboarding@resend.dev'}>`,
+      from: `${process.env.FROM_NAME || 'Multimaart CRM'} <onboarding@resend.dev>`, // Hardcoded for testing!
       to,
       subject,
       html,
