@@ -9,6 +9,9 @@ const sendEmail = async ({ to, subject, html }) => {
       user: process.env.SMTP_EMAIL || 'info@multimaart.com',
       pass: process.env.SMTP_PASSWORD || 'Multimaart@1234',
     },
+    tls: {
+      rejectUnauthorized: false, // Critical for cPanel Webmail servers
+    },
     connectionTimeout: 5000,
   });
 
