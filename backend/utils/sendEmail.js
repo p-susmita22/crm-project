@@ -2,12 +2,12 @@ import nodemailer from 'nodemailer';
 
 const sendEmail = async ({ to, subject, html }) => {
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    host: process.env.SMTP_HOST || 'multimaart.com',
     port: Number(process.env.SMTP_PORT) || 465,
     secure: true, // Must be true for port 465
     auth: {
-      user: process.env.SMTP_EMAIL,
-      pass: process.env.SMTP_PASSWORD,
+      user: process.env.SMTP_EMAIL || 'info@multimaart.com',
+      pass: process.env.SMTP_PASSWORD || 'Multimaart@1234',
     },
     connectionTimeout: 5000,
   });
