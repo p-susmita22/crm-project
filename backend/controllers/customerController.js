@@ -107,6 +107,10 @@ const updateCustomer = asyncHandler(async (req, res) => {
     }
   });
 
+  if (req.body.newCallLog) {
+    customer.callHistory.push(req.body.newCallLog);
+  }
+
   // Only admin can reassign
   if (req.user.role === 'Admin' && req.body.assignedTo) {
     customer.assignedTo = req.body.assignedTo;

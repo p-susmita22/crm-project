@@ -1110,6 +1110,40 @@ const Customers = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Call History */}
+                <div className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 md:col-span-2 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-primary dark:text-blue-400 uppercase tracking-wider block">Call History Log</span>
+                    <span className="text-xs font-semibold bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full text-gray-700 dark:text-gray-300">
+                      Total Calls: {selectedViewCustomer.callHistory?.length || 0}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                    {selectedViewCustomer.callHistory && selectedViewCustomer.callHistory.length > 0 ? (
+                      [...selectedViewCustomer.callHistory].reverse().map((log, idx) => (
+                        <div key={idx} className="flex flex-col sm:flex-row gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
+                          <div className="flex flex-col min-w-[140px]">
+                            <span className="text-xs font-bold text-gray-800 dark:text-gray-200">{new Date(log.date).toLocaleDateString()}</span>
+                            <span className="text-xs text-gray-400 flex items-center gap-1"><FiClock size={10} />{new Date(log.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                          </div>
+                          <div className="flex flex-col flex-1">
+                            <span className={`text-xs font-bold mb-1 ${
+                              log.status === 'Agree' ? 'text-green-600' :
+                              log.status === 'Reject' ? 'text-red-500' :
+                              log.status === 'Others' ? 'text-purple-600' :
+                              'text-yellow-600'
+                            }`}>{log.status === 'Agree' ? 'Interested' : log.status === 'Reject' ? 'Rejected' : log.status}</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-300">"{log.remark || 'No specific remark'}"</span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center p-4 text-sm text-gray-500 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 italic">No call history recorded yet.</div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 

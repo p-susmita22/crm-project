@@ -63,6 +63,13 @@ const customerSchema = mongoose.Schema(
       type: String, // stored as 'YYYY-MM-DD' for easy date-wise grouping
       default: () => new Date().toISOString().split('T')[0],
     },
+    callHistory: [
+      {
+        date: { type: Date, default: Date.now },
+        status: String,
+        remark: String,
+      }
+    ],
   },
   {
     timestamps: true,

@@ -126,7 +126,8 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
         address,
         pincode,
         state,
-        onboarding
+        onboarding,
+        newCallLog: { status, remark: notes || otherReason || 'Status updated' }
       };
 
       let customerIdToUse = customer?._id;
