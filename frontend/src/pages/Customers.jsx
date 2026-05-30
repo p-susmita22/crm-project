@@ -23,6 +23,7 @@ const Customers = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDate, setFilterDate] = useState(''); // YYYY-MM-DD
   const [filterEmployeeId, setFilterEmployeeId] = useState('');
+  const [filterOnboarding, setFilterOnboarding] = useState('');
   const [adminViewEmployee, setAdminViewEmployee] = useState(null); // Used for drill-down view
   const [selectedViewCustomer, setSelectedViewCustomer] = useState(null);
   const fileInputRef = useRef(null);
@@ -523,8 +524,9 @@ const Customers = () => {
     }
     
     const matchStatus = user?.role === 'Employee' ? c.status !== 'Pending' : true;
+    const matchOnboarding = filterOnboarding ? c.onboarding === filterOnboarding : true;
 
-    return matchSearch && matchDate && matchEmployee && matchStatus;
+    return matchSearch && matchDate && matchEmployee && matchStatus && matchOnboarding;
   });
 
   // Group filteredCustomers by date (for employee view) — sorted newest first
@@ -733,9 +735,18 @@ const Customers = () => {
                 )}
               </div>
             )}
-            <button className="flex items-center px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-              <FiFilter className="mr-2" /> Filter
-            </button>
+            <div className="relative shrink-0">
+              <select
+                value={filterOnboarding}
+                onChange={(e) => setFilterOnboarding(e.target.value)}
+                className="appearance-none flex items-center pl-10 pr-8 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-800 transition-colors outline-none cursor-pointer text-sm font-medium w-full sm:w-auto"
+              >
+                <option value="">All Types</option>
+                <option value="Seller">Seller</option>
+                <option value="District Partner">District Partner</option>
+              </select>
+              <FiFilter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            </div>
           </div>
 
       {/* ── EMPLOYEE: Grouped-by-date tables ─────────────────────────────── */}
@@ -835,7 +846,7 @@ const Customers = () => {
                           <tr className="bg-gray-50 dark:bg-gray-700/50 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
                             <th className="py-4 px-6">ID</th>
                             <th className="py-4 px-6">Customer Name</th>
-                            <th className="py-4 px-6">Company Name</th>
+                            <th className="py-4 px-6">Onboarding Type</th>
                             <th className="py-4 px-6 text-center">Actions</th>
                           </tr>
                         </thead>
@@ -845,7 +856,13 @@ const Customers = () => {
                               <tr key={customer._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                 <td className="py-4 px-6 text-sm font-medium text-gray-900 dark:text-white">{customer.customerId}</td>
                                 <td className="py-4 px-6 text-sm font-semibold text-gray-800 dark:text-gray-200">{customer.name}</td>
-                                <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">{customer.companyName || '-'}</td>
+                                <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
+                                  {customer.onboarding && customer.onboarding !== 'None' ? (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                      {customer.onboarding}
+                                    </span>
+                                  ) : '-'}
+                                </td>
                                 <td className="py-4 px-6">
                                   <div className="flex items-center justify-center space-x-3">
                                     <button
@@ -905,7 +922,7 @@ const Customers = () => {
                   <tr className="bg-gray-50 dark:bg-gray-700/50 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
                     <th className="py-4 px-6">ID</th>
                     <th className="py-4 px-6">Customer Name</th>
-                    <th className="py-4 px-6">Company Name</th>
+                    <th className="py-4 px-6">Onboarding Type</th>
                     <th className="py-4 px-6 text-center">Actions</th>
                   </tr>
                 </thead>
@@ -917,7 +934,13 @@ const Customers = () => {
                     <tr key={customer._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                       <td className="py-4 px-6 text-sm font-medium text-gray-900 dark:text-white">{customer.customerId}</td>
                       <td className="py-4 px-6 text-sm font-semibold text-gray-800 dark:text-gray-200">{customer.name}</td>
-                      <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">{customer.companyName || '-'}</td>
+                      <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
+                        {customer.onboarding && customer.onboarding !== 'None' ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                            {customer.onboarding}
+                          </span>
+                        ) : '-'}
+                      </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center justify-center space-x-3">
                           <button
