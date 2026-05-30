@@ -110,19 +110,7 @@ const Dashboard = () => {
           <p className="text-gray-500 dark:text-gray-400 mt-1">Welcome back, {user?.name}</p>
         </div>
         <div className="flex items-center gap-4">
-          {user?.role === 'Admin' && (
-            <button 
-              onClick={() => setShowSubmissionsModal(true)}
-              className="relative flex items-center gap-2 bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-xl font-bold transition-all"
-            >
-              <FiInbox size={18} /> Received Work
-              {workSubmissions.filter(s => !s.isRead).length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 flex items-center justify-center rounded-full animate-pulse shadow-md">
-                  {workSubmissions.filter(s => !s.isRead).length}
-                </span>
-              )}
-            </button>
-          )}
+
           <div className="text-sm bg-primary/10 text-primary px-3 py-1.5 rounded-full font-medium">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
           </div>
