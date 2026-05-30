@@ -351,11 +351,11 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
         </div>
 
         {/* ── Conditional Response Section ── */}
-        {(onboarding === 'Seller' || onboarding === 'District Partner') ? (
+        {customer && (customer.onboarding === 'Seller' || customer.onboarding === 'District Partner') ? (
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex flex-col items-center justify-center text-center">
             <FiCheckCircle className="text-blue-500 mb-2" size={24} />
             <p className="text-sm font-bold text-blue-800 dark:text-blue-300">
-              Already Onboarded as {onboarding}
+              Already Onboarded as {customer.onboarding}
             </p>
           </div>
         ) : (
@@ -454,7 +454,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
         </div>
 
         {/* ── Schedule Call Back Reminder ── */}
-        {!(onboarding === 'Seller' || onboarding === 'District Partner') && (
+        {!(customer && (customer.onboarding === 'Seller' || customer.onboarding === 'District Partner')) && (
           <div className="pt-2 animate-fade-in">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
               <FiClock size={14} className="text-blue-500" /> Schedule Reminder / Call Back (Optional)
