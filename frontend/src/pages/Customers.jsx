@@ -26,6 +26,7 @@ const Customers = () => {
   const [adminViewEmployee, setAdminViewEmployee] = useState(null); // Used for drill-down view
   const [selectedViewCustomer, setSelectedViewCustomer] = useState(null);
   const fileInputRef = useRef(null);
+  const [uploadDate, setUploadDate] = useState('');
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -564,6 +565,7 @@ const Customers = () => {
                 
                 const formData = new FormData();
                 formData.append('file', file);
+                if (uploadDate) formData.append('date', uploadDate);
                 
                 try {
                   await toast.promise(api.post('/work-submissions', formData, {
@@ -579,7 +581,10 @@ const Customers = () => {
               }}
             />
             <button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => {
+                setUploadDate('');
+                fileInputRef.current?.click();
+              }}
               className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors shadow-sm"
               title="Send your Excel/PDF sheet of today's work to Admin"
             >
@@ -711,14 +716,26 @@ const Customers = () => {
                         <p className="text-xs text-gray-400">{dayCustomers.length} customer{dayCustomers.length !== 1 ? 's' : ''}</p>
                       </div>
                     </div>
-                    {/* Per-day Excel download */}
-                    <button
-                      onClick={() => downloadMyExcel(dateKey)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-xl text-xs font-semibold transition-colors"
-                      title={`Download Excel for ${dateKey}`}
-                    >
-                      <FiDownload size={13} /> Download Excel
-                    </button>
+                    {/* Per-day Actions */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => downloadMyExcel(dateKey)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-xl text-xs font-semibold transition-colors"
+                        title={`Download Excel for ${dateKey}`}
+                      >
+                        <FiDownload size={13} /> Download Excel
+                      </button>
+                      <button
+                        onClick={() => {
+                          setUploadDate(dateKey);
+                          fileInputRef.current?.click();
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-700 rounded-xl text-xs font-semibold transition-colors"
+                        title={`Upload & Send Work for ${dateKey}`}
+                      >
+                        <FiSend size={13} /> Send Work
+                      </button>
+                    </div>
                   </div>
 
                   {/* Employee Customer File Download Section for this day */}
