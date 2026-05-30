@@ -19,7 +19,7 @@ const CallingScriptSection = ({ customer }) => {
   const [settings, setSettings] = useState(null);
 
   React.useEffect(() => {
-    import('../../api/axios').then(({ default: api }) => {
+    import('../api/axios').then(({ default: api }) => {
       api.get('/settings').then(res => setSettings(res.data)).catch(console.error);
     });
   }, []);
