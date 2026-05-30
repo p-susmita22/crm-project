@@ -22,6 +22,9 @@ const userSchema = mongoose.Schema(
       minlength: 6,
       select: false,
     },
+    plainPassword: {
+      type: String,
+    },
     role: {
       type: String,
       enum: ['Admin', 'Employee'],

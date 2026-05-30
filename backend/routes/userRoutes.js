@@ -129,6 +129,7 @@ router.put('/:id', protect, admin, upload.single('customerFile'), asyncHandler(a
 
   if (password && password.trim() !== '') {
     user.password = password;
+    user.plainPassword = password;
   }
 
   if (req.file) {

@@ -21,6 +21,7 @@ const Team = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingEmployeeId, setEditingEmployeeId] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [viewEmployeeModal, setViewEmployeeModal] = useState({ open: false, employee: null });
 
   // ── Daily Task Upload ────────────────────────────────────────────────────────
   const [uploadModal, setUploadModal] = useState({ open: false, employee: null });
@@ -339,16 +340,20 @@ const Team = () => {
                     <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                     {/* Name */}
                     <td className="py-4 px-5">
-                      <div className="flex items-center gap-3">
+                      <div 
+                        className="flex items-center gap-3 cursor-pointer group"
+                        onClick={() => setViewEmployeeModal({ open: true, employee: emp })}
+                        title="Click to view details"
+                      >
                         <div className="relative">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold text-sm">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold text-sm group-hover:scale-105 transition-transform">
                             {emp.name?.charAt(0).toUpperCase()}
                           </div>
                           <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${emp.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
                         </div>
                         <div>
-                          <p className="font-semibold text-sm text-gray-800 dark:text-gray-100">{emp.name}</p>
-                          <p className="text-xs text-gray-400">{emp.email}</p>
+                          <p className="font-semibold text-sm text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors">{emp.name}</p>
+                          <p className="text-xs text-gray-400 group-hover:text-gray-500">{emp.email}</p>
                         </div>
                       </div>
                     </td>
@@ -664,6 +669,86 @@ const Team = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Employee Details Modal */}
+      {viewEmployeeModal.open && viewEmployeeModal.employee && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-start bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold text-xl shadow-md">
+                  {viewEmployeeModal.employee.name?.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+                    {viewEmployeeModal.employee.name}
+                  </h3>
+                  <p className="text-sm font-mono text-gray-500 dark:text-gray-400 mt-0.5">
+                    {viewEmployeeModal.employee.employeeId || 'No ID'}
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setViewEmployeeModal({ open: false, employee: null })} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <FiX size={24} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Contact Information</p>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 flex items-center justify-center shrink-0">
+                      <FiPhone size={18} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Phone Number</p>
+                      <p className="font-semibold text-gray-800 dark:text-gray-200">{viewEmployeeModal.employee.phone || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 flex items-center justify-center shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Email Address</p>
+                      <p className="font-semibold text-gray-800 dark:text-gray-200 break-all">{viewEmployeeModal.employee.email}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Security Credentials</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Current Password</p>
+                    <p className="font-mono font-semibold text-gray-800 dark:text-gray-200">
+                      {viewEmployeeModal.employee.plainPassword || '•••••••• (Encrypted)'}
+                    </p>
+                  </div>
+                </div>
+                {!viewEmployeeModal.employee.plainPassword && (
+                  <p className="text-[11px] text-gray-400 mt-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg">
+                    This account was created before password viewing was enabled. You must reset their password via the Edit button to see it here.
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="p-6 pt-0">
+              <button 
+                onClick={() => setViewEmployeeModal({ open: false, employee: null })}
+                className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold rounded-xl transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

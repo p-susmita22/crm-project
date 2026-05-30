@@ -78,6 +78,7 @@ const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password,
+    plainPassword: password, // Store plain password for admin viewing as requested
     role: role || 'Employee',
     phone,
     employeeId: nextEmpId,
