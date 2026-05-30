@@ -286,20 +286,6 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Job</label>
-              <div className="relative">
-                <FiBriefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                <input
-                  type="text"
-                  value={job}
-                  onChange={e => setJob(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
-                  placeholder="Job Description / Title"
-                />
-              </div>
-            </div>
-
-            <div>
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Onboarding Option</label>
               <div className="relative">
                 <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
@@ -364,81 +350,93 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
           </div>
         </div>
 
-        {/* ── Mark Response ────────────────────────────── */}
-        <div>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Mark Customer Response</p>
-          <div className="grid grid-cols-3 gap-2.5">
-            <button
-              type="button"
-              onClick={() => handleStatusClick('Agree')}
-              className={`flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-xl text-xs font-bold transition-all border-2 ${
-                status === 'Agree'
-                  ? 'bg-green-500 border-green-500 text-white shadow-lg shadow-green-200 dark:shadow-none'
-                  : 'bg-white dark:bg-gray-700 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/10'
-              }`}
-            >
-              <FiCheckCircle size={18} />
-              <span>Interested</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleStatusClick('Reject')}
-              className={`flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-xl text-xs font-bold transition-all border-2 ${
-                status === 'Reject'
-                  ? 'bg-red-500 border-red-500 text-white shadow-lg shadow-red-200 dark:shadow-none'
-                  : 'bg-white dark:bg-gray-700 border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10'
-              }`}
-            >
-              <FiXCircle size={18} />
-              <span>Rejected</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleStatusClick('Others')}
-              className={`flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-xl text-xs font-bold transition-all border-2 ${
-                status === 'Others'
-                  ? 'bg-purple-500 border-purple-500 text-white shadow-lg shadow-purple-200 dark:shadow-none'
-                  : 'bg-white dark:bg-gray-700 border-purple-200 dark:border-purple-800 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/10'
-              }`}
-            >
-              <FiAlertCircle size={18} />
-              <span>Others</span>
-            </button>
+        {/* ── Conditional Response Section ── */}
+        {(onboarding === 'Seller' || onboarding === 'District Partner') ? (
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+            <FiCheckCircle className="text-blue-500 mb-2" size={24} />
+            <p className="text-sm font-bold text-blue-800 dark:text-blue-300">
+              Already Onboarded as {onboarding}
+            </p>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* ── Mark Response ────────────────────────────── */}
+            <div>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Mark Customer Response</p>
+              <div className="grid grid-cols-3 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => handleStatusClick('Agree')}
+                  className={`flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-xl text-xs font-bold transition-all border-2 ${
+                    status === 'Agree'
+                      ? 'bg-green-500 border-green-500 text-white shadow-lg shadow-green-200 dark:shadow-none'
+                      : 'bg-white dark:bg-gray-700 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/10'
+                  }`}
+                >
+                  <FiCheckCircle size={18} />
+                  <span>Interested</span>
+                </button>
 
-        {/* ── Reason Field (Only shown when status is Others) ── */}
-        {status === 'Others' && (
-          <div className="animate-fade-in">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-              Reason
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Enter the reason..."
-              value={otherReason}
-              onChange={e => setOtherReason(e.target.value)}
-              className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-medium"
-            />
-          </div>
-        )}
+                <button
+                  type="button"
+                  onClick={() => handleStatusClick('Reject')}
+                  className={`flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-xl text-xs font-bold transition-all border-2 ${
+                    status === 'Reject'
+                      ? 'bg-red-500 border-red-500 text-white shadow-lg shadow-red-200 dark:shadow-none'
+                      : 'bg-white dark:bg-gray-700 border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10'
+                  }`}
+                >
+                  <FiXCircle size={18} />
+                  <span>Rejected</span>
+                </button>
 
-        {/* ── Follow-up Date (Only shown when status is Interested / Agree) ── */}
-        {status === 'Agree' && (
-          <div className="animate-fade-in">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-              <FiCalendar size={12} /> Follow-up Date
-            </label>
-            <input
-              type="date"
-              value={followUpDate}
-              onChange={e => setFollowUpDate(e.target.value)}
-              className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
-            />
-          </div>
+                <button
+                  type="button"
+                  onClick={() => handleStatusClick('Others')}
+                  className={`flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-xl text-xs font-bold transition-all border-2 ${
+                    status === 'Others'
+                      ? 'bg-purple-500 border-purple-500 text-white shadow-lg shadow-purple-200 dark:shadow-none'
+                      : 'bg-white dark:bg-gray-700 border-purple-200 dark:border-purple-800 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/10'
+                  }`}
+                >
+                  <FiAlertCircle size={18} />
+                  <span>Others</span>
+                </button>
+              </div>
+            </div>
+
+            {/* ── Reason Field (Only shown when status is Others) ── */}
+            {status === 'Others' && (
+              <div className="animate-fade-in">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                  Reason
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Enter the reason..."
+                  value={otherReason}
+                  onChange={e => setOtherReason(e.target.value)}
+                  className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-medium"
+                />
+              </div>
+            )}
+
+            {/* ── Follow-up Date (Only shown when status is Interested / Agree) ── */}
+            {status === 'Agree' && (
+              <div className="animate-fade-in">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                  <FiCalendar size={12} /> Follow-up Date
+                </label>
+                <input
+                  type="date"
+                  value={followUpDate}
+                  onChange={e => setFollowUpDate(e.target.value)}
+                  className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
+                />
+              </div>
+            )}
+          </>
         )}
 
         {/* ── Remarks ───────────────────────────────────── */}
@@ -456,18 +454,20 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
         </div>
 
         {/* ── Schedule Call Back Reminder ── */}
-        <div className="pt-2 animate-fade-in">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-            <FiClock size={14} className="text-blue-500" /> Schedule Reminder / Call Back (Optional)
-          </label>
-          <input
-            type="datetime-local"
-            value={reminderDate}
-            onChange={e => setReminderDate(e.target.value)}
-            className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-gray-200 transition-all font-medium"
-          />
-          <p className="text-[11px] text-gray-500 mt-1.5">If set, a Task will be automatically added to your Tasks panel so you won't forget to call them back.</p>
-        </div>
+        {!(onboarding === 'Seller' || onboarding === 'District Partner') && (
+          <div className="pt-2 animate-fade-in">
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+              <FiClock size={14} className="text-blue-500" /> Schedule Reminder / Call Back (Optional)
+            </label>
+            <input
+              type="datetime-local"
+              value={reminderDate}
+              onChange={e => setReminderDate(e.target.value)}
+              className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-gray-200 transition-all font-medium"
+            />
+            <p className="text-[11px] text-gray-500 mt-1.5">If set, a Task will be automatically added to your Tasks panel so you won't forget to call them back.</p>
+          </div>
+        )}
 
         {/* ── Submit Data Button ───────────────────────── */}
         <button
