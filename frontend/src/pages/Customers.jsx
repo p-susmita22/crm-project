@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
@@ -25,6 +25,7 @@ const Customers = () => {
   const [filterEmployeeId, setFilterEmployeeId] = useState('');
   const [adminViewEmployee, setAdminViewEmployee] = useState(null); // Used for drill-down view
   const [selectedViewCustomer, setSelectedViewCustomer] = useState(null);
+  const fileInputRef = useRef(null);
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -552,17 +553,35 @@ const Customers = () => {
         )}
         {user?.role === 'Employee' && (
           <div className="flex items-center gap-3">
-            <button
-              onClick={async () => {
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept=".pdf,.xls,.xlsx,.doc,.docx" 
+              onChange={async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
                 try {
-                  await api.post('/work-submissions');
-                  toast.success("Today's work sent to Admin successfully!");
-                } catch (err) {
-                  toast.error(err.response?.data?.message || 'Failed to send work');
+                  await toast.promise(api.post('/work-submissions', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                  }), {
+                    loading: 'Uploading file...',
+                    success: "Today's work sent to Admin successfully!",
+                    error: (err) => err.response?.data?.message || 'Failed to send work'
+                  });
+                } finally {
+                  if (fileInputRef.current) fileInputRef.current.value = '';
                 }
               }}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
               className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors shadow-sm"
-              title="Send your Excel sheet of today's work to Admin"
+              title="Send your Excel/PDF sheet of today's work to Admin"
             >
               <FiSend size={15} /> Send Work
             </button>

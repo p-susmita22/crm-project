@@ -56,20 +56,16 @@ const Dashboard = () => {
   }, [user, isEmployeePanel]);
 
   const handleDownloadEmployeeExcel = async (submission) => {
-    try {
-      const { employee, submissionDate } = submission;
-      const response = await api.get('/customers/export/excel', { 
-        responseType: 'blob', 
-        params: { date: submissionDate, employeeId: employee } 
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const baseUrl = api.defaults.baseURL ? api.defaults.baseURL.replace('/api', '') : 'http://localhost:5000';
+      const fullUrl = `${baseUrl}${submission.fileUrl}`;
+      
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `Employee_${submission.employeeName}_Tasks_${submissionDate}.xlsx`;
+      a.href = fullUrl;
+      a.target = '_blank';
+      a.download = submission.fileName || 'Work_Submission';
       document.body.appendChild(a);
       a.click();
       a.remove();
-      window.URL.revokeObjectURL(url);
       
       // Mark as read
       if (!submission.isRead) {
@@ -289,7 +285,7 @@ const Dashboard = () => {
                       onClick={() => handleDownloadEmployeeExcel(sub)}
                       className="flex items-center gap-2 px-3 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg text-sm font-bold transition-colors"
                     >
-                      <FiDownload size={14} /> Download Excel
+                      <FiDownload size={14} /> View File
                     </button>
                   </div>
                 ))
