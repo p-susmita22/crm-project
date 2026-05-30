@@ -1,10 +1,33 @@
 import express from 'express';
 import asyncHandler from 'express-async-handler';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import WorkSubmission from '../models/WorkSubmission.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
-import upload from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
+
+// Ensure uploads directory exists
+const uploadDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Use diskStorage to actually save the file so Admin can download it
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename(req, file, cb) {
+    cb(null, `work-${req.user._id}-${Date.now()}${path.extname(file.originalname)}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+});
 
 router.post('/', protect, upload.single('file'), asyncHandler(async (req, res) => {
   if (!req.file) {
@@ -16,8 +39,12 @@ router.post('/', protect, upload.single('file'), asyncHandler(async (req, res) =
   const existing = await WorkSubmission.findOne({ employee: req.user._id, submissionDate: date });
   
   if (existing) {
-    res.status(400);
-    throw new Error('Work already sent for today!');
+    // If they already submitted today, just update the file with the newest one!
+    existing.fileName = req.file.originalname;
+    existing.fileUrl = `/uploads/${req.file.filename}`;
+    existing.isRead = false; // Mark as unread so admin notices the update
+    await existing.save();
+    return res.status(200).json(existing);
   }
   
   const submission = await WorkSubmission.create({
