@@ -595,17 +595,6 @@ const Customers = () => {
                 Updated: {lastRefreshed.toLocaleTimeString()}
               </span>
             )}
-            <button 
-              onClick={() => setShowSubmissionsModal(true)}
-              className="relative flex items-center gap-2 bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-2.5 rounded-xl font-bold transition-all"
-            >
-              <FiInbox size={18} /> Received Work
-              {workSubmissions.filter(s => !s.isRead).length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 flex items-center justify-center rounded-full animate-pulse shadow-md">
-                  {workSubmissions.filter(s => !s.isRead).length}
-                </span>
-              )}
-            </button>
             <button
               onClick={() => fetchData(true)}
               disabled={refreshing}
@@ -657,28 +646,71 @@ const Customers = () => {
 
       {/* ── ADMIN: Employee Grid View (Default) ────────────────────────────── */}
       {user?.role === 'Admin' && !adminViewEmployee && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
-          {employees.map(emp => {
-            const empCustCount = customers.filter(c => c.assignedTo?._id === emp._id).length;
-            return (
-              <div 
-                key={emp._id} 
-                onClick={() => setAdminViewEmployee(emp)} 
-                className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xl group-hover:bg-primary group-hover:text-white transition-colors">
-                    {emp.name.charAt(0).toUpperCase()}
+        <div className="space-y-8 animate-fade-in">
+          {sortedDates.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 py-12 text-center text-gray-400 text-sm">
+              No customers found.
+            </div>
+          ) : (
+            sortedDates.map(dateKey => {
+              const dayCustomers = customersByDate[dateKey];
+              const label = new Date(dateKey).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+              
+              // Get unique employee IDs who have customers on this date
+              const uniqueEmpIds = [...new Set(dayCustomers.filter(c => c.assignedTo).map(c => c.assignedTo._id || c.assignedTo))];
+              const dayEmployees = employees.filter(emp => uniqueEmpIds.includes(emp._id));
+
+              if (dayEmployees.length === 0) return null;
+
+              return (
+                <div key={dateKey} className="bg-gray-50/50 dark:bg-gray-800/30 p-5 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                  <div className="flex items-center justify-between mb-4 border-b border-gray-200 dark:border-gray-700 pb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <FiCalendar className="text-primary" />
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-800 dark:text-white">{label}</h3>
+                    </div>
+                    {/* Received Work Button for this Date */}
+                    <button 
+                      onClick={() => setShowSubmissionsModal(dateKey)}
+                      className="relative flex items-center gap-2 bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded-lg font-bold text-sm transition-all shadow-sm"
+                    >
+                      <FiInbox size={15} /> Received Work
+                      {workSubmissions.filter(s => !s.isRead && s.submissionDate === dateKey).length > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full animate-pulse shadow-md border-2 border-white">
+                          {workSubmissions.filter(s => !s.isRead && s.submissionDate === dateKey).length}
+                        </span>
+                      )}
+                    </button>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-gray-800 dark:text-white text-lg">{emp.name}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{empCustCount} Assigned Customers</p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {dayEmployees.map(emp => {
+                      const empCustCount = dayCustomers.filter(c => c.assignedTo?._id === emp._id || c.assignedTo === emp._id).length;
+                      return (
+                        <div 
+                          key={emp._id} 
+                          onClick={() => setAdminViewEmployee(emp)} 
+                          className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-600 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-lg group-hover:bg-primary group-hover:text-white transition-colors">
+                              {emp.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-gray-800 dark:text-white text-md">{emp.name}</h3>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{empCustCount} Assigned Customers</p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              </div>
-            );
-          })}
-          
+              );
+            })
+          )}
         </div>
       )}
 
@@ -1284,11 +1316,14 @@ const Customers = () => {
                 <FiXCircle size={22} />
               </button>
             </div>
-            <div className="p-6 max-h-[60vh] overflow-y-auto space-y-3">
-              {workSubmissions.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">No work submissions received yet.</div>
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              {(typeof showSubmissionsModal === 'string' ? workSubmissions.filter(s => s.submissionDate === showSubmissionsModal) : workSubmissions).length === 0 ? (
+                <div className="text-center py-10 text-gray-400">
+                  <FiInbox className="mx-auto mb-3 text-gray-300" size={32} />
+                  <p>No work submissions yet.</p>
+                </div>
               ) : (
-                workSubmissions.map(sub => (
+                (typeof showSubmissionsModal === 'string' ? workSubmissions.filter(s => s.submissionDate === showSubmissionsModal) : workSubmissions).map(sub => (
                   <div key={sub._id} className={`flex items-center justify-between p-4 rounded-xl border ${sub.isRead ? 'bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700' : 'bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800'}`}>
                     <div>
                       <h4 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
