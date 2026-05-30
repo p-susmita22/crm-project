@@ -410,6 +410,32 @@ const Customers = () => {
     }
   };
 
+  const handleSendWork = async (dateStr) => {
+    try {
+      const params = dateStr ? { date: dateStr } : {};
+      const response = await api.get('/customers/export/excel', { responseType: 'blob', params });
+      
+      const file = new File([response.data], dateStr ? `Work_Submission_${dateStr}.xlsx` : `Work_Submission_${new Date().toISOString().slice(0, 10)}.xlsx`, {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      if (dateStr) formData.append('date', dateStr);
+      
+      await toast.promise(api.post('/work-submissions', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }), {
+        loading: 'Generating and sending Excel sheet...',
+        success: "Work sent to Admin successfully!",
+        error: (err) => err.response?.data?.message || 'Failed to send work'
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to generate and send work');
+    }
+  };
+
   // Employee: print all their customers as a styled PDF table
   const handleExportPDF = () => {
     const dateStr = new Date().toLocaleDateString('en-IN');
@@ -602,39 +628,10 @@ const Customers = () => {
         )}
         {user?.role === 'Employee' && (
           <div className="flex items-center gap-3">
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              className="hidden" 
-              accept=".pdf,.xls,.xlsx,.doc,.docx" 
-              onChange={async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                const formData = new FormData();
-                formData.append('file', file);
-                if (uploadDate) formData.append('date', uploadDate);
-                
-                try {
-                  await toast.promise(api.post('/work-submissions', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                  }), {
-                    loading: 'Uploading file...',
-                    success: "Today's work sent to Admin successfully!",
-                    error: (err) => err.response?.data?.message || 'Failed to send work'
-                  });
-                } finally {
-                  if (fileInputRef.current) fileInputRef.current.value = '';
-                }
-              }}
-            />
             <button
-              onClick={() => {
-                setUploadDate('');
-                fileInputRef.current?.click();
-              }}
+              onClick={() => handleSendWork('')}
               className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors shadow-sm"
-              title="Send your Excel/PDF sheet of today's work to Admin"
+              title="Generate Excel and send today's work to Admin"
             >
               <FiSend size={15} /> Send Work
             </button>
@@ -776,12 +773,9 @@ const Customers = () => {
                     {/* Per-day Actions */}
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => {
-                          setUploadDate(dateKey);
-                          fileInputRef.current?.click();
-                        }}
+                        onClick={() => handleSendWork(dateKey)}
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-700 rounded-xl text-xs font-semibold transition-colors"
-                        title={`Upload & Send Work for ${dateKey}`}
+                        title={`Generate Excel & Send Work for ${dateKey}`}
                       >
                         <FiSend size={13} /> Send Work
                       </button>
