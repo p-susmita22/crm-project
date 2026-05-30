@@ -125,6 +125,83 @@ const Reports = () => {
     printWindow.document.close();
   };
 
+  const downloadReportPdf = (r) => {
+    const dateStr = new Date(r.submittedAt).toLocaleDateString('en-IN');
+    const sessionTime = formatTime(r.sessionTimeSeconds || 0);
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Daily Report - ${r.employeeName} - ${r.reportDate}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: 'Outfit', sans-serif; padding: 36px; color: #1f2937; background: #fff; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #6366f1; padding-bottom: 20px; margin-bottom: 28px; }
+            .title { font-size: 24px; font-weight: 800; color: #312e81; letter-spacing: -0.02em; }
+            .subtitle { font-size: 13px; color: #6b7280; margin-top: 4px; }
+            .meta { font-size: 12px; color: #6b7280; text-align: right; }
+            .meta b { color: #374151; display: block; font-size: 13px; }
+            .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+            .card { border-radius: 14px; padding: 16px; border: 1px solid #e5e7eb; }
+            .card-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #6b7280; margin-bottom: 6px; }
+            .card-value { font-size: 26px; font-weight: 800; color: #111827; }
+            .notes-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+            .notes-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #9ca3af; margin-bottom: 8px; }
+            .notes-text { font-size: 13px; color: #374151; line-height: 1.6; white-space: pre-line; }
+            .footer { margin-top: 28px; font-size: 11px; color: #9ca3af; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 14px; }
+            
+            /* Print Specific Styles */
+            @media print {
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              .card { border: 2px solid #e5e7eb !important; break-inside: avoid; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="title">📋 Daily Work Report</div>
+              <div class="subtitle">Submitted by ${r.employeeName} &nbsp;·&nbsp; ${r.reportDate}</div>
+            </div>
+            <div class="meta">
+              <b>Generated: ${dateStr}</b>
+              Submitted at: ${new Date(r.submittedAt).toLocaleTimeString()}
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="card"><div class="card-label">Calls Assigned</div><div class="card-value">${r.totalCallsAssigned}</div></div>
+            <div class="card"><div class="card-label">Calls Done</div><div class="card-value">${r.callsDone}</div></div>
+            <div class="card"><div class="card-label">Leads Generated</div><div class="card-value">${r.leadsGenerated}</div></div>
+            <div class="card"><div class="card-label">Interested / Agreed</div><div class="card-value">${r.positiveResponses}</div></div>
+            <div class="card"><div class="card-label">Rejected</div><div class="card-value">${r.negativeResponses}</div></div>
+            <div class="card"><div class="card-label">Session Time</div><div class="card-value" style="font-size:18px;">${sessionTime}</div></div>
+          </div>
+
+          ${r.additionalNotes ? `
+            <div class="notes-box">
+              <div class="notes-label">Additional Notes / Remarks</div>
+              <div class="notes-text">${r.additionalNotes}</div>
+            </div>
+          ` : ''}
+
+          <div class="footer">CRM System &mdash; Employee Daily Report &mdash; Confidential &mdash; ${dateStr}</div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    
+    // Wait for fonts/styles to load before triggering print
+    setTimeout(() => {
+      printWindow.print();
+      // Optional: printWindow.close(); 
+      // Most users prefer closing it themselves or we can auto-close after print dialog closes.
+    }, 300);
+  };
+
   const downloadEmployeeExcel = async (employeeId, employeeName, date = null) => {
     try {
       const params = [`employeeId=${employeeId}`];
@@ -251,6 +328,12 @@ const Reports = () => {
                                               title="View Full Report"
                                             >
                                               <FiEye size={14} />
+                                            </button>
+                                            <button
+                                              onClick={() => downloadReportPdf(row)}
+                                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 rounded-lg text-xs font-bold transition-colors shadow-sm"
+                                            >
+                                              <FiDownload size={14} /> PDF
                                             </button>
                                             <button
                                               onClick={() => downloadEmployeeExcel(emp._id, `${emp.name}_${row.reportDate}`, row.reportDate)}
