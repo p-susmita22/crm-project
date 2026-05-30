@@ -22,6 +22,8 @@ const Customers = () => {
   const [lastRefreshed, setLastRefreshed] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDate, setFilterDate] = useState(''); // YYYY-MM-DD
+  const [filterEmployeeId, setFilterEmployeeId] = useState('');
+  const [adminViewEmployee, setAdminViewEmployee] = useState(null); // Used for drill-down view
   const [selectedViewCustomer, setSelectedViewCustomer] = useState(null);
 
   // Modal states
@@ -471,7 +473,19 @@ const Customers = () => {
       c.phone.includes(searchTerm)
     );
     const matchDate = filterDate ? toDateStr(c) === filterDate : true;
-    return matchSearch && matchDate;
+    
+    let matchEmployee = true;
+    if (user?.role === 'Admin' && adminViewEmployee) {
+      if (adminViewEmployee._id === 'unassigned') {
+        matchEmployee = !c.assignedTo;
+      } else {
+        matchEmployee = c.assignedTo?._id === adminViewEmployee._id;
+      }
+    } else if (filterEmployeeId) {
+      matchEmployee = c.assignedTo?._id === filterEmployeeId;
+    }
+    
+    return matchSearch && matchDate && matchEmployee;
   });
 
   // Group filteredCustomers by date (for employee view) — sorted newest first
@@ -556,42 +570,87 @@ const Customers = () => {
 
 
 
-      {/* Filters and Search */}
-      <div className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-        <div className="relative flex-1">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <FiSearch className="text-gray-400" />
+      {/* ── ADMIN: Employee Grid View (Default) ────────────────────────────── */}
+      {user?.role === 'Admin' && !adminViewEmployee && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
+          {employees.map(emp => {
+            const empCustCount = customers.filter(c => c.assignedTo?._id === emp._id).length;
+            return (
+              <div 
+                key={emp._id} 
+                onClick={() => setAdminViewEmployee(emp)} 
+                className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xl group-hover:bg-primary group-hover:text-white transition-colors">
+                    {emp.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800 dark:text-white text-lg">{emp.name}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{empCustCount} Assigned Customers</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          
+          {/* Unassigned Block */}
+          <div 
+            onClick={() => setAdminViewEmployee({ _id: 'unassigned', name: 'Unassigned Customers' })} 
+            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:shadow-md hover:border-gray-300 dark:hover:border-gray-500 transition-all group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center font-bold text-xl group-hover:bg-gray-200 dark:group-hover:bg-gray-600 transition-colors">
+                U
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-800 dark:text-white text-lg">Unassigned</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{customers.filter(c => !c.assignedTo).length} Customers</p>
+              </div>
+            </div>
           </div>
-          <input
-            type="text"
-            placeholder="Search by ID, Name or Phone..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl leading-5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-all"
-          />
         </div>
-        {/* Date filter — employees only */}
-        {user?.role === 'Employee' && (
-          <div className="flex items-center gap-2">
-            <FiCalendar className="text-gray-400 shrink-0" />
-            <input
-              type="date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
-            />
-            {filterDate && (
-              <button
-                onClick={() => setFilterDate('')}
-                className="text-xs text-gray-400 hover:text-red-400 transition-colors whitespace-nowrap"
-              >Clear</button>
+      )}
+
+      {/* ── CONDITIONAL RENDER FOR FILTERS & TABLES ───────────────────────── */}
+      {(user?.role === 'Employee' || (user?.role === 'Admin' && adminViewEmployee)) && (
+        <>
+          {/* Filters and Search */}
+          <div className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiSearch className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search by ID, Name or Phone..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl leading-5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-all"
+              />
+            </div>
+            {/* Date filter — employees only */}
+            {user?.role === 'Employee' && (
+              <div className="flex items-center gap-2">
+                <FiCalendar className="text-gray-400 shrink-0" />
+                <input
+                  type="date"
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                />
+                {filterDate && (
+                  <button
+                    onClick={() => setFilterDate('')}
+                    className="text-xs text-gray-400 hover:text-red-400 transition-colors whitespace-nowrap"
+                  >Clear</button>
+                )}
+              </div>
             )}
+            <button className="flex items-center px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <FiFilter className="mr-2" /> Filter
+            </button>
           </div>
-        )}
-        <button className="flex items-center px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-          <FiFilter className="mr-2" /> Filter
-        </button>
-      </div>
 
       {/* ── EMPLOYEE: Grouped-by-date tables ─────────────────────────────── */}
       {user?.role === 'Employee' && (
@@ -718,20 +777,35 @@ const Customers = () => {
         </div>
       )}
 
-      {/* ── ADMIN: Flat single table ──────────────────────────────────────── */}
-      {user?.role === 'Admin' && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse whitespace-nowrap">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-gray-700/50 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
-                  <th className="py-4 px-6">ID</th>
-                  <th className="py-4 px-6">Customer Name</th>
-                  <th className="py-4 px-6">Company Name</th>
-                  <th className="py-4 px-6">Employee Name</th>
-                  <th className="py-4 px-6 text-center">Actions</th>
-                </tr>
-              </thead>
+      {/* ── ADMIN: Flat single table (Drill-down) ─────────────────────────── */}
+      {user?.role === 'Admin' && adminViewEmployee && (
+        <div className="animate-fade-in space-y-4">
+          <div className="flex items-center gap-4 pb-2">
+            <button 
+              onClick={() => {
+                setAdminViewEmployee(null);
+                setSearchTerm('');
+              }} 
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium shadow-sm"
+            >
+              ← Back to Employees
+            </button>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+              {adminViewEmployee.name}
+            </h3>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse whitespace-nowrap">
+                <thead>
+                  <tr className="bg-gray-50 dark:bg-gray-700/50 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
+                    <th className="py-4 px-6">ID</th>
+                    <th className="py-4 px-6">Customer Name</th>
+                    <th className="py-4 px-6">Company Name</th>
+                    <th className="py-4 px-6 text-center">Actions</th>
+                  </tr>
+                </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {loading ? (
                   <tr><td colSpan={5} className="py-8 text-center"><div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></td></tr>
@@ -741,15 +815,6 @@ const Customers = () => {
                       <td className="py-4 px-6 text-sm font-medium text-gray-900 dark:text-white">{customer.customerId}</td>
                       <td className="py-4 px-6 text-sm font-semibold text-gray-800 dark:text-gray-200">{customer.name}</td>
                       <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">{customer.companyName || '-'}</td>
-                      <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
-                        {customer.assignedTo ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-medium">
-                            {customer.assignedTo.name}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 italic">Unassigned</span>
-                        )}
-                      </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center justify-center space-x-3">
                           <button
@@ -772,12 +837,20 @@ const Customers = () => {
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan={5} className="py-8 text-center text-gray-500">No customers found matching your criteria.</td></tr>
+                  <tr><td colSpan={4} className="py-8 text-center text-gray-500">No customers found for {adminViewEmployee.name}.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
         </div>
+        </div>
+      )}
+      
+      {/* CLOSE FRAGMENT FOR CONDITIONAL RENDER */}
+      {(user?.role === 'Employee' || (user?.role === 'Admin' && adminViewEmployee)) && (
+        <></>
+      )}
+      </>
       )}
 
       {/* Add/Edit Customer Modal */}
