@@ -23,6 +23,36 @@ const Team = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [viewEmployeeModal, setViewEmployeeModal] = useState({ open: false, employee: null });
 
+  // ── Script Management ────────────────────────────────────────────────────────
+  const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
+  const [scriptsData, setScriptsData] = useState({ sellerScript: '', districtPartnerScript: '' });
+  const [savingScripts, setSavingScripts] = useState(false);
+  const [activeScriptTab, setActiveScriptTab] = useState('seller');
+
+  const handleOpenScriptModal = async () => {
+    setIsScriptModalOpen(true);
+    try {
+      const { data } = await api.get('/settings');
+      setScriptsData({ sellerScript: data.sellerScript || '', districtPartnerScript: data.districtPartnerScript || '' });
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to load scripts');
+    }
+  };
+
+  const handleSaveScripts = async () => {
+    setSavingScripts(true);
+    try {
+      await api.put('/settings', scriptsData);
+      toast.success('Scripts updated successfully');
+      setIsScriptModalOpen(false);
+    } catch (e) {
+      toast.error('Failed to save scripts');
+    } finally {
+      setSavingScripts(false);
+    }
+  };
+
   // ── Daily Task Upload ────────────────────────────────────────────────────────
   const [uploadModal, setUploadModal] = useState({ open: false, employee: null });
   const [uploadFile, setUploadFile] = useState(null);
@@ -277,6 +307,9 @@ const Team = () => {
           />
           <button onClick={fetchEmployees} className="flex items-center gap-2 text-sm text-gray-500 hover:text-primary border border-gray-200 dark:border-gray-600 px-3 py-2 rounded-xl transition-colors">
             <FiRefreshCw size={14} /> Refresh
+          </button>
+          <button onClick={handleOpenScriptModal} className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3 py-2 rounded-xl transition-colors font-medium">
+            <FiFileText size={14} /> Manage Scripts
           </button>
           <button
             onClick={handleAddClick}
@@ -752,6 +785,72 @@ const Team = () => {
           </div>
         </div>
       )}
+
+      {/* ── Manage Scripts Modal ── */}
+      {isScriptModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-fade-in flex flex-col">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <FiFileText className="text-primary" /> Manage Calling Scripts
+              </h3>
+              <button onClick={() => setIsScriptModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">✕</button>
+            </div>
+            <div className="p-0 flex flex-col h-[60vh]">
+              <div className="flex border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/20">
+                <button
+                  onClick={() => setActiveScriptTab('seller')}
+                  className={`flex-1 py-3 text-sm font-bold transition-colors ${activeScriptTab === 'seller' ? 'text-primary border-b-2 border-primary bg-white dark:bg-gray-800' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  Seller Script
+                </button>
+                <button
+                  onClick={() => setActiveScriptTab('districtPartner')}
+                  className={`flex-1 py-3 text-sm font-bold transition-colors ${activeScriptTab === 'districtPartner' ? 'text-secondary border-b-2 border-secondary bg-white dark:bg-gray-800' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  District Partner Script
+                </button>
+              </div>
+              <div className="flex-1 p-6 flex flex-col">
+                <p className="text-xs text-gray-500 mb-3 font-mono bg-gray-100 dark:bg-gray-700 p-2 rounded-lg">
+                  Use {'{Name}'} for customer name and {'{Company}'} for company name. Double-Enter (new line) separates the script into highlighted steps for the caller.
+                </p>
+                {activeScriptTab === 'seller' ? (
+                  <textarea
+                    value={scriptsData.sellerScript}
+                    onChange={(e) => setScriptsData({ ...scriptsData, sellerScript: e.target.value })}
+                    className="flex-1 w-full p-4 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-gray-800 dark:text-gray-200 resize-none focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                    placeholder="Enter seller script here..."
+                  />
+                ) : (
+                  <textarea
+                    value={scriptsData.districtPartnerScript}
+                    onChange={(e) => setScriptsData({ ...scriptsData, districtPartnerScript: e.target.value })}
+                    className="flex-1 w-full p-4 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-gray-800 dark:text-gray-200 resize-none focus:ring-2 focus:ring-secondary focus:border-secondary outline-none"
+                    placeholder="Enter district partner script here..."
+                  />
+                )}
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
+              <button 
+                onClick={() => setIsScriptModalOpen(false)}
+                className="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSaveScripts}
+                disabled={savingScripts}
+                className="px-5 py-2.5 bg-primary hover:bg-primary-dark disabled:opacity-70 text-white font-semibold rounded-xl transition-colors shadow-md flex items-center gap-2"
+              >
+                {savingScripts ? 'Saving...' : 'Save Scripts'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

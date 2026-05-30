@@ -16,105 +16,64 @@ const CallingScriptSection = ({ customer }) => {
     ? <strong className="text-secondary font-bold">{company}</strong>
     : <span className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-1 rounded text-xs font-mono">[Company]</span>;
 
-  const sellerScripts = [
-    {
-      step: 1,
-      label: 'Greeting',
-      icon: <FiMic className="text-blue-500" />,
-      color: 'border-blue-400 bg-blue-50 dark:bg-blue-900/10',
-      badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-      text: <span>Hello {Name}, I am calling from Multi Maart regarding our exclusive Seller onboarding program. Am I speaking with {Name} from {Company}?</span>,
-    },
-    {
-      step: 2,
-      label: 'Product Introduction',
-      icon: <FiBookOpen className="text-purple-500" />,
-      color: 'border-purple-400 bg-purple-50 dark:bg-purple-900/10',
-      badge: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-      text: <span>{Name}, Multi Maart is India's fastest growing B2B marketplace. By onboarding {Company} as a Seller, you get access to thousands of wholesale buyers across the country.</span>,
-    },
-    {
-      step: 3,
-      label: 'Sales Pitch',
-      icon: <FiThumbsUp className="text-green-500" />,
-      color: 'border-green-400 bg-green-50 dark:bg-green-900/10',
-      badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      text: <span>{Name}, we charge ZERO commission on your first 100 orders! Sellers in your category have seen a 50% increase in sales within the first month.</span>,
-    },
-    {
-      step: 4,
-      label: 'Common Questions & Rebuttals',
-      icon: <FiHelpCircle className="text-yellow-500" />,
-      color: 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/10',
-      badge: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-      text: (
-        <span className="whitespace-pre-line block space-y-2">
-          <span className="block"><strong>Q: Is there any registration fee?</strong>{'\n'}→ No {Name}, seller registration is absolutely free.</span>
-          <span className="block"><strong>Q: Who manages shipping?</strong>{'\n'}→ We have tied up with top logistics partners to provide doorstep pickup from {Company}.</span>
-          <span className="block"><strong>Q: We already sell on other platforms.</strong>{'\n'}→ That's great! Multi Maart gives you an additional revenue stream with zero upfront investment.</span>
-        </span>
-      ),
-    },
-    {
-      step: 5,
-      label: 'Closing Statement',
-      icon: <FiMessageSquare className="text-primary" />,
-      color: 'border-primary bg-primary/5 dark:bg-primary/10',
-      badge: 'bg-primary/10 text-primary',
-      text: <span>{Name}, shall I send you the Seller Registration link on WhatsApp right now so you can create your free catalog?</span>,
-    },
-  ];
+  const [settings, setSettings] = useState(null);
 
-  const districtPartnerScripts = [
-    {
-      step: 1,
-      label: 'Greeting',
-      icon: <FiMic className="text-blue-500" />,
-      color: 'border-blue-400 bg-blue-50 dark:bg-blue-900/10',
-      badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-      text: <span>Hello {Name}, I am calling from Multi Maart regarding our District Partner franchise opportunity. Am I speaking with {Name} from {Company}?</span>,
-    },
-    {
-      step: 2,
-      label: 'Program Introduction',
-      icon: <FiBookOpen className="text-purple-500" />,
-      color: 'border-purple-400 bg-purple-50 dark:bg-purple-900/10',
-      badge: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-      text: <span>{Name}, we are appointing exclusive District Partners to lead Multi Maart's expansion. As a partner, you will earn a percentage of ALL transactions happening in your district.</span>,
-    },
-    {
-      step: 3,
-      label: 'Value Pitch',
-      icon: <FiThumbsUp className="text-green-500" />,
-      color: 'border-green-400 bg-green-50 dark:bg-green-900/10',
-      badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      text: <span>{Name}, this is a highly lucrative monopoly business model. Once you secure your district, no one else can take the franchise there, guaranteeing you long-term passive income.</span>,
-    },
-    {
-      step: 4,
-      label: 'Common Questions & Rebuttals',
-      icon: <FiHelpCircle className="text-yellow-500" />,
-      color: 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/10',
-      badge: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-      text: (
-        <span className="whitespace-pre-line block space-y-2">
-          <span className="block"><strong>Q: What is the investment?</strong>{'\n'}→ The franchise fee depends on the district tier, starting from just ₹50,000.</span>
-          <span className="block"><strong>Q: What is my main responsibility?</strong>{'\n'}→ Your goal is to onboard local sellers and drive buyer awareness. We provide full marketing support!</span>
-          <span className="block"><strong>Q: I need more details before deciding.</strong>{'\n'}→ Absolutely! Let me arrange a video call with our Franchise Director who can walk you through the entire revenue model.</span>
-        </span>
-      ),
-    },
-    {
-      step: 5,
-      label: 'Closing Statement',
-      icon: <FiMessageSquare className="text-primary" />,
-      color: 'border-primary bg-primary/5 dark:bg-primary/10',
-      badge: 'bg-primary/10 text-primary',
-      text: <span>{Name}, shall I share the official District Partner pitch deck on your WhatsApp so you can review the ROI projections?</span>,
-    },
-  ];
+  React.useEffect(() => {
+    import('../../api/axios').then(({ default: api }) => {
+      api.get('/settings').then(res => setSettings(res.data)).catch(console.error);
+    });
+  }, []);
 
-  const currentScripts = activeTab === 'seller' ? sellerScripts : districtPartnerScripts;
+  const parseScript = (rawText) => {
+    if (!rawText) return [];
+    
+    // Replace placeholders with spans
+    const replacePlaceholders = (text) => {
+      const parts = text.split(/(\{Name\}|\{Company\})/g);
+      return parts.map((part, i) => {
+        if (part === '{Name}') return <React.Fragment key={i}>{Name}</React.Fragment>;
+        if (part === '{Company}') return <React.Fragment key={i}>{Company}</React.Fragment>;
+        return part;
+      });
+    };
+
+    const paragraphs = rawText.split('\n\n').filter(p => p.trim() !== '');
+    
+    return paragraphs.map((p, index) => {
+      const colors = [
+        { icon: <FiMic className="text-blue-500" />, color: 'border-blue-400 bg-blue-50 dark:bg-blue-900/10', badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+        { icon: <FiBookOpen className="text-purple-500" />, color: 'border-purple-400 bg-purple-50 dark:bg-purple-900/10', badge: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
+        { icon: <FiThumbsUp className="text-green-500" />, color: 'border-green-400 bg-green-50 dark:bg-green-900/10', badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+        { icon: <FiHelpCircle className="text-yellow-500" />, color: 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/10', badge: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
+        { icon: <FiMessageSquare className="text-primary" />, color: 'border-primary bg-primary/5 dark:bg-primary/10', badge: 'bg-primary/10 text-primary' },
+      ];
+      const style = colors[index % colors.length];
+
+      const lines = p.split('\n');
+      const textNode = lines.length > 1 ? (
+        <span className="whitespace-pre-line block space-y-2">
+          {lines.map((line, li) => (
+            <span key={li} className="block">{replacePlaceholders(line)}</span>
+          ))}
+        </span>
+      ) : (
+        <span>{replacePlaceholders(p)}</span>
+      );
+
+      return {
+        step: index + 1,
+        label: `Action ${index + 1}`,
+        icon: style.icon,
+        color: style.color,
+        badge: style.badge,
+        text: textNode,
+      };
+    });
+  };
+
+  const currentScripts = settings 
+    ? (activeTab === 'seller' ? parseScript(settings.sellerScript) : parseScript(settings.districtPartnerScript))
+    : [];
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
