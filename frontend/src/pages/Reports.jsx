@@ -26,7 +26,7 @@ const Reports = () => {
       ]);
       setEmployees(empRes.data);
       setAllReports(repRes.data);
-    } catch {
+    } catch (error) {
       toast.error('Failed to load data');
     } finally {
       setLoading(false);
@@ -51,7 +51,7 @@ const Reports = () => {
       await api.delete(`/reports/${reportId}`);
       setAllReports(prev => prev.filter(r => r._id !== reportId));
       toast.success('Report deleted');
-    } catch {
+    } catch (error) {
       toast.error('Failed to delete report');
     }
   };
@@ -140,7 +140,7 @@ const Reports = () => {
       a.remove();
       window.URL.revokeObjectURL(url);
       toast.success(`Downloaded ${date ? `tasks for ${date}` : 'all tasks'} for ${employeeName}`);
-    } catch {
+    } catch (error) {
       toast.error('Failed to download task list');
     }
   };

@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await api.post('/auth/logout'); // clear server-side cookie too
       toast.success('Logged out successfully');
-    } catch {
+    } catch (error) {
       // Even if server call fails, user is already logged out locally
       toast.success('Logged out successfully');
     }

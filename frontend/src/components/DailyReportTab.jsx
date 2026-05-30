@@ -54,7 +54,7 @@ const DailyReportTab = ({ customers, sessionSeconds = 0, assignedCallsCount = 0 
         setPastReports(data);
         const existing = data.find(r => r.reportDate === today());
         if (existing) setTodayReport(existing);
-      } catch {
+      } catch (error) {
         toast.error('Failed to load reports');
       } finally {
         setLoading(false);

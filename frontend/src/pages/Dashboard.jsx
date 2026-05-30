@@ -72,7 +72,7 @@ const Dashboard = () => {
         await api.put(`/work-submissions/${submission._id}/read`);
         setWorkSubmissions(prev => prev.map(s => s._id === submission._id ? { ...s, isRead: true } : s));
       }
-    } catch {
+    } catch (error) {
       toast.error('Failed to download Excel');
     }
   };

@@ -46,7 +46,7 @@ const LeadManagementSection = () => {
       setLeads(leads.map(l => l._id === data._id ? data : l));
       setActiveLead(data);
       toast.success('Lead updated!');
-    } catch {
+    } catch (error) {
       toast.error('Failed to update lead');
     } finally {
       setSaving(false);

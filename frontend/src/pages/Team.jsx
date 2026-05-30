@@ -47,7 +47,7 @@ const Team = () => {
     try {
       const { data } = await api.get(`/users/${empId}/task-history`);
       setTaskHistory(h => ({ ...h, [empId]: data }));
-    } catch {
+    } catch (error) {
       toast.error('Failed to load task history');
     } finally {
       setLoadingHistory(h => ({ ...h, [empId]: false }));
@@ -90,7 +90,7 @@ const Team = () => {
       a.remove();
       window.URL.revokeObjectURL(url);
       toast.success(`Downloaded ${date ? `tasks for ${date}` : 'all tasks'} for ${employeeName}`);
-    } catch {
+    } catch (error) {
       toast.error('Failed to download task list');
     }
   };
@@ -106,7 +106,7 @@ const Team = () => {
       // Refresh task history panel for this employee
       const { data } = await api.get(`/users/${empId}/task-history`);
       setTaskHistory(prev => ({ ...prev, [empId]: data }));
-    } catch {
+    } catch (error) {
       toast.error('Failed to delete tasks');
     }
   };
@@ -161,7 +161,7 @@ const Team = () => {
     try {
       const { data } = await api.get(`/users/status?date=${selectedDate}`);
       setEmployees(data);
-    } catch {
+    } catch (error) {
       toast.error('Failed to load employees');
     } finally {
       setLoading(false);
@@ -248,7 +248,7 @@ const Team = () => {
       await api.delete(`/users/${id}`);
       toast.success('Employee deleted');
       fetchEmployees();
-    } catch {
+    } catch (error) {
       toast.error('Failed to delete employee');
     }
   };
