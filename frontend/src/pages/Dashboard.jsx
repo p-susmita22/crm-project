@@ -56,6 +56,7 @@ const Dashboard = () => {
   }, [user, isEmployeePanel]);
 
   const handleDownloadEmployeeExcel = async (submission) => {
+    try {
       const baseUrl = api.defaults.baseURL ? api.defaults.baseURL.replace('/api', '') : 'http://localhost:5000';
       const fullUrl = `${baseUrl}${submission.fileUrl}`;
       
