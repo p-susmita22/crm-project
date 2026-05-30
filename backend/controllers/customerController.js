@@ -145,9 +145,8 @@ const exportCustomersExcel = asyncHandler(async (req, res) => {
   let customers;
   const { employeeId, date } = req.query;
 
-  // Filter by taskDate string (YYYY-MM-DD) — exact match, not range
   let dateFilter = {};
-  if (date) {
+  if (date && req.user.role === 'Admin') {
     dateFilter = { taskDate: date };
   }
 
@@ -156,11 +155,21 @@ const exportCustomersExcel = asyncHandler(async (req, res) => {
     customers = await Customer.find(filter).populate('assignedTo', 'name email').sort({ createdAt: 1 });
   } else {
     // Employees only export their own assigned customers that they have worked on (not pending)
-    customers = await Customer.find({ 
+    // Filter specifically by the date they were updated (in IST) to match "what I did today"
+    const targetDateStr = date 
+      ? new Date(date).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }) 
+      : new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
+      
+    const allAssigned = await Customer.find({ 
       assignedTo: req.user._id, 
-      status: { $ne: 'Pending' },
-      ...dateFilter 
-    }).populate('assignedTo', 'name email').sort({ createdAt: 1 });
+      status: { $ne: 'Pending' }
+    }).populate('assignedTo', 'name email').sort({ updatedAt: -1 });
+
+    customers = allAssigned.filter(c => {
+      // Check if updatedAt matches target date
+      const updatedDateStr = new Date(c.updatedAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
+      return updatedDateStr === targetDateStr;
+    });
   }
 
   const rows = customers.map(c => ({
