@@ -765,13 +765,6 @@ const Customers = () => {
                     {/* Per-day Actions */}
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => downloadMyExcel(dateKey)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-xl text-xs font-semibold transition-colors"
-                        title={`Download Excel for ${dateKey}`}
-                      >
-                        <FiDownload size={13} /> Download Excel
-                      </button>
-                      <button
                         onClick={() => {
                           setUploadDate(dateKey);
                           fileInputRef.current?.click();
@@ -780,6 +773,18 @@ const Customers = () => {
                         title={`Upload & Send Work for ${dateKey}`}
                       >
                         <FiSend size={13} /> Send Work
+                      </button>
+                      <button
+                        onClick={() => downloadMyExcel(dateKey)}
+                        className="relative flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-xl text-xs font-semibold transition-colors"
+                        title={`Download Excel for ${dateKey}`}
+                      >
+                        <FiDownload size={13} /> Download Excel
+                        {user?.role === 'Employee' && fileDateStr === dateKey && user?.customerFile?.fileName && (
+                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full animate-pulse shadow-md font-bold">
+                            1
+                          </span>
+                        )}
                       </button>
                     </div>
                   </div>
