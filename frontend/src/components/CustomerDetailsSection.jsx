@@ -75,7 +75,8 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
     }
   }, [customer?._id]);
 
-  const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.Pending;
+  const displayStatus = customer?.status || 'Pending';
+  const cfg = STATUS_CONFIG[displayStatus] || STATUS_CONFIG.Pending;
 
   const handleStatusClick = (newStatus) => {
     setStatus(newStatus);
@@ -214,7 +215,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
         {/* ── Current Status Badge ─────────────────────── */}
         <div className={`flex items-center justify-between p-3 rounded-xl ring-1 ${cfg.bg} ${cfg.ring}`}>
           <div className="flex items-center gap-2">
-            <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot} ${status === 'Agree' ? 'animate-pulse' : ''}`} />
+            <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot} ${displayStatus === 'Agree' ? 'animate-pulse' : ''}`} />
             <span className={`text-sm font-bold ${cfg.text}`}>Current Status: {cfg.label}</span>
           </div>
           <span className="text-xs text-gray-400 font-mono">ID: {customer?.customerId || 'New'}</span>
