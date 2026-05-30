@@ -155,30 +155,22 @@ const exportCustomersExcel = asyncHandler(async (req, res) => {
     const filter = employeeId ? { assignedTo: employeeId, ...dateFilter } : { ...dateFilter };
     customers = await Customer.find(filter).populate('assignedTo', 'name email').sort({ createdAt: 1 });
   } else {
-    // Employees only export their own assigned customers
-    customers = await Customer.find({ assignedTo: req.user._id, ...dateFilter }).populate('assignedTo', 'name email').sort({ createdAt: 1 });
+    // Employees only export their own assigned customers that they have worked on (not pending)
+    customers = await Customer.find({ 
+      assignedTo: req.user._id, 
+      status: { $ne: 'Pending' },
+      ...dateFilter 
+    }).populate('assignedTo', 'name email').sort({ createdAt: 1 });
   }
 
   const rows = customers.map(c => ({
-    'Task Date':     c.taskDate || new Date(c.createdAt).toISOString().split('T')[0],
     'Customer ID':   c.customerId || '',
-    'Customer Name': c.name || '',
-    'Contact Number': c.phone || '',
-    'Email ID':      c.email || '',
-    'Company':       c.companyName || '',
-    'Job Title':     c.job || '',
-    'Onboarding':    c.onboarding || '',
-    'District':      c.address || '',
-    'Pin Code':      c.pincode || '',
-    'State':         c.state || '',
-    'Status':        c.status === 'Agree' ? 'Interested' :
-                     c.status === 'Reject' ? 'Rejected' :
-                     c.status === 'Others' ? 'Others' :
-                     (c.status || 'Pending'),
-    'Others Reason': c.otherReason || '',
-    'Follow-up Date': c.followUpDate ? new Date(c.followUpDate).toLocaleDateString('en-IN') : '',
-    'Remarks / Notes': c.notes || '',
-    'Assigned Employee': c.assignedTo?.name || '',
+    'Name':          c.name || '',
+    'Contact No':    c.phone || '',
+    'Mail ID':       c.email || '',
+    'Company Name':  c.companyName || '',
+    'Onboarding As': c.onboarding || '',
+    'Remarks':       c.notes || ''
   }));
 
   const worksheet = xlsx.utils.json_to_sheet(rows);
