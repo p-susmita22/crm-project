@@ -13,6 +13,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
 
   const totalCustomers = await Customer.countDocuments(query);
   const totalLeads = await Lead.countDocuments(query);
+  const totalEmployees = await User.countDocuments({ role: 'Employee' });
   
   const convertedLeads = await Lead.countDocuments({ ...query, status: 'Converted' });
   const rejectedCustomers = await Customer.countDocuments({ ...query, status: 'Reject' });
@@ -70,6 +71,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
   res.json({
     totalCustomers,
     totalLeads,
+    totalEmployees,
     convertedLeads,
     rejectedCustomers,
     customerStatusData,

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api/axios';
 import StatCard from '../components/StatCard';
 import EmployeeCallingPanel from '../components/EmployeeCallingPanel';
-import { FiUsers, FiTarget, FiTrendingUp, FiXCircle } from 'react-icons/fi';
+import { FiUsers, FiTarget, FiTrendingUp, FiXCircle, FiBriefcase } from 'react-icons/fi';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -16,6 +16,7 @@ const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
   const isEmployeePanel = location.pathname.startsWith('/employee');
 
   useEffect(() => {
@@ -84,13 +85,15 @@ const Dashboard = () => {
           icon={<FiUsers className="text-2xl" />} 
           color="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
           trend={12}
+          onClick={() => navigate('/admin/customers')}
         />
         <StatCard 
-          title="Total Leads" 
-          value={stats?.totalLeads || 0} 
-          icon={<FiTarget className="text-2xl" />} 
+          title="Total Employees" 
+          value={stats?.totalEmployees || 0} 
+          icon={<FiBriefcase className="text-2xl" />} 
           color="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400"
           trend={8}
+          onClick={() => navigate('/admin/team')}
         />
         <StatCard 
           title="Converted Leads" 
@@ -98,6 +101,7 @@ const Dashboard = () => {
           icon={<FiTrendingUp className="text-2xl" />} 
           color="bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
           trend={24}
+          onClick={() => navigate('/admin/leads')}
         />
         <StatCard 
           title="Rejected Customers" 
@@ -105,6 +109,7 @@ const Dashboard = () => {
           icon={<FiXCircle className="text-2xl" />} 
           color="bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
           trend={-5}
+          onClick={() => navigate('/admin/customers')}
         />
       </div>
 
