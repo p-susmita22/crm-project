@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
 import { toast } from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
-import { FiPlus, FiEdit2, FiTrash2, FiUser, FiRefreshCw, FiWifi, FiWifiOff, FiClock, FiPhone, FiDownload, FiUpload, FiX, FiEye } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiUser, FiRefreshCw, FiWifi, FiWifiOff, FiClock, FiPhone, FiDownload, FiUpload, FiX, FiEye, FiFileText } from 'react-icons/fi';
 
 const formatSeconds = (sec = 0) => {
   const h = Math.floor(sec / 3600);
