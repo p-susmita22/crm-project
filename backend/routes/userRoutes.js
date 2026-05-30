@@ -277,6 +277,11 @@ router.delete('/:id', protect, admin, asyncHandler(async (req, res) => {
     }
   }
 
+  const Customer = (await import('../models/Customer.js')).default;
+
+  // Delete all customers assigned to this employee
+  await Customer.deleteMany({ assignedTo: user._id });
+
   await user.deleteOne();
   // Collapse the sequence gap immediately
   await reindexEmployees();
