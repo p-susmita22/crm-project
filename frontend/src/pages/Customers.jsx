@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
-import { FiPlus, FiEdit2, FiTrash2, FiUsers, FiSearch, FiFilter, FiDownload, FiFileText, FiEye, FiXCircle, FiCalendar, FiRefreshCw, FiSend } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiUsers, FiSearch, FiFilter, FiDownload, FiFileText, FiEye, FiXCircle, FiCalendar, FiRefreshCw, FiSend, FiInbox } from 'react-icons/fi';
 
 const indianStates = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", 
@@ -28,6 +28,10 @@ const Customers = () => {
   const fileInputRef = useRef(null);
   const [uploadDate, setUploadDate] = useState('');
 
+  // Admin Work Submissions states
+  const [workSubmissions, setWorkSubmissions] = useState([]);
+  const [showSubmissionsModal, setShowSubmissionsModal] = useState(false);
+
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -45,6 +49,14 @@ const Customers = () => {
       setCustomers(custRes.data);
       if (user?.role === 'Admin') {
         setEmployees(empRes.data.filter(e => e.role === 'Employee'));
+        
+        // Fetch work submissions
+        try {
+          const wsRes = await api.get('/work-submissions');
+          setWorkSubmissions(wsRes.data);
+        } catch (err) {
+          console.error('Failed to fetch work submissions', err);
+        }
       }
       setLastRefreshed(new Date());
     } catch (error) {
@@ -61,6 +73,29 @@ const Customers = () => {
     const interval = setInterval(() => fetchData(true), 30000);
     return () => clearInterval(interval);
   }, [user]);
+
+  const handleDownloadEmployeeExcel = async (submission) => {
+    try {
+      const baseUrl = api.defaults.baseURL ? api.defaults.baseURL.replace('/api', '') : 'http://localhost:5000';
+      const fullUrl = `${baseUrl}${submission.fileUrl}`;
+      
+      const a = document.createElement('a');
+      a.href = fullUrl;
+      a.target = '_blank';
+      a.download = submission.fileName || 'Work_Submission';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      
+      // Mark as read
+      if (!submission.isRead) {
+        await api.put(`/work-submissions/${submission._id}/read`);
+        setWorkSubmissions(prev => prev.map(s => s._id === submission._id ? { ...s, isRead: true } : s));
+      }
+    } catch {
+      toast.error('Failed to open file');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -532,6 +567,17 @@ const Customers = () => {
                 Updated: {lastRefreshed.toLocaleTimeString()}
               </span>
             )}
+            <button 
+              onClick={() => setShowSubmissionsModal(true)}
+              className="relative flex items-center gap-2 bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-2.5 rounded-xl font-bold transition-all"
+            >
+              <FiInbox size={18} /> Received Work
+              {workSubmissions.filter(s => !s.isRead).length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 flex items-center justify-center rounded-full animate-pulse shadow-md">
+                  {workSubmissions.filter(s => !s.isRead).length}
+                </span>
+              )}
+            </button>
             <button
               onClick={() => fetchData(true)}
               disabled={refreshing}
@@ -1214,6 +1260,45 @@ const Customers = () => {
               >
                 <FiDownload size={16} /> Download PDF
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Received Work Modal */}
+      {showSubmissionsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-700">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <FiInbox className="text-purple-500" /> Employee Daily Work Submissions
+              </h3>
+              <button onClick={() => setShowSubmissionsModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <FiXCircle size={22} />
+              </button>
+            </div>
+            <div className="p-6 max-h-[60vh] overflow-y-auto space-y-3">
+              {workSubmissions.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">No work submissions received yet.</div>
+              ) : (
+                workSubmissions.map(sub => (
+                  <div key={sub._id} className={`flex items-center justify-between p-4 rounded-xl border ${sub.isRead ? 'bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700' : 'bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800'}`}>
+                    <div>
+                      <h4 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                        {sub.employeeName} 
+                        {!sub.isRead && <span className="bg-red-500 text-white text-[10px] uppercase px-2 py-0.5 rounded-full font-bold">New</span>}
+                      </h4>
+                      <p className="text-xs text-gray-500 mt-1">Submitted: {new Date(sub.createdAt).toLocaleString()}</p>
+                    </div>
+                    <button 
+                      onClick={() => handleDownloadEmployeeExcel(sub)}
+                      className="flex items-center gap-2 px-3 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg text-sm font-bold transition-colors"
+                    >
+                      <FiDownload size={14} /> View File
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
