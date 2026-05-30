@@ -91,10 +91,19 @@ const EmployeeCallingPanel = () => {
       .then(r => {
         setTotalCustomersCount(r.data.length);
         const todayDateStr = new Date().toISOString().slice(0, 10);
-        // Only load customers uploaded for today's calling target
-        const todaysCustomers = r.data.filter(c => c.taskDate === todayDateStr || c.taskDate === undefined || c.createdAt?.startsWith(todayDateStr));
-        setCustomers(todaysCustomers);
-        if (todaysCustomers.length > 0) setActiveCustomer(todaysCustomers[0]);
+        
+        // Find the most recent date with assigned customers
+        const allDates = [...new Set(r.data.map(c => c.taskDate).filter(Boolean))].sort((a, b) => b.localeCompare(a));
+        let targetDateStr = todayDateStr;
+        
+        // If today has no data, but past data exists, use the most recent past data
+        if (allDates.length > 0 && !allDates.includes(todayDateStr)) {
+          targetDateStr = allDates[0];
+        }
+
+        const targetCustomers = r.data.filter(c => c.taskDate === targetDateStr || (!c.taskDate && c.createdAt?.startsWith(targetDateStr)));
+        setCustomers(targetCustomers);
+        if (targetCustomers.length > 0) setActiveCustomer(targetCustomers[0]);
       })
       .catch(() => toast.error('Failed to load customers'))
       .finally(() => setLoading(false));
