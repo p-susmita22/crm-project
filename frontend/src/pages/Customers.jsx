@@ -679,21 +679,6 @@ const Customers = () => {
             );
           })}
           
-          {/* Unassigned Block */}
-          <div 
-            onClick={() => setAdminViewEmployee({ _id: 'unassigned', name: 'Unassigned Customers' })} 
-            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:shadow-md hover:border-gray-300 dark:hover:border-gray-500 transition-all group"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center font-bold text-xl group-hover:bg-gray-200 dark:group-hover:bg-gray-600 transition-colors">
-                U
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-800 dark:text-white text-lg">Unassigned</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{customers.filter(c => !c.assignedTo).length} Customers</p>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
