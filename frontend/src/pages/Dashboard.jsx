@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import api from '../api/axios';
 import StatCard from '../components/StatCard';
 import EmployeeCallingPanel from '../components/EmployeeCallingPanel';
-import { FiUsers, FiTarget, FiTrendingUp, FiXCircle, FiBriefcase } from 'react-icons/fi';
+import { FiUsers, FiTarget, FiTrendingUp, FiXCircle, FiBriefcase, FiDownload, FiBell, FiInbox } from 'react-icons/fi';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -18,6 +18,8 @@ const Dashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isEmployeePanel = location.pathname.startsWith('/employee');
+  const [workSubmissions, setWorkSubmissions] = useState([]);
+  const [showSubmissionsModal, setShowSubmissionsModal] = useState(false);
 
   useEffect(() => {
     // Only fetch dashboard stats for Admin view. 
@@ -38,8 +40,46 @@ const Dashboard = () => {
       }
     };
 
+    const fetchWorkSubmissions = async () => {
+      try {
+        const { data } = await api.get('/work-submissions');
+        setWorkSubmissions(data);
+      } catch (err) {
+        console.error('Failed to load work submissions');
+      }
+    };
+
     fetchDashboardStats();
-  }, [user]);
+    fetchWorkSubmissions();
+    const interval = setInterval(fetchWorkSubmissions, 30000);
+    return () => clearInterval(interval);
+  }, [user, isEmployeePanel]);
+
+  const handleDownloadEmployeeExcel = async (submission) => {
+    try {
+      const { employee, submissionDate } = submission;
+      const response = await api.get('/customers/export/excel', { 
+        responseType: 'blob', 
+        params: { date: submissionDate, employeeId: employee } 
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Employee_${submission.employeeName}_Tasks_${submissionDate}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      
+      // Mark as read
+      if (!submission.isRead) {
+        await api.put(`/work-submissions/${submission._id}/read`);
+        setWorkSubmissions(prev => prev.map(s => s._id === submission._id ? { ...s, isRead: true } : s));
+      }
+    } catch {
+      toast.error('Failed to download Excel');
+    }
+  };
 
   if (loading) {
     return (
@@ -67,13 +107,28 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-between items-end">
+      <div className="flex justify-between items-end flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Dashboard Overview</h2>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Welcome back, {user?.name}</p>
         </div>
-        <div className="text-sm bg-primary/10 text-primary px-3 py-1 rounded-full font-medium">
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+        <div className="flex items-center gap-4">
+          {user?.role === 'Admin' && (
+            <button 
+              onClick={() => setShowSubmissionsModal(true)}
+              className="relative flex items-center gap-2 bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-xl font-bold transition-all"
+            >
+              <FiInbox size={18} /> Received Work
+              {workSubmissions.filter(s => !s.isRead).length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 flex items-center justify-center rounded-full animate-pulse shadow-md">
+                  {workSubmissions.filter(s => !s.isRead).length}
+                </span>
+              )}
+            </button>
+          )}
+          <div className="text-sm bg-primary/10 text-primary px-3 py-1.5 rounded-full font-medium">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+          </div>
         </div>
       </div>
 
@@ -201,6 +256,45 @@ const Dashboard = () => {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Received Work Modal */}
+      {showSubmissionsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-700">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <FiInbox className="text-purple-500" /> Employee Daily Work Submissions
+              </h3>
+              <button onClick={() => setShowSubmissionsModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <FiXCircle size={22} />
+              </button>
+            </div>
+            <div className="p-6 max-h-[60vh] overflow-y-auto space-y-3">
+              {workSubmissions.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">No work submissions received yet.</div>
+              ) : (
+                workSubmissions.map(sub => (
+                  <div key={sub._id} className={`flex items-center justify-between p-4 rounded-xl border ${sub.isRead ? 'bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700' : 'bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800'}`}>
+                    <div>
+                      <h4 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                        {sub.employeeName} 
+                        {!sub.isRead && <span className="bg-red-500 text-white text-[10px] uppercase px-2 py-0.5 rounded-full font-bold">New</span>}
+                      </h4>
+                      <p className="text-xs text-gray-500 mt-1">Submitted: {new Date(sub.createdAt).toLocaleString()}</p>
+                    </div>
+                    <button 
+                      onClick={() => handleDownloadEmployeeExcel(sub)}
+                      className="flex items-center gap-2 px-3 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg text-sm font-bold transition-colors"
+                    >
+                      <FiDownload size={14} /> Download Excel
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}

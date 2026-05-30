@@ -485,7 +485,9 @@ const Customers = () => {
       matchEmployee = c.assignedTo?._id === filterEmployeeId;
     }
     
-    return matchSearch && matchDate && matchEmployee;
+    const matchStatus = user?.role === 'Employee' ? c.status !== 'Pending' : true;
+
+    return matchSearch && matchDate && matchEmployee && matchStatus;
   });
 
   // Group filteredCustomers by date (for employee view) — sorted newest first
@@ -550,6 +552,20 @@ const Customers = () => {
         )}
         {user?.role === 'Employee' && (
           <div className="flex items-center gap-3">
+            <button
+              onClick={async () => {
+                try {
+                  await api.post('/work-submissions');
+                  toast.success("Today's work sent to Admin successfully!");
+                } catch (err) {
+                  toast.error(err.response?.data?.message || 'Failed to send work');
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors shadow-sm"
+              title="Send your Excel sheet of today's work to Admin"
+            >
+              <FiSend size={15} /> Send Work
+            </button>
             <button
               onClick={downloadMyExcel}
               className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors shadow-sm"

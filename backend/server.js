@@ -56,6 +56,7 @@ import taskRoutes from './routes/taskRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+import workRoutes from './routes/workRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 // Base Route
@@ -71,6 +72,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/work-submissions', workRoutes);
 
 // Error handling middleware
 app.use(notFound);
