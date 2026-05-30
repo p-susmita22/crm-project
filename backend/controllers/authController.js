@@ -28,6 +28,10 @@ const authUser = asyncHandler(async (req, res) => {
       res.status(403);
       throw new Error('Access denied. Admins cannot sign in to the Employee Dashboard.');
     }
+    if (user.role === 'Employee' && user.isActive === false) {
+      res.status(403);
+      throw new Error('Account disabled. Please contact the administrator.');
+    }
 
     const token = generateToken(res, user._id);
 

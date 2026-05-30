@@ -16,7 +16,7 @@ const Team = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '', role: 'Employee', assignedCallsCount: 0 });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '', role: 'Employee', assignedCallsCount: 0, isActive: true });
   const [selectedFile, setSelectedFile] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingEmployeeId, setEditingEmployeeId] = useState(null);
@@ -214,17 +214,18 @@ const Team = () => {
   };
 
   const handleEditClick = (emp) => {
+    setIsEditMode(true);
+    setEditingEmployeeId(emp._id);
     setFormData({
-      name: emp.name || '',
-      email: emp.email || '',
+      name: emp.name,
+      email: emp.email,
       phone: emp.phone || '',
       password: '',
       role: emp.role || 'Employee',
-      assignedCallsCount: emp.assignedCallsCount || 0
+      assignedCallsCount: emp.assignedCallsCount || 0,
+      isActive: emp.isActive !== false
     });
     setSelectedFile(null);
-    setEditingEmployeeId(emp._id);
-    setIsEditMode(true);
     setIsModalOpen(true);
   };
 
@@ -249,6 +250,7 @@ const Team = () => {
       formDataToSend.append('email', formData.email);
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('role', formData.role);
+      formDataToSend.append('isActive', formData.isActive);
       if (formData.password) {
         formDataToSend.append('password', formData.password);
       }
@@ -264,7 +266,7 @@ const Team = () => {
         toast.success('Employee created successfully');
       }
       setIsModalOpen(false);
-      setFormData({ name: '', email: '', phone: '', password: '', role: 'Employee' });
+      setFormData({ name: '', email: '', phone: '', password: '', role: 'Employee', isActive: true });
       setSelectedFile(null);
       fetchEmployees();
     } catch (error) {
@@ -395,10 +397,17 @@ const Team = () => {
                     <td className="py-4 px-5 text-sm text-gray-600 dark:text-gray-400"><span className="flex items-center gap-1"><FiPhone size={12} /> {emp.phone || '—'}</span></td>
                     <td className="py-4 px-5 text-center font-semibold text-sm text-gray-700 dark:text-gray-200">{emp.assignedCallsCount || 0}</td>
                     <td className="py-4 px-5 text-center">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${emp.isOnline ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${emp.isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
-                        {emp.isOnline ? 'Online' : 'Offline'}
-                      </span>
+                      {emp.isActive === false ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                          Inactive
+                        </span>
+                      ) : (
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${emp.isOnline ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${emp.isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                          {emp.isOnline ? 'Online' : 'Offline'}
+                        </span>
+                      )}
                     </td>
                     <td className="py-4 px-5 text-center">
                       <span className="flex items-center justify-center gap-1 text-sm font-mono text-gray-700 dark:text-gray-200">
@@ -692,6 +701,26 @@ const Team = () => {
                 )}
               </div>
 
+              {isEditMode && (
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-800 dark:text-gray-200">Account Status</label>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">If inactive, the employee cannot log in.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={formData.isActive}
+                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                    <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {formData.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </label>
+                </div>
+              )}
 
               <div className="pt-4 flex justify-end space-x-3 border-t border-gray-100 dark:border-gray-700">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700">

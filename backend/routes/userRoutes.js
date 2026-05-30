@@ -118,13 +118,16 @@ router.put('/:id', protect, admin, upload.single('customerFile'), asyncHandler(a
     throw new Error('User not found');
   }
 
-  const { name, email, phone, password, assignedCallsCount } = req.body;
+  const { name, email, phone, password, assignedCallsCount, isActive } = req.body;
 
   user.name = name || user.name;
   user.email = email || user.email;
   user.phone = phone || user.phone;
   if (assignedCallsCount !== undefined) {
     user.assignedCallsCount = Number(assignedCallsCount) || 0;
+  }
+  if (isActive !== undefined) {
+    user.isActive = isActive === 'true' || isActive === true;
   }
 
   if (password && password.trim() !== '') {
@@ -158,7 +161,8 @@ router.put('/:id', protect, admin, upload.single('customerFile'), asyncHandler(a
     phone: updatedUser.phone,
     employeeId: updatedUser.employeeId,
     customerFile: updatedUser.customerFile,
-    assignedCallsCount: updatedUser.assignedCallsCount
+    assignedCallsCount: updatedUser.assignedCallsCount,
+    isActive: updatedUser.isActive
   });
 }));
 
