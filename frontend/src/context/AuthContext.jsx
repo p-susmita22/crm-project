@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkUser = async () => {
-      const token = localStorage.getItem('crm_token');
+      const token = sessionStorage.getItem('crm_token');
 
       // No token = definitely not logged in, skip API call
       if (!token) {
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         // Token is invalid/expired — clear it
         setUser(null);
-        localStorage.removeItem('crm_token');
+        sessionStorage.removeItem('crm_token');
       } finally {
         setLoading(false);
       }
@@ -35,9 +35,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password, loginType = 'Admin') => {
     try {
       const { data } = await api.post('/auth/login', { email, password, loginType });
-      // Store token in localStorage for cross-domain auth (production)
+      // Store token in sessionStorage for cross-domain auth (production)
       if (data.token) {
-        localStorage.setItem('crm_token', data.token);
+        sessionStorage.setItem('crm_token', data.token);
       }
       setUser(data);
       toast.success('Logged in successfully!');
@@ -50,8 +50,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     // Always clear local state first — never leave a stale token
-    localStorage.removeItem('crm_token');
-    localStorage.removeItem('crm_session_start');
+    sessionStorage.removeItem('crm_token');
+    sessionStorage.removeItem('crm_session_start');
     setUser(null);
     try {
       await api.post('/auth/logout'); // clear server-side cookie too

@@ -33,9 +33,9 @@ const EmployeeCallingPanel = () => {
   // ── Timer ───────────────────────────────────────────────────────────────────
   const SESSION_KEY = 'crm_session_start';
 
-  // Lazy init: calculate elapsed from localStorage immediately (no flicker to 00:00)
+  // Lazy init: calculate elapsed from sessionStorage immediately (no flicker to 00:00)
   const [elapsed, setElapsed] = useState(() => {
-    const stored = localStorage.getItem(SESSION_KEY);
+    const stored = sessionStorage.getItem(SESSION_KEY);
     if (stored) {
       return Math.floor((Date.now() - parseInt(stored, 10)) / 1000);
     }
@@ -47,12 +47,12 @@ const EmployeeCallingPanel = () => {
   const sinceLastHeartbeat = useRef(0);
 
   useEffect(() => {
-    // Ensure localStorage has the session start time
-    if (!localStorage.getItem(SESSION_KEY)) {
-      localStorage.setItem(SESSION_KEY, Date.now().toString());
+    // Ensure sessionStorage has the session start time
+    if (!sessionStorage.getItem(SESSION_KEY)) {
+      sessionStorage.setItem(SESSION_KEY, Date.now().toString());
     }
 
-    const sessionStartTime = parseInt(localStorage.getItem(SESSION_KEY), 10);
+    const sessionStartTime = parseInt(sessionStorage.getItem(SESSION_KEY), 10);
     setIsOnline(true);
 
     // Tell backend we're online
@@ -77,7 +77,7 @@ const EmployeeCallingPanel = () => {
     };
   }, []);
 
-  // On browser tab close — mark offline but keep localStorage (so refresh restores timer)
+  // On browser tab close — mark offline but keep sessionStorage (so refresh restores timer)
   useEffect(() => {
     const handler = () => {
       api.post('/users/session/end', { elapsedSeconds: sinceLastHeartbeat.current }).catch(() => {});

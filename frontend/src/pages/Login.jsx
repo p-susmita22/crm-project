@@ -9,7 +9,7 @@ import api from '../api/axios';
 const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { login, user } = useContext(AuthContext);
+  const { login, user, setUser } = useContext(AuthContext);
 
   // Detect portal from URL: /admin/login → 'Admin', /employee/login → 'Employee'
   const isAdminPath    = location.pathname === '/admin/login';
@@ -22,18 +22,26 @@ const Login = () => {
   const from = location.state?.from?.pathname;
 
 
-  // Redirect if already logged in
+  // Redirect if already logged in with the matching role
   useEffect(() => {
     if (user) {
-      const redirectPath =
-        from && from !== '/' && from !== '/login'
-          ? from
-          : user.role === 'Admin'
-          ? '/admin/dashboard'
-          : '/employee/dashboard';
-      navigate(redirectPath, { replace: true });
+      if (user.role === loginType) {
+        const redirectPath =
+          from && from !== '/' && from !== '/login'
+            ? from
+            : user.role === 'Admin'
+            ? '/admin/dashboard'
+            : '/employee/dashboard';
+        navigate(redirectPath, { replace: true });
+      } else {
+        // Mismatch: logged in as Admin but trying to access Employee Login (or vice versa).
+        // Clear the local session ONLY so they can log in to this portal without affecting other tabs.
+        sessionStorage.removeItem('crm_token');
+        sessionStorage.removeItem('crm_session_start');
+        setUser(null);
+      }
     }
-  }, [user, navigate, from]);
+  }, [user, navigate, from, loginType, setUser]);
 
 
 

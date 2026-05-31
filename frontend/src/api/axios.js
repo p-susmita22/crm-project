@@ -5,9 +5,9 @@ const api = axios.create({
   withCredentials: true, // still send cookies for local dev
 });
 
-// Attach JWT from localStorage as Bearer token on every request (needed for cross-domain/production)
+// Attach JWT from sessionStorage as Bearer token on every request (needed for cross-domain/production)
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('crm_token');
+  const token = sessionStorage.getItem('crm_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
