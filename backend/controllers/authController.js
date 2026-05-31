@@ -226,8 +226,8 @@ const forgotPassword = asyncHandler(async (req, res) => {
       await axios.get('https://www.fast2sms.com/dev/bulkV2', {
         params: {
           authorization: process.env.FAST2SMS_API_KEY,
-          variables_values: otp,
-          route: 'otp',
+          message: `Your CRM Admin Password Reset OTP is ${otp}. Valid for 10 mins.`,
+          route: 'q',
           numbers: user.phone
         }
       });
