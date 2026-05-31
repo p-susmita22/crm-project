@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
 import { 
   FiHome, FiUsers, FiTarget, FiCheckSquare, FiSettings,
-  FiLogOut, FiMenu, FiX, FiFileText, FiUser, FiChevronDown, FiEdit3
+  FiLogOut, FiMenu, FiX, FiFileText, FiUser, FiChevronDown, FiEdit3, FiClock
 } from 'react-icons/fi';
 import multimaartLogo from '../assets/multimaart-logo.png';
 import api from '../api/axios';
@@ -34,6 +34,7 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
   if (panelType === 'admin') {
     navItems.push({ name: 'Team', path: `${basePath}/team`, icon: <FiSettings className="text-xl" /> });
     navItems.push({ name: 'Reports', path: `${basePath}/reports`, icon: <FiFileText className="text-xl" /> });
+    navItems.push({ name: 'History', path: `${basePath}/history`, icon: <FiClock className="text-xl" /> });
   }
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);

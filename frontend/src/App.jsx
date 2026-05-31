@@ -23,6 +23,7 @@ import Tasks from './pages/Tasks';
 import Team from './pages/Team';
 import Reports from './pages/Reports';
 import Profile from './pages/Profile';
+import EmployeeHistory from './pages/EmployeeHistory';
 
 const RootRedirect = () => {
   const { user, loading } = useContext(AuthContext);
@@ -57,6 +58,7 @@ function App() {
           <Route path="leads" element={<Leads />} />
           <Route path="team" element={<Team />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="history" element={<EmployeeHistory />} />
           <Route path="profile" element={<Profile />} />
         </Route>
 

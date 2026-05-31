@@ -358,6 +358,52 @@ router.delete('/:id', protect, admin, asyncHandler(async (req, res) => {
   }
 
   const Customer = (await import('../models/Customer.js')).default;
+  const ArchivedEmployee = (await import('../models/ArchivedEmployee.js')).default;
+
+  // Fetch all customers assigned to this employee
+  const customers = await Customer.find({ assignedTo: user._id });
+
+  // Calculate stats
+  let convertedLeads = 0;
+  let rejectedCustomers = 0;
+  let pendingCustomers = 0;
+  let otherCustomers = 0;
+
+  const archivedCustomers = customers.map(c => {
+    if (c.status === 'Agree') convertedLeads++;
+    else if (c.status === 'Reject') rejectedCustomers++;
+    else if (c.status === 'Pending') pendingCustomers++;
+    else if (c.status === 'Others') otherCustomers++;
+
+    return {
+      customerId: c.customerId,
+      name: c.name,
+      phone: c.phone,
+      email: c.email,
+      companyName: c.companyName,
+      status: c.status,
+      onboarding: c.onboarding,
+      taskDate: c.taskDate,
+      sourceFile: c.sourceFile
+    };
+  });
+
+  // Create archived employee record
+  await ArchivedEmployee.create({
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    employeeId: user.employeeId,
+    role: user.role,
+    stats: {
+      totalCustomers: customers.length,
+      convertedLeads,
+      rejectedCustomers,
+      pendingCustomers,
+      otherCustomers,
+    },
+    customers: archivedCustomers
+  });
 
   // Delete all customers assigned to this employee
   await Customer.deleteMany({ assignedTo: user._id });
@@ -365,7 +411,16 @@ router.delete('/:id', protect, admin, asyncHandler(async (req, res) => {
   await user.deleteOne();
   // Collapse the sequence gap immediately
   await reindexEmployees();
-  res.json({ message: 'Employee deleted' });
+  res.json({ message: 'Employee deleted and archived successfully' });
+}));
+
+// @desc    Get employee history (archived employees)
+// @route   GET /api/users/history/archived
+// @access  Private/Admin
+router.get('/history/archived', protect, admin, asyncHandler(async (req, res) => {
+  const ArchivedEmployee = (await import('../models/ArchivedEmployee.js')).default;
+  const archived = await ArchivedEmployee.find({}).sort({ deletedAt: -1 });
+  res.json(archived);
 }));
 
 export default router;
