@@ -3,6 +3,8 @@ import Customer from '../models/Customer.js';
 import Lead from '../models/Lead.js';
 import Task from '../models/Task.js';
 import User from '../models/User.js';
+import Report from '../models/Report.js';
+import WorkSubmission from '../models/WorkSubmission.js';
 
 // @desc    Get dashboard statistics
 // @route   GET /api/dashboard
@@ -82,3 +84,22 @@ const getDashboardStats = asyncHandler(async (req, res) => {
 });
 
 export { getDashboardStats };
+
+// @desc    Get notification counts (unread reports, unread work submissions)
+// @route   GET /api/dashboard/notifications
+// @access  Private/Admin
+const getNotifications = asyncHandler(async (req, res) => {
+  if (req.user.role !== 'Admin') {
+    return res.json({ unreadReports: 0, unreadWork: 0 });
+  }
+
+  const unreadReports = await Report.countDocuments({ isRead: false });
+  const unreadWork = await WorkSubmission.countDocuments({ isRead: false });
+
+  res.json({
+    unreadReports,
+    unreadWork
+  });
+});
+
+export { getNotifications };

@@ -28,6 +28,9 @@ const Reports = () => {
       ]);
       setEmployees(empRes.data);
       setAllReports(repRes.data);
+      
+      // Mark reports as read
+      await api.put('/reports/mark-all-read').catch(err => console.error(err));
     } catch (error) {
       toast.error('Failed to load data');
     } finally {

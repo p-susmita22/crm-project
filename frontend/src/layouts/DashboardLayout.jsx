@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
@@ -13,6 +13,7 @@ import { toast } from 'react-hot-toast';
 const DashboardLayout = ({ panelType = 'employee' }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isProfileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [notifications, setNotifications] = useState({ unreadReports: 0, unreadWork: 0 });
   
   const { user, logout, setUser } = useContext(AuthContext);
   const { theme } = useContext(ThemeContext); 
@@ -21,9 +22,30 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
 
   const basePath = panelType === 'admin' ? '/admin' : '/employee';
 
+  useEffect(() => {
+    if (panelType === 'admin') {
+      const fetchNotifications = async () => {
+        try {
+          const { data } = await api.get('/dashboard/notifications');
+          setNotifications(data);
+        } catch (error) {
+          console.error("Failed to fetch notifications", error);
+        }
+      };
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 15000);
+      return () => clearInterval(interval);
+    }
+  }, [panelType]);
+
   const navItems = [
     { name: 'Dashboard', path: `${basePath}/dashboard`, icon: <FiHome className="text-xl" /> },
-    { name: 'Customers', path: `${basePath}/customers`, icon: <FiUsers className="text-xl" /> },
+    { 
+      name: 'Customers', 
+      path: `${basePath}/customers`, 
+      icon: <FiUsers className="text-xl" />,
+      badge: panelType === 'admin' ? notifications.unreadWork : 0
+    },
     { name: 'Leads', path: `${basePath}/leads`, icon: <FiTarget className="text-xl" /> },
   ];
 
@@ -33,7 +55,12 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
 
   if (panelType === 'admin') {
     navItems.push({ name: 'Team', path: `${basePath}/team`, icon: <FiSettings className="text-xl" /> });
-    navItems.push({ name: 'Reports', path: `${basePath}/reports`, icon: <FiFileText className="text-xl" /> });
+    navItems.push({ 
+      name: 'Reports', 
+      path: `${basePath}/reports`, 
+      icon: <FiFileText className="text-xl" />,
+      badge: notifications.unreadReports
+    });
     navItems.push({ name: 'History', path: `${basePath}/history`, icon: <FiClock className="text-xl" /> });
   }
 
@@ -72,15 +99,22 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+              className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${
                 location.pathname.startsWith(item.path)
                   ? 'bg-primary text-white shadow-md shadow-primary/30'
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'
               }`}
               onClick={() => setSidebarOpen(false)}
             >
-              {item.icon}
-              <span className="font-medium">{item.name}</span>
+              <div className="flex items-center space-x-3">
+                {item.icon}
+                <span className="font-medium">{item.name}</span>
+              </div>
+              {item.badge > 0 && (
+                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           ))}
         </nav>

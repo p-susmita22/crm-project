@@ -51,6 +51,14 @@ router.get('/', protect, admin, asyncHandler(async (req, res) => {
   res.json(reports);
 }));
 
+// @desc    Admin marks all reports as read
+// @route   PUT /api/reports/mark-all-read
+// @access  Private/Admin
+router.put('/mark-all-read', protect, admin, asyncHandler(async (req, res) => {
+  await Report.updateMany({ isRead: false }, { isRead: true });
+  res.json({ message: 'All reports marked as read' });
+}));
+
 // @desc    Admin deletes a report
 // @route   DELETE /api/reports/:id
 // @access  Private/Admin
@@ -59,6 +67,21 @@ router.delete('/:id', protect, admin, asyncHandler(async (req, res) => {
   if (!report) { res.status(404); throw new Error('Report not found'); }
   await report.deleteOne();
   res.json({ message: 'Report deleted' });
+}));
+
+// @desc    Admin marks a report as read
+// @route   PUT /api/reports/:id/read
+// @access  Private/Admin
+router.put('/:id/read', protect, admin, asyncHandler(async (req, res) => {
+  const report = await Report.findById(req.params.id);
+  if (report) {
+    report.isRead = true;
+    await report.save();
+    res.json(report);
+  } else {
+    res.status(404);
+    throw new Error('Report not found');
+  }
 }));
 
 export default router;
