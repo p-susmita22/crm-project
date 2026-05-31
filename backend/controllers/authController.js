@@ -1,11 +1,10 @@
 import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
-import axios from 'axios';
+import twilio from 'twilio';
 import { importCustomersFromFile } from '../utils/customerImporter.js';
 import { reindexEmployees } from '../utils/employeeReindexer.js';
 import sendEmail from '../utils/sendEmail.js';
-
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
 // @access  Public
@@ -220,26 +219,32 @@ const forgotPassword = asyncHandler(async (req, res) => {
   user.otpVerified = false;
   await user.save({ validateBeforeSave: false });
 
-  // Send SMS via Fast2SMS
-  if (process.env.FAST2SMS_API_KEY) {
+  // Send SMS via Twilio
+  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
     try {
-      await axios.get('https://www.fast2sms.com/dev/bulkV2', {
-        params: {
-          authorization: process.env.FAST2SMS_API_KEY,
-          message: `Your CRM Admin Password Reset OTP is ${otp}. Valid for 10 mins.`,
-          route: 'q',
-          numbers: user.phone
-        }
+      const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      
+      // Ensure phone number has country code (defaulting to India +91 if none provided)
+      let formattedPhone = user.phone.trim();
+      if (!formattedPhone.startsWith('+')) {
+        formattedPhone = '+91' + formattedPhone;
+      }
+
+      await client.messages.create({
+        body: `Your CRM Admin Password Reset OTP is ${otp}. Valid for 10 mins.`,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: formattedPhone
       });
+      
       console.log(`\n================================`);
-      console.log(` SMS OTP actually sent to ${user.phone} via Fast2SMS`);
+      console.log(` SMS OTP actually sent to ${formattedPhone} via Twilio`);
       console.log(` OTP Code: ${otp}`);
       console.log(`================================\n`);
     } catch (err) {
-      console.error('Fast2SMS Error:', err.response?.data || err.message);
-      // Fallback to console log if SMS fails (e.g. invalid API key)
+      console.error('Twilio Error:', err.message);
+      // Fallback to console log if SMS fails
       console.log(`\n================================`);
-      console.log(` SMS OTP sent to ${user.phone}`);
+      console.log(` SMS OTP sent to ${user.phone} (Fallback log)`);
       console.log(` OTP Code: ${otp}`);
       console.log(`================================\n`);
     }
