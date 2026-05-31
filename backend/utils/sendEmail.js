@@ -3,15 +3,17 @@ import nodemailer from 'nodemailer';
 const sendEmail = async ({ to, subject, html }) => {
   try {
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: process.env.SMTP_PORT || 587,
+      secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
       auth: {
-        user: 'paridasusmita2003@gmail.com',
-        pass: process.env.SMTP_PASSWORD // User needs to set this in .env
+        user: process.env.SMTP_EMAIL,
+        pass: process.env.SMTP_PASSWORD
       }
     });
 
     const mailOptions = {
-      from: '"Multimaart CRM" <paridasusmita2003@gmail.com>',
+      from: `"${process.env.FROM_NAME || 'CRM Admin'}" <${process.env.FROM_EMAIL || process.env.SMTP_EMAIL}>`,
       to,
       subject,
       html
