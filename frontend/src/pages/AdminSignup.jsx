@@ -3,13 +3,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api/axios';
 import { toast } from 'react-hot-toast';
-import { FiMail, FiLock, FiUser, FiUserPlus } from 'react-icons/fi';
+import { FiMail, FiLock, FiUser, FiUserPlus, FiEye, FiEyeOff } from 'react-icons/fi';
 
 const AdminSignup = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { user, setUser } = useContext(AuthContext);
@@ -130,7 +131,7 @@ const AdminSignup = () => {
                 <FiLock className="text-gray-400" />
               </div>
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 minLength="6"
                 maxLength="8"
@@ -138,9 +139,16 @@ const AdminSignup = () => {
                 title="Password must be 6 to 8 characters, start with a capital letter and contain at least one special character"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                className="block w-full pl-11 pr-11 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 placeholder="••••••••"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+              </button>
             </div>
           </div>
 
