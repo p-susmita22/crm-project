@@ -423,4 +423,20 @@ router.get('/history/archived', protect, admin, asyncHandler(async (req, res) =>
   res.json(archived);
 }));
 
+// @desc    Delete archived employee permanently
+// @route   DELETE /api/users/history/archived/:id
+// @access  Private/Admin
+router.delete('/history/archived/:id', protect, admin, asyncHandler(async (req, res) => {
+  const ArchivedEmployee = (await import('../models/ArchivedEmployee.js')).default;
+  const archived = await ArchivedEmployee.findById(req.params.id);
+  
+  if (archived) {
+    await archived.deleteOne();
+    res.json({ message: 'Archived employee permanently deleted' });
+  } else {
+    res.status(404);
+    throw new Error('Archived employee not found');
+  }
+}));
+
 export default router;

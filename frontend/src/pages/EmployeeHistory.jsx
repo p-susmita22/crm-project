@@ -25,6 +25,18 @@ const EmployeeHistory = () => {
     }
   };
 
+  const deleteArchived = async (id, e) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to permanently delete this archived employee and all their data? This action cannot be undone.')) return;
+    try {
+      await api.delete(`/users/history/archived/${id}`);
+      setArchived(prev => prev.filter(emp => emp._id !== id));
+      toast.success('Archived employee deleted forever');
+    } catch (err) {
+      toast.error('Failed to delete archived employee');
+    }
+  };
+
   const toggleExpand = (id) => {
     setExpandedId(expandedId === id ? null : id);
   };
@@ -104,9 +116,18 @@ const EmployeeHistory = () => {
                       <p className="font-bold text-green-700 dark:text-green-300">{emp.stats?.convertedLeads || 0}</p>
                     </div>
                   </div>
-                  <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                    {expandedId === emp._id ? <FiChevronUp size={20} /> : <FiChevronDown size={20} />}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={(e) => deleteArchived(emp._id, e)}
+                      className="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30"
+                      title="Delete Forever"
+                    >
+                      <FiTrash2 size={18} />
+                    </button>
+                    <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2">
+                      {expandedId === emp._id ? <FiChevronUp size={20} /> : <FiChevronDown size={20} />}
+                    </button>
+                  </div>
                 </div>
               </div>
 
