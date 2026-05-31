@@ -209,16 +209,16 @@ const getUserProfile = asyncHandler(async (req, res) => {
 // @route   POST /api/auth/forgot-password
 // @access  Public
 const forgotPassword = asyncHandler(async (req, res) => {
-  const { phone } = req.body;
-  if (!phone) {
+  const { email } = req.body;
+  if (!email) {
     res.status(400);
-    throw new Error('Please provide a phone number');
+    throw new Error('Please provide an email address');
   }
 
-  const user = await User.findOne({ phone: phone.trim() });
+  const user = await User.findOne({ email: email.toLowerCase().trim() });
   if (!user) {
     res.status(404);
-    throw new Error('No account found with that phone number');
+    throw new Error('No account found with that email address');
   }
 
   // Only Admins can reset password via this flow
@@ -236,45 +236,35 @@ const forgotPassword = asyncHandler(async (req, res) => {
   user.otpVerified = false;
   await user.save({ validateBeforeSave: false });
 
-  // Send SMS via 2Factor.in
-  if (process.env.TWO_FACTOR_API_KEY) {
-    try {
-      let formattedPhone = user.phone.trim();
-      // 2factor doesn't require +91, just the 10-digit number usually, but we pass it as-is
-      
-      const response = await axios.get(`https://2factor.in/API/V1/${process.env.TWO_FACTOR_API_KEY}/SMS/${formattedPhone}/${otp}`);
-      
-      console.log(`\n================================`);
-      console.log(` SMS OTP actually sent to ${formattedPhone} via 2Factor.in`);
-      console.log(` API Response: ${response.data.Status}`);
-      console.log(` OTP Code: ${otp}`);
-      console.log(`================================\n`);
-    } catch (err) {
-      console.error('2Factor Error:', err.response?.data || err.message);
-      // Fallback to console log if SMS fails
-      console.log(`\n================================`);
-      console.log(` SMS OTP sent to ${user.phone} (Fallback log)`);
-      console.log(` OTP Code: ${otp}`);
-      console.log(`================================\n`);
-    }
-  } else {
-    // Without a real SMS gateway, we log it to the terminal so the user can see it
-    console.log(`\n================================`);
-    console.log(` SMS OTP sent to ${user.phone}`);
-    console.log(` OTP Code: ${otp}`);
-    console.log(`================================\n`);
-  }
+  // Send OTP via Email instead of SMS
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+      <h2 style="color: #19B681;">Password Reset Verification</h2>
+      <p>Hello ${user.name},</p>
+      <p>You requested to reset your admin password. Please use the following OTP to proceed:</p>
+      <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
+        <h1 style="margin: 0; letter-spacing: 5px; color: #333;">${otp}</h1>
+      </div>
+      <p style="color: #666; font-size: 14px;">This OTP will expire in 10 minutes. If you did not request this, please secure your account.</p>
+    </div>
+  `;
 
-  res.json({ message: 'OTP sent to your phone number', phone: user.phone });
+  await sendEmail({
+    to: user.email,
+    subject: 'CRM Admin Password Reset OTP',
+    html: htmlContent
+  });
+
+  res.json({ message: 'OTP sent to your registered email address', email: user.email });
 });
 
 // @desc    Verify OTP submitted by admin
 // @route   POST /api/auth/verify-otp
 // @access  Public
 const verifyOtp = asyncHandler(async (req, res) => {
-  const { phone, otp } = req.body;
+  const { email, otp } = req.body;
 
-  const user = await User.findOne({ phone: phone.trim() });
+  const user = await User.findOne({ email: email.toLowerCase().trim() });
   if (!user) {
     res.status(404);
     throw new Error('User not found');
@@ -305,9 +295,9 @@ const verifyOtp = asyncHandler(async (req, res) => {
 // @route   POST /api/auth/reset-password
 // @access  Public
 const resetPassword = asyncHandler(async (req, res) => {
-  const { phone, newPassword } = req.body;
+  const { email, newPassword } = req.body;
 
-  const user = await User.findOne({ phone: phone.trim() });
+  const user = await User.findOne({ email: email.toLowerCase().trim() });
   if (!user) {
     res.status(404);
     throw new Error('User not found');

@@ -13,11 +13,11 @@ const ResetPassword = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const phone = location.state?.phone;
+  const email = location.state?.email;
 
   useEffect(() => {
-    if (!phone) navigate('/forgot-password', { replace: true });
-  }, [phone, navigate]);
+    if (!email) navigate('/forgot-password', { replace: true });
+  }, [email, navigate]);
 
   // Password rules validation
   const rules = [
@@ -37,7 +37,7 @@ const ResetPassword = () => {
     }
     setIsSubmitting(true);
     try {
-      await api.post('/auth/reset-password', { phone, newPassword });
+      await api.post('/auth/reset-password', { email, newPassword });
       toast.success('Password reset successfully! Please log in.');
       navigate('/login', { replace: true });
     } catch (err) {

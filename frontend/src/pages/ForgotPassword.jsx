@@ -6,18 +6,18 @@ import api from '../api/axios';
 import multimaartLogo from '../assets/multimaart-logo.png';
 
 const ForgotPassword = () => {
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!phone) return;
+    if (!email) return;
     setIsSubmitting(true);
     try {
-      await api.post('/auth/forgot-password', { phone });
-      toast.success('OTP sent to your phone!');
-      navigate('/verify-otp', { state: { phone } });
+      await api.post('/auth/forgot-password', { email });
+      toast.success('OTP sent to your email!');
+      navigate('/verify-otp', { state: { email } });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to send OTP');
     } finally {
@@ -45,24 +45,24 @@ const ForgotPassword = () => {
 
           <h1 className="text-2xl font-bold text-center text-gray-800 dark:text-white mb-2">Forgot Password?</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-8">
-            Enter your admin phone number and we'll send you a 6-digit OTP to reset your password.
+            Enter your admin email address and we'll send you a 6-digit OTP to reset your password.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Admin Phone Number
+                Admin Email Address
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <FiPhone className="text-gray-400" />
                 </div>
                 <input
-                  type="tel"
+                  type="email"
                   required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="9876543210"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
                   className="block w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
                 />
               </div>
