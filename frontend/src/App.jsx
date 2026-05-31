@@ -22,6 +22,7 @@ import Leads from './pages/Leads';
 import Tasks from './pages/Tasks';
 import Team from './pages/Team';
 import Reports from './pages/Reports';
+import Profile from './pages/Profile';
 
 const RootRedirect = () => {
   const { user, loading } = useContext(AuthContext);
@@ -56,6 +57,7 @@ function App() {
           <Route path="leads" element={<Leads />} />
           <Route path="team" element={<Team />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         <Route path="/employee" element={<ProtectedRoute><DashboardLayout panelType="employee" /></ProtectedRoute>}>
@@ -64,6 +66,7 @@ function App() {
           <Route path="customers" element={<Customers />} />
           <Route path="leads" element={<Leads />} />
           <Route path="tasks" element={<Tasks />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         <Route path="/" element={<RootRedirect />} />

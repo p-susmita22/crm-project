@@ -90,6 +90,14 @@ const userSchema = mongoose.Schema(
     otpCode: { type: String },
     otpExpiry: { type: Date },
     otpVerified: { type: Boolean, default: false },
+    sessions: [
+      {
+        token: String,
+        deviceInfo: String,
+        ipAddress: String,
+        lastActive: { type: Date, default: Date.now }
+      }
+    ]
   },
   {
     timestamps: true,

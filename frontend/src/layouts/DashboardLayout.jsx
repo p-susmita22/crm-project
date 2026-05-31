@@ -13,16 +13,10 @@ import { toast } from 'react-hot-toast';
 const DashboardLayout = ({ panelType = 'employee' }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isProfileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   
   const { user, logout, setUser } = useContext(AuthContext);
-  const { theme } = useContext(ThemeContext); // Keep theme context to retain light mode / dark mode class from root if needed, though removing toggle
+  const { theme } = useContext(ThemeContext); 
 
-  // Profile Form State
-  const [profileName, setProfileName] = useState(user?.name || '');
-  const [profileEmail, setProfileEmail] = useState(user?.email || '');
-  const [profilePassword, setProfilePassword] = useState('');
-  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const location = useLocation();
 
   const basePath = panelType === 'admin' ? '/admin' : '/employee';
@@ -43,37 +37,6 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
   }
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-
-  const handleProfileUpdate = async (e) => {
-    e.preventDefault();
-    if (panelType !== 'admin') return;
-
-    setIsUpdatingProfile(true);
-    try {
-      const payload = {
-        name: profileName,
-        email: profileEmail,
-      };
-      if (profilePassword) {
-        if (profilePassword.length < 6 || profilePassword.length > 8 || !/^[A-Z]/.test(profilePassword) || !/[^a-zA-Z0-9\s]/.test(profilePassword)) {
-          toast.error('Password must be 6 to 8 characters, start with a capital letter, and contain a special character');
-          setIsUpdatingProfile(false);
-          return;
-        }
-        payload.password = profilePassword;
-      }
-
-      const { data } = await api.put(`/users/${user._id}`, payload);
-      setUser(data);
-      toast.success('Profile updated successfully!');
-      setProfileModalOpen(false);
-      setProfilePassword('');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to update profile');
-    } finally {
-      setIsUpdatingProfile(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
@@ -167,18 +130,13 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
             {isProfileDropdownOpen && (
               <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-2 z-50 animate-fade-in">
                 {panelType === 'admin' && (
-                  <button 
-                    onClick={() => {
-                      setProfileDropdownOpen(false);
-                      setProfileName(user?.name || '');
-                      setProfileEmail(user?.email || '');
-                      setProfilePassword('');
-                      setProfileModalOpen(true);
-                    }}
+                  <Link 
+                    to={`${basePath}/profile`}
+                    onClick={() => setProfileDropdownOpen(false)}
                     className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                   >
                     <FiUser /> Profile
-                  </button>
+                  </Link>
                 )}
                 <button 
                   onClick={() => {
@@ -199,58 +157,6 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
           <Outlet />
         </main>
       </div>
-
-      {/* Profile Modal */}
-      {isProfileModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md animate-fade-in overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-primary/5 to-secondary/5">
-              <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                <FiEdit3 className="text-primary" /> Edit Profile
-              </h3>
-              <button onClick={() => setProfileModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                <FiX size={20} />
-              </button>
-            </div>
-            
-            <form onSubmit={handleProfileUpdate} className="p-6 space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Full Name</label>
-                <input
-                  type="text" required
-                  value={profileName} onChange={e => setProfileName(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email Address</label>
-                <input
-                  type="email" required
-                  value={profileEmail} onChange={e => setProfileEmail(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">New Password (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="Leave blank to keep current password"
-                  value={profilePassword} onChange={e => setProfilePassword(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={isUpdatingProfile}
-                className="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl font-bold transition-all disabled:opacity-70 mt-2"
-              >
-                {isUpdatingProfile ? 'Saving...' : 'Save Changes'}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
   );
 };
 

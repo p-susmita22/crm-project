@@ -35,6 +35,23 @@ const authUser = asyncHandler(async (req, res) => {
 
     const token = generateToken(res, user._id);
 
+    // Track session
+    const deviceInfo = req.headers['user-agent'] || 'Unknown Device';
+    const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown IP';
+    
+    user.sessions.push({
+      token,
+      deviceInfo,
+      ipAddress,
+      lastActive: Date.now()
+    });
+    
+    // Keep only last 10 sessions to prevent document bloat
+    if (user.sessions.length > 10) {
+      user.sessions = user.sessions.slice(-10);
+    }
+    await user.save({ validateBeforeSave: false });
+
     res.json({
       _id: user._id,
       name: user.name,

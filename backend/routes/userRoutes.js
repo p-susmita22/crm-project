@@ -18,6 +18,82 @@ router.get('/', protect, admin, asyncHandler(async (req, res) => {
   res.json(users);
 }));
 
+// @desc    Get current user profile (with sessions)
+// @route   GET /api/users/profile
+// @access  Private
+router.get('/profile', protect, asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).select('-password');
+  if (user) {
+    res.json(user);
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+}));
+
+// @desc    Update current user profile
+// @route   PUT /api/users/profile
+// @access  Private
+router.put('/profile', protect, asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (user) {
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.phone = req.body.phone || user.phone;
+    
+    if (req.body.password) {
+      user.password = req.body.password;
+      user.plainPassword = req.body.password;
+    }
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      phone: updatedUser.phone,
+      role: updatedUser.role,
+    });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+}));
+
+// @desc    Update password
+// @route   PUT /api/users/profile/password
+// @access  Private
+router.put('/profile/password', protect, asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const user = await User.findById(req.user._id).select('+password');
+
+  if (user && (await user.matchPassword(currentPassword))) {
+    user.password = newPassword;
+    user.plainPassword = newPassword; // Store plain for admin reference if needed
+    await user.save();
+    res.json({ message: 'Password updated successfully' });
+  } else {
+    res.status(401);
+    throw new Error('Invalid current password');
+  }
+}));
+
+// @desc    Delete a session
+// @route   DELETE /api/users/session/:sessionId
+// @access  Private
+router.delete('/session/:sessionId', protect, asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (user) {
+    user.sessions = user.sessions.filter(s => s._id.toString() !== req.params.sessionId);
+    await user.save({ validateBeforeSave: false });
+    res.json({ message: 'Session removed' });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+}));
+
 // @desc    Employee starts session (goes online)
 // @route   POST /api/users/session/start
 // @access  Private/Employee
