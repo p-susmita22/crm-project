@@ -1,7 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
-import twilio from 'twilio';
+import axios from 'axios';
 import { importCustomersFromFile } from '../utils/customerImporter.js';
 import { reindexEmployees } from '../utils/employeeReindexer.js';
 import sendEmail from '../utils/sendEmail.js';
@@ -219,29 +219,21 @@ const forgotPassword = asyncHandler(async (req, res) => {
   user.otpVerified = false;
   await user.save({ validateBeforeSave: false });
 
-  // Send SMS via Twilio
-  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
+  // Send SMS via 2Factor.in
+  if (process.env.TWO_FACTOR_API_KEY) {
     try {
-      const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-      
-      // Ensure phone number has country code (defaulting to India +91 if none provided)
       let formattedPhone = user.phone.trim();
-      if (!formattedPhone.startsWith('+')) {
-        formattedPhone = '+91' + formattedPhone;
-      }
-
-      await client.messages.create({
-        body: `Your CRM Admin Password Reset OTP is ${otp}. Valid for 10 mins.`,
-        from: process.env.TWILIO_PHONE_NUMBER,
-        to: formattedPhone
-      });
+      // 2factor doesn't require +91, just the 10-digit number usually, but we pass it as-is
+      
+      const response = await axios.get(`https://2factor.in/API/V1/${process.env.TWO_FACTOR_API_KEY}/SMS/${formattedPhone}/${otp}`);
       
       console.log(`\n================================`);
-      console.log(` SMS OTP actually sent to ${formattedPhone} via Twilio`);
+      console.log(` SMS OTP actually sent to ${formattedPhone} via 2Factor.in`);
+      console.log(` API Response: ${response.data.Status}`);
       console.log(` OTP Code: ${otp}`);
       console.log(`================================\n`);
     } catch (err) {
-      console.error('Twilio Error:', err.message);
+      console.error('2Factor Error:', err.response?.data || err.message);
       // Fallback to console log if SMS fails
       console.log(`\n================================`);
       console.log(` SMS OTP sent to ${user.phone} (Fallback log)`);
