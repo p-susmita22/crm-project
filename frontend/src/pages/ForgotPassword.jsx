@@ -1,23 +1,23 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FiMail, FiArrowLeft, FiSend } from 'react-icons/fi';
+import { FiPhone, FiArrowLeft, FiSend } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import api from '../api/axios';
 import multimaartLogo from '../assets/multimaart-logo.png';
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email) return;
+    if (!phone) return;
     setIsSubmitting(true);
     try {
-      await api.post('/auth/forgot-password', { email });
-      toast.success('OTP sent! Check your email inbox.');
-      navigate('/verify-otp', { state: { email } });
+      await api.post('/auth/forgot-password', { phone });
+      toast.success('OTP sent to your phone!');
+      navigate('/verify-otp', { state: { phone } });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to send OTP');
     } finally {
@@ -39,30 +39,30 @@ const ForgotPassword = () => {
           {/* Icon Badge */}
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <FiMail className="text-primary text-3xl" />
+              <FiPhone className="text-primary text-3xl" />
             </div>
           </div>
 
           <h1 className="text-2xl font-bold text-center text-gray-800 dark:text-white mb-2">Forgot Password?</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-8">
-            Enter your admin email address and we'll send you a 6-digit OTP to reset your password.
+            Enter your admin phone number and we'll send you a 6-digit OTP to reset your password.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Admin Email Address
+                Admin Phone Number
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <FiMail className="text-gray-400" />
+                  <FiPhone className="text-gray-400" />
                 </div>
                 <input
-                  type="email"
+                  type="tel"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@yourcompany.com"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="9876543210"
                   className="block w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
                 />
               </div>

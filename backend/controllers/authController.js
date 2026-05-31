@@ -186,20 +186,20 @@ const getUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Send OTP to admin email for password reset
+// @desc    Send OTP to admin phone for password reset
 // @route   POST /api/auth/forgot-password
 // @access  Public
 const forgotPassword = asyncHandler(async (req, res) => {
-  const { email } = req.body;
-  if (!email) {
+  const { phone } = req.body;
+  if (!phone) {
     res.status(400);
-    throw new Error('Please provide an email address');
+    throw new Error('Please provide a phone number');
   }
 
-  const user = await User.findOne({ email: email.toLowerCase().trim() });
+  const user = await User.findOne({ phone: phone.trim() });
   if (!user) {
     res.status(404);
-    throw new Error('No account found with that email address');
+    throw new Error('No account found with that phone number');
   }
 
   // Only Admins can reset password via this flow
@@ -217,31 +217,22 @@ const forgotPassword = asyncHandler(async (req, res) => {
   user.otpVerified = false;
   await user.save({ validateBeforeSave: false });
 
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; border: 1px solid #e5e7eb; border-radius: 16px;">
-      <h2 style="color: #1e3a8a; margin-bottom: 8px;">🔐 Password Reset OTP</h2>
-      <p style="color: #374151; margin-bottom: 24px;">You requested a password reset for your CRM Admin account.</p>
-      <div style="background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 24px;">
-        <p style="font-size: 12px; color: #6b7280; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.1em;">Your OTP Code</p>
-        <p style="font-size: 40px; font-weight: 800; color: #1e3a8a; letter-spacing: 0.2em; margin: 0;">${otp}</p>
-        <p style="font-size: 12px; color: #ef4444; margin-top: 8px;">Expires in 10 minutes</p>
-      </div>
-      <p style="color: #6b7280; font-size: 13px;">If you didn't request this, please ignore this email. Your password will remain unchanged.</p>
-    </div>
-  `;
+  // Without a real SMS gateway, we log it to the terminal so the user can see it
+  console.log(`\n================================`);
+  console.log(` SMS OTP sent to ${user.phone}`);
+  console.log(` OTP Code: ${otp}`);
+  console.log(`================================\n`);
 
-  await sendEmail({ to: user.email, subject: 'CRM Admin – Password Reset OTP', html });
-
-  res.json({ message: 'OTP sent to your email address', email: user.email });
+  res.json({ message: 'OTP sent to your phone number', phone: user.phone });
 });
 
 // @desc    Verify OTP submitted by admin
 // @route   POST /api/auth/verify-otp
 // @access  Public
 const verifyOtp = asyncHandler(async (req, res) => {
-  const { email, otp } = req.body;
+  const { phone, otp } = req.body;
 
-  const user = await User.findOne({ email: email.toLowerCase().trim() });
+  const user = await User.findOne({ phone: phone.trim() });
   if (!user) {
     res.status(404);
     throw new Error('User not found');
@@ -272,9 +263,9 @@ const verifyOtp = asyncHandler(async (req, res) => {
 // @route   POST /api/auth/reset-password
 // @access  Public
 const resetPassword = asyncHandler(async (req, res) => {
-  const { email, newPassword } = req.body;
+  const { phone, newPassword } = req.body;
 
-  const user = await User.findOne({ email: email.toLowerCase().trim() });
+  const user = await User.findOne({ phone: phone.trim() });
   if (!user) {
     res.status(404);
     throw new Error('User not found');

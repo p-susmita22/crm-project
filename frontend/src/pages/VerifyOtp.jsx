@@ -13,12 +13,12 @@ const VerifyOtp = () => {
   const inputRefs = useRef([]);
   const navigate = useNavigate();
   const location = useLocation();
-  const email = location.state?.email;
+  const phone = location.state?.phone;
 
-  // Redirect back if accessed directly without email
+  // Redirect back if accessed directly without phone
   useEffect(() => {
-    if (!email) navigate('/forgot-password', { replace: true });
-  }, [email, navigate]);
+    if (!phone) navigate('/forgot-password', { replace: true });
+  }, [phone, navigate]);
 
   // Countdown for resend
   useEffect(() => {
@@ -58,9 +58,9 @@ const VerifyOtp = () => {
     }
     setIsSubmitting(true);
     try {
-      await api.post('/auth/verify-otp', { email, otp: otpCode });
+      await api.post('/auth/verify-otp', { phone, otp: otpCode });
       toast.success('OTP verified! Set your new password.');
-      navigate('/reset-password', { state: { email } });
+      navigate('/reset-password', { state: { phone } });
     } catch (err) {
       toast.error(err.response?.data?.message || 'OTP verification failed');
     } finally {
@@ -71,8 +71,8 @@ const VerifyOtp = () => {
   const handleResend = async () => {
     setIsResending(true);
     try {
-      await api.post('/auth/forgot-password', { email });
-      toast.success('New OTP sent to your email!');
+      await api.post('/auth/forgot-password', { phone });
+      toast.success('New OTP sent to your phone!');
       setCountdown(60);
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
@@ -104,7 +104,7 @@ const VerifyOtp = () => {
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-2">
             We sent a 6-digit code to
           </p>
-          <p className="text-sm font-semibold text-primary text-center mb-8">{email}</p>
+          <p className="text-sm font-semibold text-primary text-center mb-8">{phone}</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* OTP Input Boxes */}
