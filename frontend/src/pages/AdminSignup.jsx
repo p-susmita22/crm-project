@@ -147,7 +147,7 @@ const AdminSignup = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
               >
-                {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                {showPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
               </button>
             </div>
           </div>
