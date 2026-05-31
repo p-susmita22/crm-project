@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { toast } from 'react-hot-toast';
-import { FiFileText, FiDownload, FiCalendar, FiChevronDown, FiChevronUp, FiTrash2, FiClock, FiEye } from 'react-icons/fi';
+import { FiFileText, FiDownload, FiCalendar, FiChevronDown, FiChevronUp, FiTrash2, FiClock, FiEye, FiSearch } from 'react-icons/fi';
 
 const formatTime = (sec = 0) => {
   if (!sec || sec <= 0) return '0m';
@@ -16,6 +16,7 @@ const Reports = () => {
   const [allReports, setAllReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedEmployee, setExpandedEmployee] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchData = async () => {
     setLoading(true);
@@ -231,6 +232,17 @@ const Reports = () => {
           </h2>
           <p className="text-gray-500 dark:text-gray-400 mt-1">View submitted reports and download daily task Excel sheets.</p>
         </div>
+
+        <div className="relative">
+          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search employee..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 pr-4 py-2 w-full md:w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-primary/50 text-gray-800 dark:text-white shadow-sm transition-all"
+          />
+        </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
@@ -250,11 +262,24 @@ const Reports = () => {
                     <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                   </td>
                 </tr>
-              ) : employees.length > 0 ? (
-                employees.map((emp) => {
-                  const empReports = allReports.filter(r => 
-                    r.employee === emp._id || (r.employee && r.employee._id === emp._id)
+              ) : (
+                (() => {
+                  const filteredEmployees = employees.filter(emp =>
+                    emp.name?.toLowerCase().includes(searchTerm.toLowerCase())
                   );
+
+                  if (filteredEmployees.length === 0) {
+                    return (
+                      <tr>
+                        <td colSpan="3" className="py-10 text-center text-gray-400">No employees match your search.</td>
+                      </tr>
+                    );
+                  }
+
+                  return filteredEmployees.map((emp) => {
+                    const empReports = allReports.filter(r => 
+                      r.employee === emp._id || (r.employee && r.employee._id === emp._id)
+                    );
                   
                   return (
                     <React.Fragment key={emp._id}>
@@ -356,11 +381,8 @@ const Reports = () => {
                       )}
                     </React.Fragment>
                   );
-                })
-              ) : (
-                <tr>
-                  <td colSpan="3" className="py-10 text-center text-gray-400">No employees found.</td>
-                </tr>
+                  });
+                })()
               )}
             </tbody>
           </table>
