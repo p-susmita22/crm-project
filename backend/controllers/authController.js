@@ -121,9 +121,9 @@ const registerUser = asyncHandler(async (req, res) => {
 // @route   POST /api/auth/admin-signup
 // @access  Public
 const registerAdmin = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, phone, password } = req.body;
 
-  const userExists = await User.findOne({ email });
+  const userExists = await User.findOne({ $or: [{ email }, { phone }] });
 
   if (userExists) {
     res.status(400);
@@ -133,6 +133,7 @@ const registerAdmin = asyncHandler(async (req, res) => {
   const user = await User.create({
     name,
     email,
+    phone,
     password,
     role: 'Admin', // Force Admin role
   });
@@ -143,6 +144,7 @@ const registerAdmin = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
       role: user.role,
       token,
     });

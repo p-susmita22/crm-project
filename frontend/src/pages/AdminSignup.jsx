@@ -8,6 +8,7 @@ import { FiMail, FiLock, FiUser, FiUserPlus } from 'react-icons/fi';
 const AdminSignup = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -32,7 +33,7 @@ const AdminSignup = () => {
     }
 
     try {
-      const { data } = await api.post('/auth/admin-signup', { name, email, password });
+      const { data } = await api.post('/auth/admin-signup', { name, email, phone, password });
       
       setUser(data);
       
@@ -101,6 +102,23 @@ const AdminSignup = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="block w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 placeholder="admin@yourcompany.com"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span className="text-gray-400">📞</span>
+              </div>
+              <input
+                type="tel"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="block w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="9876543210"
               />
             </div>
           </div>
