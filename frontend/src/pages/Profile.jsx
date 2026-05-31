@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api/axios';
 import { toast } from 'react-hot-toast';
-import { FiUser, FiMail, FiPhone, FiLock, FiMonitor, FiTrash2, FiSave, FiShield } from 'react-icons/fi';
+import { FiUser, FiMail, FiPhone, FiLock, FiMonitor, FiTrash2, FiSave, FiShield, FiEye, FiEyeOff } from 'react-icons/fi';
 
 const Profile = () => {
   const { user, setUser } = useContext(AuthContext);
@@ -23,6 +23,7 @@ const Profile = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isSavingDetails, setIsSavingDetails] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -203,17 +204,35 @@ const Profile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
-                  <input 
-                    type="password" required value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
-                  />
+                  <div className="relative">
+                    <input 
+                      type={showPassword ? 'text' : 'password'} required value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                      className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl pl-4 pr-10 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    >
+                      {showPassword ? <FiEyeOff /> : <FiEye />}
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm New Password</label>
-                  <input 
-                    type="password" required value={passwordData.confirmPassword} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
-                  />
+                  <div className="relative">
+                    <input 
+                      type={showPassword ? 'text' : 'password'} required value={passwordData.confirmPassword} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                      className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl pl-4 pr-10 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    >
+                      {showPassword ? <FiEyeOff /> : <FiEye />}
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end pt-2">
