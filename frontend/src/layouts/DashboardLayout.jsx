@@ -157,6 +157,7 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
           <Outlet />
         </main>
       </div>
+    </div>
   );
 };
 
