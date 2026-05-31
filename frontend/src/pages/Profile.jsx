@@ -16,11 +16,11 @@ const Profile = () => {
   });
 
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
 
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isSavingDetails, setIsSavingDetails] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
@@ -52,6 +52,7 @@ const Profile = () => {
       toast.success('Profile updated successfully!');
       setUser({ ...user, ...data });
       fetchProfile();
+      setIsEditingProfile(false);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update profile');
     } finally {
@@ -79,11 +80,10 @@ const Profile = () => {
     setIsSavingPassword(true);
     try {
       await api.put('/users/profile/password', {
-        currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       });
       toast.success('Password updated successfully!');
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setPasswordData({ newPassword: '', confirmPassword: '' });
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update password');
     } finally {
@@ -125,10 +125,16 @@ const Profile = () => {
           
           {/* Profile Details Form */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 flex justify-between items-center">
               <h3 className="font-bold text-gray-800 dark:text-white flex items-center">
                 <FiUser className="mr-2" /> Personal Information
               </h3>
+              <button 
+                onClick={() => setIsEditingProfile(!isEditingProfile)}
+                className={`text-sm font-medium ${isEditingProfile ? 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' : 'text-primary hover:text-primary-dark'} transition-colors`}
+              >
+                {isEditingProfile ? 'Cancel' : 'Edit Profile'}
+              </button>
             </div>
             <form onSubmit={handleUpdateDetails} className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -138,7 +144,8 @@ const Profile = () => {
                     <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input 
                       type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                      disabled={!isEditingProfile}
+                      className={`w-full border rounded-xl pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white ${!isEditingProfile ? 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600'}`}
                     />
                   </div>
                 </div>
@@ -148,7 +155,8 @@ const Profile = () => {
                     <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input 
                       type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                      disabled={!isEditingProfile}
+                      className={`w-full border rounded-xl pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white ${!isEditingProfile ? 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600'}`}
                     />
                   </div>
                 </div>
@@ -158,7 +166,8 @@ const Profile = () => {
                     <FiPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input 
                       type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                      className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                      disabled={!isEditingProfile}
+                      className={`w-full border rounded-xl pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white ${!isEditingProfile ? 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600'}`}
                     />
                   </div>
                 </div>
@@ -173,11 +182,13 @@ const Profile = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex justify-end pt-2">
-                <button type="submit" disabled={isSavingDetails} className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl font-medium transition-colors flex items-center shadow-sm disabled:opacity-70">
-                  {isSavingDetails ? 'Saving...' : <><FiSave className="mr-2" /> Save Details</>}
-                </button>
-              </div>
+              {isEditingProfile && (
+                <div className="flex justify-end pt-2">
+                  <button type="submit" disabled={isSavingDetails} className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl font-medium transition-colors flex items-center shadow-sm disabled:opacity-70">
+                    {isSavingDetails ? 'Saving...' : <><FiSave className="mr-2" /> Save Details</>}
+                  </button>
+                </div>
+              )}
             </form>
           </div>
 
@@ -189,13 +200,6 @@ const Profile = () => {
               </h3>
             </div>
             <form onSubmit={handleUpdatePassword} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Password</label>
-                <input 
-                  type="password" required value={passwordData.currentPassword} onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                  className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
-                />
-              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>

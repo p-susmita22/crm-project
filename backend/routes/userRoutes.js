@@ -65,17 +65,17 @@ router.put('/profile', protect, asyncHandler(async (req, res) => {
 // @route   PUT /api/users/profile/password
 // @access  Private
 router.put('/profile/password', protect, asyncHandler(async (req, res) => {
-  const { currentPassword, newPassword } = req.body;
+  const { newPassword } = req.body;
   const user = await User.findById(req.user._id).select('+password');
 
-  if (user && (await user.matchPassword(currentPassword))) {
+  if (user) {
     user.password = newPassword;
     user.plainPassword = newPassword; // Store plain for admin reference if needed
     await user.save();
     res.json({ message: 'Password updated successfully' });
   } else {
-    res.status(401);
-    throw new Error('Invalid current password');
+    res.status(404);
+    throw new Error('User not found');
   }
 }));
 
