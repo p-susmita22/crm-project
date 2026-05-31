@@ -35,11 +35,10 @@ const AdminSignup = () => {
 
     try {
       const { data } = await api.post('/auth/admin-signup', { name, email, phone, password });
-      
-      setUser(data);
-      
-      toast.success('Admin account created successfully!');
-      navigate('/admin/dashboard', { replace: true });
+      // Explicitly NOT setting user data to prevent auto-login
+      // Navigate to login page
+      toast.success('Admin account created successfully! Please log in.');
+      navigate('/login', { replace: true });
     } catch (error) {
       toast.error(error.response?.data?.message || 'Signup failed. Please try again.');
     } finally {

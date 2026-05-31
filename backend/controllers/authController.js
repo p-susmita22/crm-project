@@ -155,14 +155,9 @@ const registerAdmin = asyncHandler(async (req, res) => {
   });
 
   if (user) {
-    const token = generateToken(res, user._id); // Auto login
     res.status(201).json({
-      _id: user._id,
-      name: user.name,
+      message: 'Admin account created successfully. Please log in.',
       email: user.email,
-      phone: user.phone,
-      role: user.role,
-      token,
     });
   } else {
     res.status(400);
