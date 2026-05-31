@@ -183,6 +183,75 @@ router.get('/status', protect, admin, asyncHandler(async (req, res) => {
   res.json(employees);
 }));
 
+// Helper function to archive and delete a user
+const archiveAndDeleteUser = async (user) => {
+  const fs = await import('fs');
+  // Clean up customer file from disk if exists
+  if (user.customerFile && user.customerFile.filePath) {
+    if (fs.existsSync(user.customerFile.filePath)) {
+      try {
+        fs.unlinkSync(user.customerFile.filePath);
+      } catch (err) {
+        console.error('Error deleting customer file:', err);
+      }
+    }
+  }
+
+  const Customer = (await import('../models/Customer.js')).default;
+  const ArchivedEmployee = (await import('../models/ArchivedEmployee.js')).default;
+
+  // Fetch all customers assigned to this employee
+  const customers = await Customer.find({ assignedTo: user._id });
+
+  // Calculate stats
+  let convertedLeads = 0;
+  let rejectedCustomers = 0;
+  let pendingCustomers = 0;
+  let otherCustomers = 0;
+
+  const archivedCustomers = customers.map(c => {
+    if (c.status === 'Agree') convertedLeads++;
+    else if (c.status === 'Reject') rejectedCustomers++;
+    else if (c.status === 'Pending') pendingCustomers++;
+    else if (c.status === 'Others') otherCustomers++;
+
+    return {
+      customerId: c.customerId,
+      name: c.name,
+      phone: c.phone,
+      email: c.email,
+      companyName: c.companyName,
+      status: c.status,
+      onboarding: c.onboarding,
+      taskDate: c.taskDate,
+      sourceFile: c.sourceFile
+    };
+  });
+
+  // Create archived employee record
+  await ArchivedEmployee.create({
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    employeeId: user.employeeId,
+    role: user.role,
+    stats: {
+      totalCustomers: customers.length,
+      convertedLeads,
+      rejectedCustomers,
+      pendingCustomers,
+      otherCustomers,
+    },
+    customers: archivedCustomers
+  });
+
+  // Delete all customers assigned to this employee
+  await Customer.deleteMany({ assignedTo: user._id });
+
+  await user.deleteOne();
+  await reindexEmployees();
+};
+
 // @desc    Update employee
 // @route   PUT /api/users/:id
 // @access  Private/Admin
@@ -204,6 +273,10 @@ router.put('/:id', protect, admin, upload.single('customerFile'), asyncHandler(a
   }
   if (isActive !== undefined) {
     user.isActive = isActive === 'true' || isActive === true;
+    if (user.isActive === false && user.role !== 'Admin') {
+      await archiveAndDeleteUser(user);
+      return res.json({ message: 'Employee deactivated and archived' });
+    }
   }
 
   if (password && password.trim() !== '') {
@@ -346,71 +419,7 @@ router.delete('/:id', protect, admin, asyncHandler(async (req, res) => {
   if (!user) { res.status(404); throw new Error('User not found'); }
   if (user.role === 'Admin') { res.status(400); throw new Error('Cannot delete admin'); }
   
-  // Clean up customer file from disk if exists
-  if (user.customerFile && user.customerFile.filePath) {
-    if (fs.existsSync(user.customerFile.filePath)) {
-      try {
-        fs.unlinkSync(user.customerFile.filePath);
-      } catch (err) {
-        console.error('Error deleting customer file:', err);
-      }
-    }
-  }
-
-  const Customer = (await import('../models/Customer.js')).default;
-  const ArchivedEmployee = (await import('../models/ArchivedEmployee.js')).default;
-
-  // Fetch all customers assigned to this employee
-  const customers = await Customer.find({ assignedTo: user._id });
-
-  // Calculate stats
-  let convertedLeads = 0;
-  let rejectedCustomers = 0;
-  let pendingCustomers = 0;
-  let otherCustomers = 0;
-
-  const archivedCustomers = customers.map(c => {
-    if (c.status === 'Agree') convertedLeads++;
-    else if (c.status === 'Reject') rejectedCustomers++;
-    else if (c.status === 'Pending') pendingCustomers++;
-    else if (c.status === 'Others') otherCustomers++;
-
-    return {
-      customerId: c.customerId,
-      name: c.name,
-      phone: c.phone,
-      email: c.email,
-      companyName: c.companyName,
-      status: c.status,
-      onboarding: c.onboarding,
-      taskDate: c.taskDate,
-      sourceFile: c.sourceFile
-    };
-  });
-
-  // Create archived employee record
-  await ArchivedEmployee.create({
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-    employeeId: user.employeeId,
-    role: user.role,
-    stats: {
-      totalCustomers: customers.length,
-      convertedLeads,
-      rejectedCustomers,
-      pendingCustomers,
-      otherCustomers,
-    },
-    customers: archivedCustomers
-  });
-
-  // Delete all customers assigned to this employee
-  await Customer.deleteMany({ assignedTo: user._id });
-
-  await user.deleteOne();
-  // Collapse the sequence gap immediately
-  await reindexEmployees();
+  await archiveAndDeleteUser(user);
   res.json({ message: 'Employee deleted and archived successfully' });
 }));
 

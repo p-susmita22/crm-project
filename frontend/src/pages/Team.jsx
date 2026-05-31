@@ -275,13 +275,10 @@ const Team = () => {
   };
 
   const handleDelete = async (emp) => {
-    if (!window.confirm(`Are you sure you want to deactivate ${emp.name}? They will no longer be able to log in, but their data will be kept.`)) return;
+    if (!window.confirm(`Are you sure you want to remove ${emp.name}? They will be removed from the dashboard and their data will be safely archived in the Employee History.`)) return;
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('isActive', false);
-      
-      await api.put(`/users/${emp._id}`, formDataToSend);
-      toast.success('Employee deactivated successfully');
+      await api.delete(`/users/${emp._id}`);
+      toast.success('Employee removed and archived successfully');
       fetchEmployees();
     } catch (error) {
       toast.error('Failed to deactivate employee');
@@ -424,7 +421,7 @@ const Team = () => {
                         <button onClick={() => openUploadModal(emp)} className="text-gray-400 hover:text-primary transition-colors" title="Upload Daily Tasks"><FiUpload size={15} /></button>
                         <button onClick={() => downloadEmployeeExcel(emp._id, emp.name)} className="text-gray-400 hover:text-green-500 transition-colors" title="Download All Tasks"><FiDownload size={15} /></button>
                         <button onClick={() => handleEditClick(emp)} className="text-gray-400 hover:text-primary transition-colors" title="Edit"><FiEdit2 size={15} /></button>
-                        <button onClick={() => handleDelete(emp)} className="text-gray-400 hover:text-red-500 transition-colors" title="Deactivate Employee"><FiTrash2 size={15} /></button>
+                        <button onClick={() => handleDelete(emp)} className="text-gray-400 hover:text-red-500 transition-colors" title="Remove Employee"><FiTrash2 size={15} /></button>
                         {/* History toggle */}
                         <button
                           onClick={() => toggleHistory(emp._id)}
