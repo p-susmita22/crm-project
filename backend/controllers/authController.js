@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
+import axios from 'axios';
 import { importCustomersFromFile } from '../utils/customerImporter.js';
 import { reindexEmployees } from '../utils/employeeReindexer.js';
 import sendEmail from '../utils/sendEmail.js';
@@ -217,11 +218,36 @@ const forgotPassword = asyncHandler(async (req, res) => {
   user.otpVerified = false;
   await user.save({ validateBeforeSave: false });
 
-  // Without a real SMS gateway, we log it to the terminal so the user can see it
-  console.log(`\n================================`);
-  console.log(` SMS OTP sent to ${user.phone}`);
-  console.log(` OTP Code: ${otp}`);
-  console.log(`================================\n`);
+  // Send SMS via Fast2SMS
+  if (process.env.FAST2SMS_API_KEY) {
+    try {
+      await axios.get('https://www.fast2sms.com/dev/bulkV2', {
+        params: {
+          authorization: process.env.FAST2SMS_API_KEY,
+          variables_values: otp,
+          route: 'otp',
+          numbers: user.phone
+        }
+      });
+      console.log(`\n================================`);
+      console.log(` SMS OTP actually sent to ${user.phone} via Fast2SMS`);
+      console.log(` OTP Code: ${otp}`);
+      console.log(`================================\n`);
+    } catch (err) {
+      console.error('Fast2SMS Error:', err.response?.data || err.message);
+      // Fallback to console log if SMS fails (e.g. invalid API key)
+      console.log(`\n================================`);
+      console.log(` SMS OTP sent to ${user.phone}`);
+      console.log(` OTP Code: ${otp}`);
+      console.log(`================================\n`);
+    }
+  } else {
+    // Without a real SMS gateway, we log it to the terminal so the user can see it
+    console.log(`\n================================`);
+    console.log(` SMS OTP sent to ${user.phone}`);
+    console.log(` OTP Code: ${otp}`);
+    console.log(`================================\n`);
+  }
 
   res.json({ message: 'OTP sent to your phone number', phone: user.phone });
 });
