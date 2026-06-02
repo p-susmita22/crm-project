@@ -758,6 +758,7 @@ const Customers = () => {
                 <option value="">All Types</option>
                 <option value="Seller">Seller</option>
                 <option value="District Partner">District Partner</option>
+                <option value="Interview Call">Interview Call</option>
               </select>
               <FiFilter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             </div>
@@ -1066,6 +1067,7 @@ const Customers = () => {
                     <option value="">Select Onboarding Option</option>
                     <option value="District Partner">District Partner</option>
                     <option value="Seller">Seller</option>
+                    <option value="Interview Call">Interview Call</option>
                   </select>
                 </div>
                 <div>

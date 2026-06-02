@@ -299,6 +299,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                     <option value="">Select Onboarding Option</option>
                     <option value="District Partner">District Partner</option>
                     <option value="Seller">Seller</option>
+                    <option value="Interview Call">Interview Call</option>
                   </select>
                   <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
                 </div>
@@ -354,7 +355,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
         </div>
 
         {/* ── Conditional Response Section ── */}
-        {customer && customer.status === 'Agree' && (customer.onboarding === 'Seller' || customer.onboarding === 'District Partner') ? (
+        {customer && customer.status === 'Agree' && (customer.onboarding === 'Seller' || customer.onboarding === 'District Partner' || customer.onboarding === 'Interview Call') ? (
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex flex-col items-center justify-center text-center">
             <FiCheckCircle className="text-blue-500 mb-2" size={24} />
             <p className="text-sm font-bold text-blue-800 dark:text-blue-300">
@@ -457,7 +458,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
         </div>
 
         {/* ── Schedule Call Back Reminder ── */}
-        {!(customer && (customer.onboarding === 'Seller' || customer.onboarding === 'District Partner')) && (
+        {!(customer && (customer.onboarding === 'Seller' || customer.onboarding === 'District Partner' || customer.onboarding === 'Interview Call')) && (
           <div className="pt-2 animate-fade-in">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
               <FiClock size={14} className="text-blue-500" /> Schedule Reminder / Call Back (Optional)
