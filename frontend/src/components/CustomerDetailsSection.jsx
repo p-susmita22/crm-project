@@ -286,25 +286,23 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
               </div>
             </div>
 
-            {status === 'Agree' && (
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Onboarding Option</label>
-                <div className="relative">
-                  <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                  <select
-                    value={onboarding}
-                    onChange={e => setOnboarding(e.target.value)}
-                    className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold appearance-none"
-                  >
-                    <option value="">Select Onboarding Option</option>
-                    <option value="District Partner">District Partner</option>
-                    <option value="Seller">Seller</option>
-                    <option value="Interview Call">Interview Call</option>
-                  </select>
-                  <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
-                </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Onboarding Option</label>
+              <div className="relative">
+                <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                <select
+                  value={onboarding}
+                  onChange={e => setOnboarding(e.target.value)}
+                  className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold appearance-none"
+                >
+                  <option value="">Select Onboarding Option</option>
+                  <option value="District Partner">District Partner</option>
+                  <option value="Seller">Seller</option>
+                  <option value="Interview Call">Interview Call</option>
+                </select>
+                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
               </div>
-            )}
+            </div>
 
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">State</label>
