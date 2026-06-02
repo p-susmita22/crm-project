@@ -106,11 +106,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
   const handleSave = async (e) => {
     if (e) e.preventDefault();
     
-    // Explicit Validation
-    if (!/^[1-9][0-9]{9}$/.test(phone)) {
-      toast.error('Phone number must be exactly 10 digits and cannot start with 0');
-      return;
-    }
+    // Removed explicit validation to allow saving without strict phone requirements
     
     setSaving(true);
     try {
@@ -231,7 +227,6 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                 <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                 <input
                   type="text"
-                  required
                   value={name}
                   onChange={e => setName(e.target.value)}
                   className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
@@ -246,9 +241,6 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                 <FiPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                 <input
                   type="tel"
-                  required
-                  pattern="^[1-9][0-9]{9}$"
-                  title="Phone number must be exactly 10 digits and cannot start with 0"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
@@ -263,7 +255,6 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                 <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                 <input
                   type="email"
-                  required
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
@@ -415,7 +406,6 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                 </label>
                 <input
                   type="text"
-                  required
                   placeholder="Enter the reason..."
                   value={otherReason}
                   onChange={e => setOtherReason(e.target.value)}
