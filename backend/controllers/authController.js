@@ -16,7 +16,7 @@ const authUser = asyncHandler(async (req, res) => {
     throw new Error('Please provide Email Address');
   }
 
-  const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
+  const user = await User.findOne({ email: new RegExp(`^${email.trim()}$`, 'i') }).select('+password');
 
   if (user && (await user.matchPassword(password))) {
     // Validate roles based on loginType to restrict cross-dashboard access
@@ -75,7 +75,7 @@ const authUser = asyncHandler(async (req, res) => {
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role, phone, employeeId, assignedCallsCount } = req.body;
 
-  const userExists = await User.findOne({ email });
+  const userExists = await User.findOne({ email: new RegExp(`^${email.trim()}$`, 'i') });
 
   if (userExists) {
     res.status(400);
@@ -97,7 +97,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   let user = await User.create({
     name,
-    email,
+    email: email.trim().toLowerCase(),
     password,
     plainPassword: password, // Store plain password for admin viewing as requested
     role: role || 'Employee',
@@ -210,7 +210,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     throw new Error('Please provide an email address');
   }
 
-  const user = await User.findOne({ email: email.toLowerCase().trim() });
+  const user = await User.findOne({ email: new RegExp(`^${email.trim()}$`, 'i') });
   if (!user) {
     res.status(404);
     throw new Error('No account found with that email address');
@@ -259,7 +259,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 const verifyOtp = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;
 
-  const user = await User.findOne({ email: email.toLowerCase().trim() });
+  const user = await User.findOne({ email: new RegExp(`^${email.trim()}$`, 'i') });
   if (!user) {
     res.status(404);
     throw new Error('User not found');
@@ -292,7 +292,7 @@ const verifyOtp = asyncHandler(async (req, res) => {
 const resetPassword = asyncHandler(async (req, res) => {
   const { email, newPassword } = req.body;
 
-  const user = await User.findOne({ email: email.toLowerCase().trim() });
+  const user = await User.findOne({ email: new RegExp(`^${email.trim()}$`, 'i') });
   if (!user) {
     res.status(404);
     throw new Error('User not found');
