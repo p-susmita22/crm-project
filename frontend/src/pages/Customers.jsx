@@ -527,8 +527,8 @@ const Customers = () => {
     }
   };
 
-  // Helper: get YYYY-MM-DD string from a customer's createdAt
-  const toDateStr = (c) => c.createdAt ? new Date(c.createdAt).toISOString().slice(0, 10) : 'Unknown';
+  // Helper: get YYYY-MM-DD string from a customer's taskDate
+  const toDateStr = (c) => c.taskDate || (c.createdAt ? new Date(c.createdAt).toISOString().slice(0, 10) : 'Unknown');
 
   const filteredCustomers = customers.filter(c => {
     const matchSearch = (
