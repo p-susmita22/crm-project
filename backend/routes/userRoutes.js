@@ -446,6 +446,8 @@ router.delete('/history/archived/:id', protect, admin, asyncHandler(async (req, 
     res.status(404);
     throw new Error('Archived employee not found');
   }
+}));
+
 // @desc    Restore archived employee
 // @route   POST /api/users/history/archived/:id/restore
 // @access  Private/Admin
