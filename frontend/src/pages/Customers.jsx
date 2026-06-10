@@ -273,7 +273,7 @@ const Customers = () => {
             }
             .badge-interested { background: #d1fae5; color: #065f46; }
             .badge-rejected { background: #fee2e2; color: #991b1b; }
-            .badge-others { background: #f3e8ff; color: #6b21a8; }
+            .badge-others { background: #dbeafe; color: #1e3a8a; }
             .badge-pending { background: #fef3c7; color: #92400e; }
           </style>
         </head>
@@ -482,7 +482,7 @@ const Customers = () => {
             tr:nth-child(even) td { background: #f9fafb; }
             .status-interested { color: #065f46; font-weight: 700; }
             .status-rejected { color: #991b1b; font-weight: 700; }
-            .status-others { color: #6b21a8; font-weight: 700; }
+            .status-others { color: #1d4ed8; font-weight: 700; }
             .status-pending { color: #92400e; font-weight: 700; }
             .footer { margin-top: 28px; font-size: 11px; color: #9ca3af; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 12px; }
           </style>
@@ -1215,7 +1215,7 @@ const Customers = () => {
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         selectedViewCustomer.status === 'Agree' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
                         selectedViewCustomer.status === 'Reject' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                        selectedViewCustomer.status === 'Others' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' :
+                        selectedViewCustomer.status === 'Others' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
                         'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                       }`}>
                         {selectedViewCustomer.status === 'Agree' ? 'Interested' :
@@ -1228,7 +1228,7 @@ const Customers = () => {
                     {selectedViewCustomer.status === 'Others' && selectedViewCustomer.otherReason && (
                       <div>
                         <div className="text-xs text-gray-400 font-semibold uppercase mb-0.5">Reason</div>
-                        <div className="text-sm font-semibold text-purple-600 dark:text-purple-400">{selectedViewCustomer.otherReason}</div>
+                        <div className="text-sm font-semibold text-blue-600 dark:text-blue-400">{selectedViewCustomer.otherReason}</div>
                       </div>
                     )}
 
@@ -1271,7 +1271,7 @@ const Customers = () => {
                             <span className={`text-xs font-bold mb-1 ${
                               log.status === 'Agree' ? 'text-green-600' :
                               log.status === 'Reject' ? 'text-red-500' :
-                              log.status === 'Others' ? 'text-purple-600' :
+                              log.status === 'Others' ? 'text-blue-600' :
                               'text-yellow-600'
                             }`}>{log.status === 'Agree' ? 'Interested' : log.status === 'Reject' ? 'Rejected' : log.status}</span>
                             <span className="text-sm text-gray-600 dark:text-gray-300">"{log.remark || 'No specific remark'}"</span>
