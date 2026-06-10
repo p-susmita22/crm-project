@@ -46,7 +46,7 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
       icon: <FiUser className="text-xl" />,
       badge: panelType === 'admin' ? notifications.unreadWork : 0
     },
-    { name: 'Leads', path: `${basePath}/leads`, icon: <FiTarget className="text-xl" /> },
+    { name: 'Leads', path: `${basePath}/leads`, icon: <span className="text-xl leading-none">🎯</span> },
   ];
 
   if (panelType === 'employee') {
