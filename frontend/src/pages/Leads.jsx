@@ -20,10 +20,11 @@ const Leads = () => {
   const fetchData = async () => {
     try {
       const [leadRes, empRes] = await Promise.all([
-        api.get('/leads'),
+        api.get('/customers'),
         user?.role === 'Admin' ? api.get('/users') : Promise.resolve({ data: [] })
       ]);
-      setLeads(leadRes.data);
+      const interestedCustomers = leadRes.data.filter(c => c.status === 'Agree' || c.status === 'Interested');
+      setLeads(interestedCustomers);
       if (user?.role === 'Admin') {
         setEmployees(empRes.data.filter(e => e.role === 'Employee'));
       }
@@ -49,11 +50,11 @@ const Leads = () => {
     
     try {
       if (formData._id) {
-        await api.put(`/leads/${formData._id}`, formData);
-        toast.success('Lead updated successfully');
+        await api.put(`/customers/${formData._id}`, formData);
+        toast.success('Customer updated successfully');
       } else {
-        await api.post('/leads', formData);
-        toast.success('Lead created successfully');
+        await api.post('/customers', { ...formData, status: 'Agree' });
+        toast.success('Interested customer added successfully');
       }
       setIsModalOpen(false);
       setFormData({ name: '', phone: '', email: '', companyName: '', job: '', source: 'Website', status: 'New', notes: '', assignedTo: '' });
@@ -82,7 +83,7 @@ const Leads = () => {
   const deleteLead = async (id) => {
     if (window.confirm('Are you sure you want to delete this lead?')) {
       try {
-        await api.delete(`/leads/${id}`);
+        await api.delete(`/customers/${id}`);
         toast.success('Lead deleted');
         fetchData();
       } catch (error) {
@@ -101,8 +102,10 @@ const Leads = () => {
     switch (status) {
       case 'New': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
       case 'Contacted': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-      case 'Interested': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
-      case 'Converted': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+      case 'Interested':
+      case 'Agree': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+      case 'Pending': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+      case 'Reject':
       case 'Lost': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
@@ -309,11 +312,10 @@ const Leads = () => {
                     value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})}
                     className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
                   >
-                    <option value="New">New</option>
-                    <option value="Contacted">Contacted</option>
-                    <option value="Interested">Interested</option>
-                    <option value="Converted">Converted</option>
-                    <option value="Lost">Lost</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Agree">Agree (Interested)</option>
+                    <option value="Reject">Reject</option>
+                    <option value="Others">Others</option>
                   </select>
                 </div>
                 {user?.role === 'Admin' && (
