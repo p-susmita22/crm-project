@@ -356,9 +356,9 @@ const Team = () => {
                 <th className="py-4 px-5">Employee ID</th>
                 <th className="py-4 px-5">Contact</th>
                 <th className="py-4 px-5 text-center">Assigned Calls</th>
+                <th className="py-4 px-5 text-center">Total Assigned</th>
                 <th className="py-4 px-5 text-center">Status</th>
                 <th className="py-4 px-5 text-center">Session Time</th>
-                <th className="py-4 px-5 text-center">Last Seen</th>
                 <th className="py-4 px-5 text-center">Actions</th>
               </tr>
             </thead>
@@ -396,6 +396,7 @@ const Team = () => {
                     <td className="py-4 px-5 text-sm text-gray-600 dark:text-gray-400 font-mono">{emp.employeeId || '—'}</td>
                     <td className="py-4 px-5 text-sm text-gray-600 dark:text-gray-400"><span className="flex items-center gap-1"><FiPhone size={12} /> {emp.phone || '—'}</span></td>
                     <td className="py-4 px-5 text-center font-semibold text-sm text-gray-700 dark:text-gray-200">{emp.assignedCallsCount || 0}</td>
+                    <td className="py-4 px-5 text-center font-bold text-sm text-primary dark:text-blue-400">{emp.totalAssignedCallsCount || 0}</td>
                     <td className="py-4 px-5 text-center">
                       {emp.isActive === false ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
@@ -415,7 +416,6 @@ const Team = () => {
                         {formatSeconds(emp.todayWorkingSeconds || 0)}
                       </span>
                     </td>
-                    <td className="py-4 px-5 text-center text-xs text-gray-400">{emp.lastSeenAt ? new Date(emp.lastSeenAt).toLocaleTimeString() : '—'}</td>
                     <td className="py-4 px-5">
                       <div className="flex items-center justify-center gap-3">
                         <button onClick={() => openUploadModal(emp)} className="text-gray-400 hover:text-primary transition-colors" title="Upload Daily Tasks"><FiUpload size={15} /></button>

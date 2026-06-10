@@ -51,7 +51,7 @@ const AdminSignup = () => {
       {/* Left side - Branding/Image */}
       <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-purple-600 to-primary p-10 flex-col justify-between text-white relative overflow-hidden">
         <div className="relative z-10">
-          <h1 className="text-4xl font-bold mb-4">CRM Pro</h1>
+          <h1 className="text-4xl font-bold mb-4">Multimaart CRM</h1>
           <p className="text-lg opacity-90">Create your admin account to start managing your entire business, assigning leads, and tracking team performance.</p>
         </div>
         
@@ -60,7 +60,7 @@ const AdminSignup = () => {
         <div className="absolute -top-32 -right-32 w-96 h-96 bg-white opacity-10 rounded-full blur-3xl"></div>
         
         <div className="relative z-10">
-          <p className="text-sm font-medium opacity-80">&copy; 2026 CRM Pro. All rights reserved.</p>
+          <p className="text-sm font-medium opacity-80">&copy; 2026 Multimaart CRM. All rights reserved.</p>
         </div>
       </div>
 

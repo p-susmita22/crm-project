@@ -137,38 +137,36 @@ router.post('/session/end', protect, asyncHandler(async (req, res) => {
 router.get('/status', protect, admin, asyncHandler(async (req, res) => {
   const { date } = req.query;
   const employees = await User.find({ role: 'Employee' }).select('-password').lean();
+  const Customer = (await import('../models/Customer.js')).default;
+  const targetDate = date || new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
 
-  if (date) {
-    const today = new Date().toISOString().split('T')[0];
-    if (date !== today) {
-      // Fetch reports for that past date
-      const reports = await Report.find({ reportDate: date });
-      const reportMap = {};
-      reports.forEach((r) => {
-        reportMap[r.employee.toString()] = r;
-      });
+  // Fetch how many calls are assigned to each employee strictly on targetDate
+  const customerCounts = await Customer.aggregate([
+    { $match: { taskDate: targetDate } },
+    { $group: { _id: '$assignedTo', count: { $sum: 1 } } }
+  ]);
+  const countsMap = {};
+  customerCounts.forEach(c => { countsMap[c._id.toString()] = c.count; });
 
-      // Override current live data with historical data
-      employees.forEach((emp) => {
-        const report = reportMap[emp._id.toString()];
-        emp.isOnline = false; // Always offline in the past
-        emp.todayWorkingSeconds = report ? report.sessionTimeSeconds : 0;
-        emp.assignedCallsCount = report ? report.totalCallsAssigned : emp.assignedCallsCount;
-      });
-    } else {
-      // Live data for today: check heartbeat timeout
-      const now = new Date();
-      employees.forEach((emp) => {
-        if (emp.isOnline && emp.lastSeenAt) {
-          const diffMs = now - new Date(emp.lastSeenAt);
-          if (diffMs > 2 * 60 * 1000) { // 2 minutes timeout
-            emp.isOnline = false;
-          }
-        }
-      });
-    }
+  if (targetDate !== today) {
+    // Fetch reports for that past date
+    const reports = await Report.find({ reportDate: targetDate });
+    const reportMap = {};
+    reports.forEach((r) => {
+      reportMap[r.employee.toString()] = r;
+    });
+
+    // Override current live data with historical data
+    employees.forEach((emp) => {
+      const report = reportMap[emp._id.toString()];
+      emp.isOnline = false; // Always offline in the past
+      emp.todayWorkingSeconds = report ? report.sessionTimeSeconds : 0;
+      emp.totalAssignedCallsCount = emp.assignedCallsCount; // Overall total
+      emp.assignedCallsCount = countsMap[emp._id.toString()] || 0; // Selected date's calls
+    });
   } else {
-    // Live data without date parameter: check heartbeat timeout
+    // Live data for today: check heartbeat timeout
     const now = new Date();
     employees.forEach((emp) => {
       if (emp.isOnline && emp.lastSeenAt) {
@@ -177,6 +175,8 @@ router.get('/status', protect, admin, asyncHandler(async (req, res) => {
           emp.isOnline = false;
         }
       }
+      emp.totalAssignedCallsCount = emp.assignedCallsCount; // Overall total
+      emp.assignedCallsCount = countsMap[emp._id.toString()] || 0; // Today's calls
     });
   }
 
