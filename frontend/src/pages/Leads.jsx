@@ -10,6 +10,7 @@ const Leads = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -92,11 +93,15 @@ const Leads = () => {
     }
   };
 
-  const filteredLeads = leads.filter(l =>
-    l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    l.phone.includes(searchTerm) ||
-    (l.companyName || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredLeads = leads.filter(l => {
+    const matchesSearch = l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          l.phone.includes(searchTerm) ||
+                          (l.companyName || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesEmployee = selectedEmployeeId === '' || (l.assignedTo?._id || l.assignedTo) === selectedEmployeeId;
+    
+    return matchesSearch && matchesEmployee;
+  });
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -153,6 +158,21 @@ const Leads = () => {
             className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm transition-all"
           />
         </div>
+        {/* Admin Assigned By Filter */}
+        {user?.role === 'Admin' && (
+          <div className="w-full sm:w-64 shrink-0">
+            <select
+              value={selectedEmployeeId}
+              onChange={(e) => setSelectedEmployeeId(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm transition-all"
+            >
+              <option value="">All Employees</option>
+              {employees.map(emp => (
+                <option key={emp._id} value={emp._id}>{emp.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Data Table */}
@@ -167,7 +187,6 @@ const Leads = () => {
                 <th className="py-4 px-6">Job</th>
                 <th className="py-4 px-6">Onboarding Type</th>
                 <th className="py-4 px-6">Status</th>
-                {user?.role === 'Admin' && <th className="py-4 px-6">Assigned By</th>}
                 <th className="py-4 px-6 text-center">Actions</th>
               </tr>
             </thead>
@@ -224,21 +243,6 @@ const Leads = () => {
                         )}
                       </div>
                     </td>
-                    {/* Assigned By (Admin Only) */}
-                    {user?.role === 'Admin' && (
-                      <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
-                        {lead.assignedTo?.name ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
-                              {lead.assignedTo.name.charAt(0).toUpperCase()}
-                            </div>
-                            <span className="font-medium text-gray-700 dark:text-gray-300">{lead.assignedTo.name}</span>
-                          </div>
-                        ) : (
-                          <span className="text-orange-500 italic">Unassigned</span>
-                        )}
-                      </td>
-                    )}
                     {/* Actions — edit always shown; delete only for admin */}
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-center space-x-3">
