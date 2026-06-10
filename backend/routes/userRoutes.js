@@ -446,6 +446,73 @@ router.delete('/history/archived/:id', protect, admin, asyncHandler(async (req, 
     res.status(404);
     throw new Error('Archived employee not found');
   }
+// @desc    Restore archived employee
+// @route   POST /api/users/history/archived/:id/restore
+// @access  Private/Admin
+router.post('/history/archived/:id/restore', protect, admin, asyncHandler(async (req, res) => {
+  const ArchivedEmployee = (await import('../models/ArchivedEmployee.js')).default;
+  const Customer = (await import('../models/Customer.js')).default;
+  
+  const archived = await ArchivedEmployee.findById(req.params.id);
+  
+  if (!archived) {
+    res.status(404);
+    throw new Error('Archived employee not found');
+  }
+
+  // Check if email is already taken
+  const emailExists = await User.findOne({ email: archived.email });
+  if (emailExists) {
+    res.status(400);
+    throw new Error('An active user with this email already exists.');
+  }
+
+  // Check if employeeId is taken
+  const idExists = await User.findOne({ employeeId: archived.employeeId });
+  let nextEmpId = archived.employeeId;
+  if (idExists) {
+    // Re-index to get a new ID if the old one is taken
+    await reindexEmployees();
+    const empCount = await User.countDocuments({ role: 'Employee' });
+    nextEmpId = `emp-${String(empCount + 1).padStart(3, '0')}`;
+  }
+
+  // Create new user (using default password)
+  const defaultPassword = 'Password@123';
+  const newUser = await User.create({
+    name: archived.name,
+    email: archived.email,
+    password: defaultPassword,
+    plainPassword: defaultPassword,
+    role: archived.role || 'Employee',
+    phone: archived.phone,
+    employeeId: nextEmpId,
+    assignedCallsCount: archived.customers ? archived.customers.length : 0,
+    isActive: true
+  });
+
+  // Restore customers
+  if (archived.customers && archived.customers.length > 0) {
+    const customersToInsert = archived.customers.map(c => ({
+      customerId: c.customerId || `CUST-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+      name: c.name,
+      phone: c.phone,
+      email: c.email,
+      companyName: c.companyName,
+      status: c.status || 'Pending',
+      onboarding: c.onboarding,
+      taskDate: c.taskDate || new Date().toISOString().split('T')[0],
+      sourceFile: c.sourceFile || 'Restored',
+      assignedTo: newUser._id
+    }));
+
+    await Customer.insertMany(customersToInsert);
+  }
+
+  // Delete from archived
+  await archived.deleteOne();
+
+  res.json({ message: 'Employee restored successfully', newPassword: defaultPassword });
 }));
 
 export default router;

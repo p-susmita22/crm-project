@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiClock, FiTrash2, FiSearch, FiChevronDown, FiChevronUp, FiPhone, FiMail } from 'react-icons/fi';
+import { FiClock, FiTrash2, FiSearch, FiChevronDown, FiChevronUp, FiPhone, FiMail, FiUserCheck } from 'react-icons/fi';
 import api from '../api/axios';
 import { toast } from 'react-hot-toast';
 
@@ -34,6 +34,21 @@ const EmployeeHistory = () => {
       toast.success('Archived employee deleted forever');
     } catch (err) {
       toast.error('Failed to delete archived employee');
+    }
+  };
+
+  const restoreArchived = async (id, e) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to restore this employee? They will be active and all their data will be restored to the Team dashboard.')) return;
+    try {
+      const res = await api.post(`/users/history/archived/${id}/restore`);
+      setArchived(prev => prev.filter(emp => emp._id !== id));
+      toast.success(res.data.message || 'Employee restored successfully');
+      if (res.data.newPassword) {
+        toast(`The password has been reset to: ${res.data.newPassword}`, { duration: 6000, icon: '🔑' });
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to restore employee');
     }
   };
 
@@ -117,6 +132,13 @@ const EmployeeHistory = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    <button 
+                      onClick={(e) => restoreArchived(emp._id, e)}
+                      className="text-gray-400 hover:text-green-500 transition-colors p-2 rounded-full hover:bg-green-50 dark:hover:bg-green-900/30"
+                      title="Activate Employee"
+                    >
+                      <FiUserCheck size={18} />
+                    </button>
                     <button 
                       onClick={(e) => deleteArchived(emp._id, e)}
                       className="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30"
