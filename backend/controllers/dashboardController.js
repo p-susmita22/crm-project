@@ -14,10 +14,10 @@ const getDashboardStats = asyncHandler(async (req, res) => {
   const query = isAdmin ? {} : { assignedTo: req.user._id };
 
   const totalCustomers = await Customer.countDocuments(query);
-  const totalLeads = await Lead.countDocuments(query);
+  const totalLeads = await Customer.countDocuments({ ...query, status: { $in: ['Agree', 'Interested'] } });
   const totalEmployees = await User.countDocuments({ role: 'Employee' });
   
-  const convertedLeads = await Lead.countDocuments({ ...query, status: 'Converted' });
+  const convertedLeads = await Customer.countDocuments({ ...query, status: { $in: ['Agree', 'Interested'] } });
   const rejectedCustomers = await Customer.countDocuments({ ...query, status: 'Reject' });
 
   // Example Charts Data: Customers grouped by status
@@ -26,9 +26,9 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     { $group: { _id: '$status', count: { $sum: 1 } } }
   ]);
 
-  // Lead status data
-  const leadStatusData = await Lead.aggregate([
-    { $match: query },
+  // Lead status data (using Customer Agree/Interested)
+  const leadStatusData = await Customer.aggregate([
+    { $match: { ...query, status: { $in: ['Agree', 'Interested'] } } },
     { $group: { _id: '$status', count: { $sum: 1 } } }
   ]);
 
@@ -54,17 +54,25 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       },
       {
         $lookup: {
-          from: 'leads',
+          from: 'customers',
           localField: '_id',
           foreignField: 'assignedTo',
-          as: 'leads'
+          as: 'allCustomers'
         }
       },
       {
         $project: {
           name: 1,
-          customerCount: { $size: '$customers' },
-          leadCount: { $size: '$leads' }
+          customerCount: { $size: '$allCustomers' },
+          leadCount: {
+            $size: {
+              $filter: {
+                input: '$allCustomers',
+                as: 'c',
+                cond: { $in: ['$$c.status', ['Agree', 'Interested']] }
+              }
+            }
+          }
         }
       }
     ]);
