@@ -36,7 +36,7 @@ const Customers = () => {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    customerId: '', name: '', phone: '', email: '', companyName: '', address: '', fullAddress: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: ''
+    customerId: '', name: '', phone: '', email: '', companyName: '', address: '', fullAddress: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: '', status: 'Pending', otherReason: '', followUpDate: '', notes: ''
   });
 
   const fetchData = async (silent = false) => {
@@ -116,7 +116,7 @@ const Customers = () => {
         toast.success('Customer created successfully');
       }
       setIsModalOpen(false);
-      setFormData({ customerId: '', name: '', phone: '', email: '', companyName: '', address: '', fullAddress: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: '' });
+      setFormData({ customerId: '', name: '', phone: '', email: '', companyName: '', address: '', fullAddress: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: '', status: 'Pending', otherReason: '', followUpDate: '', notes: '' });
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to save customer');
@@ -137,7 +137,11 @@ const Customers = () => {
       job: customer.job || '',
       pincode: customer.pincode || '',
       state: customer.state || '',
-      onboarding: customer.onboarding || ''
+      onboarding: customer.onboarding || '',
+      status: customer.status || 'Pending',
+      otherReason: customer.otherReason || '',
+      followUpDate: customer.followUpDate ? new Date(customer.followUpDate).toISOString().slice(0, 10) : '',
+      notes: customer.notes || ''
     });
     setIsModalOpen(true);
   };
@@ -612,7 +616,7 @@ const Customers = () => {
             </button>
             <button 
               onClick={() => {
-                setFormData({ customerId: '', name: '', phone: '', email: '', companyName: '', address: '', fullAddress: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: '' });
+                setFormData({ customerId: '', name: '', phone: '', email: '', companyName: '', address: '', fullAddress: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: '', status: 'Pending', otherReason: '', followUpDate: '', notes: '' });
                 setIsModalOpen(true);
               }}
               className="bg-primary hover:bg-primary-dark text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center shadow-sm"
@@ -1133,6 +1137,60 @@ const Customers = () => {
                     </select>
                   </div>
                 )}
+                <div className="md:col-span-2 mt-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <h4 className="text-sm font-bold text-gray-800 dark:text-white mb-4">Call Status & Feedback</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer Status</label>
+                      <select 
+                        value={formData.status || 'Pending'} 
+                        onChange={(e) => setFormData({...formData, status: e.target.value})}
+                        className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Agree">Interested</option>
+                        <option value="Reject">Rejected</option>
+                        <option value="Others">Others</option>
+                      </select>
+                    </div>
+
+                    {formData.status === 'Others' && (
+                      <div className="animate-fade-in">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
+                        <input 
+                          type="text" 
+                          value={formData.otherReason || ''} 
+                          onChange={(e) => setFormData({...formData, otherReason: e.target.value})}
+                          placeholder="Why others?"
+                          className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                        />
+                      </div>
+                    )}
+
+                    {formData.status === 'Agree' && (
+                      <div className="animate-fade-in">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Follow-up Date</label>
+                        <input 
+                          type="date" 
+                          value={formData.followUpDate || ''} 
+                          onChange={(e) => setFormData({...formData, followUpDate: e.target.value})}
+                          className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="md:col-span-2 mt-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Remarks / Notes</label>
+                  <textarea 
+                    rows={3}
+                    value={formData.notes || ''} 
+                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                    placeholder="Enter discussion remarks..."
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white resize-none"
+                  />
+                </div>
               </div>
             </form>
             

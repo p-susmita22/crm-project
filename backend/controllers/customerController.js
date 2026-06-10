@@ -43,7 +43,7 @@ const getCustomerById = asyncHandler(async (req, res) => {
 // @route   POST /api/customers
 // @access  Private
 const createCustomer = asyncHandler(async (req, res) => {
-  const { name, phone, email, companyName, address, notes, assignedTo, job, otherReason, status, followUpDate, pincode, state, onboarding } = req.body;
+  const { name, phone, email, companyName, address, fullAddress, notes, assignedTo, job, otherReason, status, followUpDate, pincode, state, onboarding } = req.body;
 
   // Make sure the existing IDs are fully re-indexed (no gaps, etc.)
   await reindexCustomers();
@@ -61,6 +61,7 @@ const createCustomer = asyncHandler(async (req, res) => {
     email,
     companyName,
     address,
+    fullAddress,
     notes,
     assignedTo: assignedTo || req.user._id,
     job,
@@ -101,7 +102,7 @@ const updateCustomer = asyncHandler(async (req, res) => {
   }
 
   // Explicitly update only fields that were sent in the request body
-  const fields = ['name', 'phone', 'email', 'companyName', 'address', 'notes', 'status', 'followUpDate', 'job', 'otherReason', 'pincode', 'state', 'onboarding'];
+  const fields = ['name', 'phone', 'email', 'companyName', 'address', 'fullAddress', 'notes', 'status', 'followUpDate', 'job', 'otherReason', 'pincode', 'state', 'onboarding'];
   fields.forEach(field => {
     if (req.body.hasOwnProperty(field)) {
       customer[field] = req.body[field];
