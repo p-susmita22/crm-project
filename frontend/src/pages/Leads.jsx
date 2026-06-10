@@ -167,6 +167,7 @@ const Leads = () => {
                 <th className="py-4 px-6">Job</th>
                 <th className="py-4 px-6">Onboarding Type</th>
                 <th className="py-4 px-6">Status</th>
+                {user?.role === 'Admin' && <th className="py-4 px-6">Assigned By</th>}
                 <th className="py-4 px-6 text-center">Actions</th>
               </tr>
             </thead>
@@ -223,6 +224,21 @@ const Leads = () => {
                         )}
                       </div>
                     </td>
+                    {/* Assigned By (Admin Only) */}
+                    {user?.role === 'Admin' && (
+                      <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
+                        {lead.assignedTo?.name ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
+                              {lead.assignedTo.name.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="font-medium text-gray-700 dark:text-gray-300">{lead.assignedTo.name}</span>
+                          </div>
+                        ) : (
+                          <span className="text-orange-500 italic">Unassigned</span>
+                        )}
+                      </td>
+                    )}
                     {/* Actions — edit always shown; delete only for admin */}
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-center space-x-3">
