@@ -165,8 +165,8 @@ const Leads = () => {
                 <th className="py-4 px-6">Mobile Number</th>
                 <th className="py-4 px-6">Company Name</th>
                 <th className="py-4 px-6">Job</th>
+                <th className="py-4 px-6">Onboarding Type</th>
                 <th className="py-4 px-6">Status</th>
-                <th className="py-4 px-6">Assigned By</th>
                 <th className="py-4 px-6 text-center">Actions</th>
               </tr>
             </thead>
@@ -197,31 +197,31 @@ const Leads = () => {
                     <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
                       {lead.job || <span className="text-gray-400 italic">—</span>}
                     </td>
-                    {/* Status badge */}
+                    {/* Onboarding Type */}
+                    <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
+                      {lead.onboarding ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">
+                          {lead.onboarding}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 italic">—</span>
+                      )}
+                    </td>
+                    {/* Status badge & Reason */}
                     <td className="py-4 px-6">
                       <div className="flex flex-col items-start gap-1">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(lead.status)}`}>
                           {lead.status}
                         </span>
-                        {lead.status === 'Agree' && lead.onboarding && (
-                          <span className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600">
-                            {lead.onboarding}
+                        {lead.status === 'Agree' && lead.notes && (
+                          <span 
+                            className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600 max-w-[200px] truncate"
+                            title={lead.notes}
+                          >
+                            {lead.notes}
                           </span>
                         )}
                       </div>
-                    </td>
-                    {/* Assigned By (the employee this lead belongs to) */}
-                    <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
-                      {lead.assignedTo?.name ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
-                            {lead.assignedTo.name.charAt(0).toUpperCase()}
-                          </div>
-                          <span className="font-medium text-gray-700 dark:text-gray-300">{lead.assignedTo.name}</span>
-                        </div>
-                      ) : (
-                        <span className="text-orange-500 italic">Unassigned</span>
-                      )}
                     </td>
                     {/* Actions — edit always shown; delete only for admin */}
                     <td className="py-4 px-6">
