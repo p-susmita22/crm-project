@@ -141,13 +141,21 @@ router.get('/status', protect, admin, asyncHandler(async (req, res) => {
   const targetDate = date || new Date().toISOString().split('T')[0];
   const today = new Date().toISOString().split('T')[0];
 
-  // Fetch how many calls are assigned to each employee strictly on targetDate
-  const customerCounts = await Customer.aggregate([
-    { $match: { taskDate: targetDate } },
-    { $group: { _id: '$assignedTo', count: { $sum: 1 } } }
+  // Fetch the count of the latest assignment (most recent taskDate) for each employee
+  const latestAssignments = await Customer.aggregate([
+    { $match: { assignedTo: { $exists: true, $ne: null } } },
+    { $group: { 
+        _id: { assignedTo: '$assignedTo', taskDate: '$taskDate' }, 
+        count: { $sum: 1 } 
+    } },
+    { $sort: { '_id.taskDate': -1 } },
+    { $group: { 
+        _id: '$_id.assignedTo', 
+        latestCount: { $first: '$count' } 
+    } }
   ]);
   const countsMap = {};
-  customerCounts.forEach(c => { countsMap[c._id.toString()] = c.count; });
+  latestAssignments.forEach(c => { countsMap[c._id.toString()] = c.latestCount; });
 
   if (targetDate !== today) {
     // Fetch reports for that past date
@@ -163,7 +171,7 @@ router.get('/status', protect, admin, asyncHandler(async (req, res) => {
       emp.isOnline = false; // Always offline in the past
       emp.todayWorkingSeconds = report ? report.sessionTimeSeconds : 0;
       emp.totalAssignedCallsCount = emp.assignedCallsCount; // Overall total
-      emp.assignedCallsCount = countsMap[emp._id.toString()] || 0; // Selected date's calls
+      emp.assignedCallsCount = countsMap[emp._id.toString()] || 0; // Latest assignment batch size
     });
   } else {
     // Live data for today: check heartbeat timeout
@@ -176,7 +184,7 @@ router.get('/status', protect, admin, asyncHandler(async (req, res) => {
         }
       }
       emp.totalAssignedCallsCount = emp.assignedCallsCount; // Overall total
-      emp.assignedCallsCount = countsMap[emp._id.toString()] || 0; // Today's calls
+      emp.assignedCallsCount = countsMap[emp._id.toString()] || 0; // Latest assignment batch size
     });
   }
 
