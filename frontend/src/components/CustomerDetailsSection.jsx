@@ -34,6 +34,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
   const [notes, setNotes] = useState('');
   const [followUpDate, setFollowUpDate] = useState('');
   const [address, setAddress] = useState('');
+  const [fullAddress, setFullAddress] = useState('');
   const [pincode, setPincode] = useState('');
   const [state, setState] = useState('');
   const [onboarding, setOnboarding] = useState('');
@@ -53,6 +54,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
       setNotes('');
       setFollowUpDate('');
       setAddress('');
+      setFullAddress('');
       setPincode('');
       setState('');
       setOnboarding('');
@@ -68,6 +70,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
       setNotes(customer.notes || '');
       setFollowUpDate(customer.followUpDate ? customer.followUpDate.slice(0, 10) : '');
       setAddress(customer.address || '');
+      setFullAddress(customer.fullAddress || '');
       setPincode(customer.pincode || '');
       setState(customer.state || '');
       setOnboarding(customer.onboarding || '');
@@ -121,6 +124,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
         otherReason: status === 'Others' ? otherReason : '',
         followUpDate: status === 'Agree' ? (followUpDate || null) : null,
         address,
+        fullAddress,
         pincode,
         state,
         onboarding,
@@ -337,6 +341,20 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                   onChange={e => setAddress(e.target.value)}
                   className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
                   placeholder="District Name"
+                />
+              </div>
+            </div>
+
+            <div className="col-span-full md:col-span-2 lg:col-span-1">
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Full Address</label>
+              <div className="relative">
+                <FiMapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                <input
+                  type="text"
+                  value={fullAddress}
+                  onChange={e => setFullAddress(e.target.value)}
+                  className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
+                  placeholder="Enter Full Address"
                 />
               </div>
             </div>

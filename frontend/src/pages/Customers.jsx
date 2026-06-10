@@ -36,7 +36,7 @@ const Customers = () => {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    customerId: '', name: '', phone: '', email: '', companyName: '', address: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: ''
+    customerId: '', name: '', phone: '', email: '', companyName: '', address: '', fullAddress: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: ''
   });
 
   const fetchData = async (silent = false) => {
@@ -116,7 +116,7 @@ const Customers = () => {
         toast.success('Customer created successfully');
       }
       setIsModalOpen(false);
-      setFormData({ customerId: '', name: '', phone: '', email: '', companyName: '', address: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: '' });
+      setFormData({ customerId: '', name: '', phone: '', email: '', companyName: '', address: '', fullAddress: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: '' });
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to save customer');
@@ -132,6 +132,7 @@ const Customers = () => {
       email: customer.email,
       companyName: customer.companyName || '',
       address: customer.address || '',
+      fullAddress: customer.fullAddress || '',
       assignedTo: customer.assignedTo?._id || '',
       job: customer.job || '',
       pincode: customer.pincode || '',
@@ -334,6 +335,10 @@ const Customers = () => {
                 <div class="meta-label">District</div>
                 <div class="meta-value">${customer.address || '-'}</div>
               </div>
+              <div style="margin-top: 12px;">
+                <div class="meta-label">Full Address</div>
+                <div class="meta-value">${customer.fullAddress || '-'}</div>
+              </div>
             </div>
 
             <div class="meta-block" style="grid-template-columns: 1fr; margin-bottom: 0;">
@@ -448,6 +453,7 @@ const Customers = () => {
         <td>${c.companyName || '-'}</td>
         <td>${c.onboarding || '-'}</td>
         <td>${c.address || '-'}</td>
+        <td>${c.fullAddress || '-'}</td>
         <td class="status-${
           c.status === 'Agree' ? 'interested' :
           c.status === 'Reject' ? 'rejected' :
@@ -502,7 +508,7 @@ const Customers = () => {
             <thead>
               <tr>
                 <th>ID</th><th>Customer Name</th><th>Contact</th><th>Email</th>
-                <th>Company</th><th>Onboarding</th><th>District</th><th>Status</th><th>Remarks</th>
+                <th>Company</th><th>Onboarding</th><th>District</th><th>Full Address</th><th>Status</th><th>Remarks</th>
               </tr>
             </thead>
             <tbody>${rows}</tbody>
@@ -606,7 +612,7 @@ const Customers = () => {
             </button>
             <button 
               onClick={() => {
-                setFormData({ customerId: '', name: '', phone: '', email: '', companyName: '', address: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: '' });
+                setFormData({ customerId: '', name: '', phone: '', email: '', companyName: '', address: '', fullAddress: '', assignedTo: '', job: '', pincode: '', state: '', onboarding: '' });
                 setIsModalOpen(true);
               }}
               className="bg-primary hover:bg-primary-dark text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center shadow-sm"
@@ -1103,6 +1109,16 @@ const Customers = () => {
                     placeholder="District Name"
                   />
                 </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Address</label>
+                  <input 
+                    type="text" 
+                    value={formData.fullAddress || ''} 
+                    onChange={(e) => setFormData({...formData, fullAddress: e.target.value})}
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                    placeholder="Full Address"
+                  />
+                </div>
                 {user?.role === 'Admin' && (
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign to Employee</label>
@@ -1200,8 +1216,12 @@ const Customers = () => {
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-gray-400 font-semibold uppercase">Address</div>
+                    <div className="text-xs text-gray-400 font-semibold uppercase">District</div>
                     <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{selectedViewCustomer.address || '-'}</div>
+                  </div>
+                  <div className="mt-4">
+                    <div className="text-xs text-gray-400 font-semibold uppercase">Full Address</div>
+                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{selectedViewCustomer.fullAddress || '-'}</div>
                   </div>
                 </div>
 

@@ -24,6 +24,9 @@ const customerSchema = mongoose.Schema(
     address: {
       type: String,
     },
+    fullAddress: {
+      type: String,
+    },
     pincode: {
       type: String,
     },
