@@ -109,7 +109,10 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
   const handleSave = async (e) => {
     if (e) e.preventDefault();
     
-    // Removed explicit validation to allow saving without strict phone requirements
+    if (!/^[1-9][0-9]{9}$/.test(phone)) {
+      toast.error('Phone number must be exactly 10 digits and cannot start with 0');
+      return;
+    }
     
     setSaving(true);
     try {
