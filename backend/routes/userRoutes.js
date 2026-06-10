@@ -496,19 +496,22 @@ router.post('/history/archived/:id/restore', protect, admin, asyncHandler(async 
   // Restore customers
   if (archived.customers && archived.customers.length > 0) {
     const customersToInsert = archived.customers.map(c => ({
-      customerId: c.customerId || `CUST-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-      name: c.name,
-      phone: c.phone,
-      email: c.email,
-      companyName: c.companyName,
+      customerId: `CUST-RESTORE-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+      name: c.name || 'Unknown',
+      phone: c.phone || '0000000000',
+      email: c.email || '',
+      companyName: c.companyName || '',
       status: c.status || 'Pending',
-      onboarding: c.onboarding,
+      onboarding: c.onboarding || '',
       taskDate: c.taskDate || new Date().toISOString().split('T')[0],
       sourceFile: c.sourceFile || 'Restored',
       assignedTo: newUser._id
     }));
 
     await Customer.insertMany(customersToInsert);
+    
+    const { reindexCustomers } = await import('../utils/reindexer.js');
+    await reindexCustomers();
   }
 
   // Delete from archived
