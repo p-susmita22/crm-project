@@ -39,29 +39,29 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
   }, [panelType]);
 
   const navItems = [
-    { name: 'Dashboard', path: `${basePath}/dashboard`, icon: <FiHome className="text-xl" /> },
+    { name: 'Dashboard', path: `${basePath}/dashboard`, icon: <span className="text-xl leading-none">🏠</span> },
     { 
       name: 'Customers', 
       path: `${basePath}/customers`, 
-      icon: <FiUser className="text-xl" />,
+      icon: <span className="text-xl leading-none">👥</span>,
       badge: panelType === 'admin' ? notifications.unreadWork : 0
     },
     { name: 'Leads', path: `${basePath}/leads`, icon: <span className="text-xl leading-none">🎯</span> },
   ];
 
   if (panelType === 'employee') {
-    navItems.push({ name: 'Tasks', path: `${basePath}/tasks`, icon: <FiCheckSquare className="text-xl" /> });
+    navItems.push({ name: 'Tasks', path: `${basePath}/tasks`, icon: <span className="text-xl leading-none">✅</span> });
   }
 
   if (panelType === 'admin') {
-    navItems.push({ name: 'Team', path: `${basePath}/team`, icon: <FiUsers className="text-xl" /> });
+    navItems.push({ name: 'Team', path: `${basePath}/team`, icon: <span className="text-xl leading-none">🤝</span> });
     navItems.push({ 
       name: 'Reports', 
       path: `${basePath}/reports`, 
-      icon: <FiFileText className="text-xl" />,
+      icon: <span className="text-xl leading-none">📊</span>,
       badge: notifications.unreadReports
     });
-    navItems.push({ name: 'History', path: `${basePath}/history`, icon: <FiClock className="text-xl" /> });
+    navItems.push({ name: 'History', path: `${basePath}/history`, icon: <span className="text-xl leading-none">🕒</span> });
   }
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
