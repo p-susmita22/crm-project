@@ -43,7 +43,7 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
     { 
       name: 'Customers', 
       path: `${basePath}/customers`, 
-      icon: <FiUsers className="text-xl" />,
+      icon: <FiUser className="text-xl" />,
       badge: panelType === 'admin' ? notifications.unreadWork : 0
     },
     { name: 'Leads', path: `${basePath}/leads`, icon: <FiTarget className="text-xl" /> },
@@ -54,7 +54,7 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
   }
 
   if (panelType === 'admin') {
-    navItems.push({ name: 'Team', path: `${basePath}/team`, icon: <FiSettings className="text-xl" /> });
+    navItems.push({ name: 'Team', path: `${basePath}/team`, icon: <FiUsers className="text-xl" /> });
     navItems.push({ 
       name: 'Reports', 
       path: `${basePath}/reports`, 
