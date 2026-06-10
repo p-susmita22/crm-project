@@ -90,7 +90,16 @@ const Dashboard = () => {
     return <EmployeeCallingPanel />;
   }
 
-  const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Agree': return '#10b981'; // Green
+      case 'Interested': return '#10b981'; // Green
+      case 'Reject': return '#ef4444'; // Red
+      case 'Pending': return '#f59e0b'; // Yellow
+      case 'Others': return '#3b82f6'; // Blue
+      default: return '#6b7280'; // Gray
+    }
+  };
 
   const customerData = stats?.customerStatusData?.map(item => ({
     name: item._id,
@@ -171,7 +180,7 @@ const Dashboard = () => {
                     dataKey="value"
                   >
                     {customerData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell key={`cell-${index}`} fill={getStatusColor(entry.name)} />
                     ))}
                   </Pie>
                   <Tooltip 
@@ -201,7 +210,7 @@ const Dashboard = () => {
                   />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                     {leadData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell key={`cell-${index}`} fill={getStatusColor(entry.name)} />
                     ))}
                   </Bar>
                 </BarChart>
