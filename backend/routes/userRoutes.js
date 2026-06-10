@@ -463,35 +463,38 @@ router.post('/history/archived/:id/restore', protect, admin, asyncHandler(async 
   }
 
   // Check if email is already taken
-  const emailExists = await User.findOne({ email: archived.email });
-  if (emailExists) {
-    res.status(400);
-    throw new Error('An active user with this email already exists.');
-  }
+  let targetUser = await User.findOne({ email: archived.email });
+  let defaultPassword = null;
 
-  // Check if employeeId is taken
-  const idExists = await User.findOne({ employeeId: archived.employeeId });
-  let nextEmpId = archived.employeeId;
-  if (idExists) {
-    // Re-index to get a new ID if the old one is taken
-    await reindexEmployees();
-    const empCount = await User.countDocuments({ role: 'Employee' });
-    nextEmpId = `emp-${String(empCount + 1).padStart(3, '0')}`;
-  }
+  if (!targetUser) {
+    // Check if employeeId is taken
+    const idExists = await User.findOne({ employeeId: archived.employeeId });
+    let nextEmpId = archived.employeeId;
+    if (idExists) {
+      // Re-index to get a new ID if the old one is taken
+      await reindexEmployees();
+      const empCount = await User.countDocuments({ role: 'Employee' });
+      nextEmpId = `emp-${String(empCount + 1).padStart(3, '0')}`;
+    }
 
-  // Create new user (using default password)
-  const defaultPassword = 'Password@123';
-  const newUser = await User.create({
-    name: archived.name,
-    email: archived.email,
-    password: defaultPassword,
-    plainPassword: defaultPassword,
-    role: archived.role || 'Employee',
-    phone: archived.phone,
-    employeeId: nextEmpId,
-    assignedCallsCount: archived.customers ? archived.customers.length : 0,
-    isActive: true
-  });
+    // Create new user (using default password)
+    defaultPassword = 'Password@123';
+    targetUser = await User.create({
+      name: archived.name,
+      email: archived.email,
+      password: defaultPassword,
+      plainPassword: defaultPassword,
+      role: archived.role || 'Employee',
+      phone: archived.phone,
+      employeeId: nextEmpId,
+      assignedCallsCount: 0,
+      isActive: true
+    });
+  } else {
+    // User already exists! Reactivate them if inactive.
+    targetUser.isActive = true;
+    await targetUser.save();
+  }
 
   // Restore customers
   if (archived.customers && archived.customers.length > 0) {
@@ -505,19 +508,27 @@ router.post('/history/archived/:id/restore', protect, admin, asyncHandler(async 
       onboarding: c.onboarding || '',
       taskDate: c.taskDate || new Date().toISOString().split('T')[0],
       sourceFile: c.sourceFile || 'Restored',
-      assignedTo: newUser._id
+      assignedTo: targetUser._id
     }));
 
     await Customer.insertMany(customersToInsert);
     
     const { reindexCustomers } = await import('../utils/reindexer.js');
     await reindexCustomers();
+
+    // Recalculate assigned calls
+    targetUser.assignedCallsCount = await Customer.countDocuments({ assignedTo: targetUser._id });
+    await targetUser.save();
   }
 
   // Delete from archived
   await archived.deleteOne();
 
-  res.json({ message: 'Employee restored successfully', newPassword: defaultPassword });
+  if (defaultPassword) {
+    res.json({ message: 'Employee restored successfully', newPassword: defaultPassword });
+  } else {
+    res.json({ message: 'Employee was already active. Old customers have been merged into their active account!' });
+  }
 }));
 
 export default router;
