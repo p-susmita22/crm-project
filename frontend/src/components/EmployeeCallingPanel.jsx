@@ -5,7 +5,6 @@ import { toast } from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import CustomerDetailsSection from './CustomerDetailsSection';
 import CallingScriptSection from './CallingScriptSection';
-import LeadManagementSection from './LeadManagementSection';
 import DailyReportTab from './DailyReportTab';
 import { FiPhone, FiTarget, FiSun, FiWifi, FiWifiOff, FiClock, FiFileText } from 'react-icons/fi';
 
@@ -18,7 +17,6 @@ const formatTime = (totalSeconds) => {
 
 const TABS = [
   { id: 'call',    label: 'Call Panel',      icon: FiPhone    },
-  { id: 'leads',   label: 'Lead Management', icon: FiTarget   },
   { id: 'report',  label: 'Daily Report',    icon: FiFileText },
 ];
 
@@ -228,7 +226,6 @@ const EmployeeCallingPanel = () => {
         </div>
       )}
 
-      {tab === 'leads' && <LeadManagementSection />}
 
       {tab === 'report' && <DailyReportTab 
         customers={customers} 
