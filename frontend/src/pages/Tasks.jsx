@@ -79,7 +79,7 @@ const Tasks = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
             <FiCheckSquare className="mr-2 text-primary" /> Task & Follow-up Management
@@ -112,7 +112,7 @@ const Tasks = () => {
              </div>
           ) : tasks.filter(t => t.status === 'Pending').length > 0 ? (
             tasks.filter(t => t.status === 'Pending').map(task => (
-              <div key={task._id} className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-l-4 border-l-primary border-gray-100 dark:border-gray-700 flex justify-between items-start transition-all hover:shadow-md">
+              <div key={task._id} className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-l-4 border-l-primary border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all hover:shadow-md">
                 <div>
                   <div className="flex items-center space-x-3 mb-2">
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
@@ -200,7 +200,7 @@ const Tasks = () => {
                   className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Task Type</label>
                   <select 
