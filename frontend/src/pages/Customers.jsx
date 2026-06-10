@@ -1037,9 +1037,15 @@ const Customers = () => {
                   <input 
                     type="tel" required 
                     pattern="^[1-9][0-9]{9}$"
+                    maxLength={10}
                     title="Phone number must be exactly 10 digits and cannot start with 0"
                     placeholder="9876543210"
-                    value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    value={formData.phone} 
+                    onChange={(e) => {
+                      let val = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                      if (val.startsWith('0')) val = val.substring(1); // Remove leading zero
+                      setFormData({...formData, phone: val});
+                    }}
                     className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
                   />
                 </div>

@@ -248,8 +248,16 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                 <FiPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                 <input
                   type="tel"
+                  maxLength={10}
+                  required
+                  pattern="^[1-9][0-9]{9}$"
+                  title="Phone number must be exactly 10 digits and cannot start with 0"
                   value={phone}
-                  onChange={e => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    let val = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                    if (val.startsWith('0')) val = val.substring(1); // Remove leading zero
+                    setPhone(val);
+                  }}
                   className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
                   placeholder="9876543210"
                 />
