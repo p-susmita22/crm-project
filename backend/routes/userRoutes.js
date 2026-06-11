@@ -351,10 +351,16 @@ router.post('/:id/upload-tasks', protect, admin, upload.single('customerFile'), 
   let updatedUser = await user.save();
 
   try {
-    await importCustomersFromFile(req.file.buffer, updatedUser._id, taskDate, req.file.originalname);
+    const importCount = await importCustomersFromFile(req.file.buffer, updatedUser._id, taskDate, req.file.originalname);
+    if (importCount === 0) {
+      res.status(400);
+      throw new Error('No valid customers found in the uploaded file. Please check the file format and ensure it contains phone numbers.');
+    }
     updatedUser = await User.findById(updatedUser._id);
   } catch (err) {
     console.error('Failed to import customers from task upload:', err);
+    res.status(err.statusCode || 500);
+    throw new Error(err.message || 'Failed to process Excel file');
   }
 
   res.json({
@@ -363,7 +369,7 @@ router.post('/:id/upload-tasks', protect, admin, upload.single('customerFile'), 
     customerFile: updatedUser.customerFile,
     assignedCallsCount: updatedUser.assignedCallsCount,
     taskDate,
-    message: `Daily tasks uploaded for ${updatedUser.name} on ${taskDate}`
+    message: `Daily tasks uploaded successfully!`
   });
 }));
 

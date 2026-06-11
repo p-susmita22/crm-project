@@ -104,7 +104,7 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
       const finalPhone = phone;
       const finalEmail = email || `customer${startCount + importCount + 1}@temp.com`;
 
-      const customerId = `cus-${String(startCount + importCount + 1).padStart(3, '0')}`;
+      const customerId = `cus-${Date.now()}-${String(startCount + importCount + 1).padStart(3, '0')}`;
 
       try {
         await Customer.create({
