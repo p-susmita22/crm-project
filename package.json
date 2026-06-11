@@ -1,0 +1,12 @@
+{
+  "name": "crm-project-backend",
+  "version": "1.0.0",
+  "description": "Railway Backend Entry Point",
+  "scripts": {
+    "postinstall": "npm install --prefix backend",
+    "start": "npm start --prefix backend"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
