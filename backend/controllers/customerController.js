@@ -48,14 +48,19 @@ const createCustomer = asyncHandler(async (req, res) => {
   // Make sure the existing IDs are fully re-indexed (no gaps, etc.)
   await reindexCustomers();
 
-  // The next ID is count + 1
+  // The next ID includes a timestamp to prevent duplicate key collisions
   const count = await Customer.countDocuments();
-  const finalId = `cus-${String(count + 1).padStart(3, '0')}`;
+  const finalId = `cus-M${Date.now().toString().slice(-6)}-${String(count + 1).padStart(3, '0')}`;
 
-  const istDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-  const today = `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}-${String(istDate.getDate()).padStart(2, '0')}`;
+  const formatter = new Intl.DateTimeFormat('en-CA', { 
+    timeZone: 'Asia/Kolkata', 
+    year: 'numeric', 
+    month: '2-digit', 
+    day: '2-digit' 
+  });
+  const today = formatter.format(new Date());
 
-  const customer = new Customer({
+  const customerData = {
     customerId: finalId,
     name,
     phone,
@@ -68,13 +73,18 @@ const createCustomer = asyncHandler(async (req, res) => {
     job,
     otherReason,
     status,
-    followUpDate,
     pincode,
     state,
     onboarding,
     taskDate: today,
     sourceFile: 'Manual Entry'
-  });
+  };
+
+  if (followUpDate) {
+    customerData.followUpDate = followUpDate;
+  }
+
+  const customer = new Customer(customerData);
 
   const createdCustomer = await customer.save();
 
@@ -199,8 +209,13 @@ const exportCustomersExcel = asyncHandler(async (req, res) => {
 
   const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
 
-  const istDateExport = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-  const dateStr = `${istDateExport.getFullYear()}-${String(istDateExport.getMonth() + 1).padStart(2, '0')}-${String(istDateExport.getDate()).padStart(2, '0')}`;
+  const formatterExport = new Intl.DateTimeFormat('en-CA', { 
+    timeZone: 'Asia/Kolkata', 
+    year: 'numeric', 
+    month: '2-digit', 
+    day: '2-digit' 
+  });
+  const dateStr = formatterExport.format(new Date());
   const filename = `Customer_Tasks_${dateStr}.xlsx`;
 
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
