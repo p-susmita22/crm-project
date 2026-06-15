@@ -215,7 +215,7 @@ const Reports = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const a = document.createElement('a');
       a.href = url;
-      const dateStr = date || new Date().toISOString().slice(0, 10);
+      const dateStr = date || new Date().toLocaleDateString('en-CA');
       a.download = `${employeeName.replace(/\s+/g, '_')}_Tasks_${dateStr}.xlsx`;
       document.body.appendChild(a);
       a.click();

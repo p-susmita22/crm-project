@@ -140,7 +140,7 @@ const Customers = () => {
       onboarding: customer.onboarding || '',
       status: customer.status || 'Pending',
       otherReason: customer.otherReason || '',
-      followUpDate: customer.followUpDate ? new Date(customer.followUpDate).toISOString().slice(0, 10) : '',
+      followUpDate: customer.followUpDate ? new Date(customer.followUpDate).toLocaleDateString('en-CA') : '',
       notes: customer.notes || ''
     });
     setIsModalOpen(true);
@@ -408,7 +408,7 @@ const Customers = () => {
       a.href = url;
       a.download = date
         ? `Customer_Tasks_${date}.xlsx`
-        : `My_Customer_Tasks_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        : `My_Customer_Tasks_${new Date().toLocaleDateString('en-CA')}.xlsx`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -424,7 +424,7 @@ const Customers = () => {
       const params = dateStr ? { date: dateStr } : {};
       const response = await api.get('/customers/export/excel', { responseType: 'blob', params });
       
-      const file = new File([response.data], dateStr ? `Work_Submission_${dateStr}.xlsx` : `Work_Submission_${new Date().toISOString().slice(0, 10)}.xlsx`, {
+      const file = new File([response.data], dateStr ? `Work_Submission_${dateStr}.xlsx` : `Work_Submission_${new Date().toLocaleDateString('en-CA')}.xlsx`, {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
       
@@ -538,7 +538,7 @@ const Customers = () => {
   };
 
   // Helper: get YYYY-MM-DD string from a customer's taskDate
-  const toDateStr = (c) => c.taskDate || (c.createdAt ? new Date(c.createdAt).toISOString().slice(0, 10) : 'Unknown');
+  const toDateStr = (c) => c.taskDate || (c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-CA') : 'Unknown');
 
   const filteredCustomers = customers.filter(c => {
     const matchSearch = (
@@ -575,7 +575,7 @@ const Customers = () => {
 
   // Add the uploaded file date to the group if it exists
   const fileDateStr = user?.customerFile?.uploadedAt 
-    ? new Date(user.customerFile.uploadedAt).toISOString().slice(0, 10)
+    ? new Date(user.customerFile.uploadedAt).toLocaleDateString('en-CA')
     : null;
 
   if (fileDateStr && !customersByDate[fileDateStr]) {

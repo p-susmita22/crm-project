@@ -52,7 +52,8 @@ const createCustomer = asyncHandler(async (req, res) => {
   const count = await Customer.countDocuments();
   const finalId = `cus-${String(count + 1).padStart(3, '0')}`;
 
-  const today = new Date().toISOString().split('T')[0];
+  const istDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  const today = `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}-${String(istDate.getDate()).padStart(2, '0')}`;
 
   const customer = new Customer({
     customerId: finalId,
@@ -198,7 +199,8 @@ const exportCustomersExcel = asyncHandler(async (req, res) => {
 
   const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
 
-  const dateStr = new Date().toISOString().slice(0, 10);
+  const istDateExport = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  const dateStr = `${istDateExport.getFullYear()}-${String(istDateExport.getMonth() + 1).padStart(2, '0')}-${String(istDateExport.getDate()).padStart(2, '0')}`;
   const filename = `Customer_Tasks_${dateStr}.xlsx`;
 
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
