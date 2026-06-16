@@ -46,7 +46,8 @@ app.use(cors({
   credentials: true,
 }));
 app.use(cookieParser());
-app.use('/uploads', express.static('uploads'));
+import path from 'path';
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 
 import authRoutes from './routes/authRoutes.js';
