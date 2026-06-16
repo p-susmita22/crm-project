@@ -125,10 +125,11 @@ const Team = () => {
     }
   };
 
-  const deleteHistoryDate = async (empId, date) => {
-    if (!window.confirm(`Are you sure you want to permanently delete all tasks for ${date}?`)) return;
+  const deleteHistoryDate = async (empId, date, file) => {
+    const fileMsg = file ? ` from file "${file}"` : '';
+    if (!window.confirm(`Are you sure you want to permanently delete tasks for ${date}${fileMsg}?`)) return;
     try {
-      const res = await api.delete(`/users/${empId}/tasks/${date}`);
+      const res = await api.delete(`/users/${empId}/tasks/${date}?file=${encodeURIComponent(file || '')}`);
       const newCount = res.data?.assignedCallsCount ?? '';
       toast.success(`Tasks deleted! Assigned Calls updated to ${newCount}`);
       // Refresh the employee row (to update assignedCallsCount badge)
@@ -506,7 +507,7 @@ const Team = () => {
                                             <FiDownload size={12} /> Excel
                                           </button>
                                           <button
-                                            onClick={() => deleteHistoryDate(emp._id, row.date)}
+                                            onClick={() => deleteHistoryDate(emp._id, row.date, row.file)}
                                             className="inline-flex items-center justify-center w-7 h-7 hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
                                             title="Delete Date Tasks"
                                           >

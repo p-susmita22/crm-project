@@ -407,7 +407,7 @@ router.get('/:id/task-history', protect, admin, asyncHandler(async (req, res) =>
   })));
 }));
 
-// @desc    Delete tasks for a specific date
+// @desc    Delete tasks for a specific date and file
 // @route   DELETE /api/users/:id/tasks/:date
 // @access  Private/Admin
 router.delete('/:id/tasks/:date', protect, admin, asyncHandler(async (req, res) => {
@@ -415,8 +415,19 @@ router.delete('/:id/tasks/:date', protect, admin, asyncHandler(async (req, res) 
   const mongoose = (await import('mongoose')).default;
   const empObjectId = mongoose.Types.ObjectId.createFromHexString(req.params.id);
 
-  // Delete all tasks for this employee on this date
-  const result = await Customer.deleteMany({ assignedTo: empObjectId, taskDate: req.params.date });
+  const { file } = req.query;
+  const query = { assignedTo: empObjectId, taskDate: req.params.date };
+  
+  if (file !== undefined) {
+    if (file === '') {
+      query.$or = [{ sourceFile: '' }, { sourceFile: { $exists: false } }];
+    } else {
+      query.sourceFile = file;
+    }
+  }
+
+  // Delete matching tasks for this employee on this date
+  const result = await Customer.deleteMany(query);
 
   // Recalculate assignedCallsCount from actual remaining customer records
   const remainingCount = await Customer.countDocuments({ assignedTo: empObjectId });
