@@ -163,10 +163,12 @@ const exportCustomersExcel = asyncHandler(async (req, res) => {
     dateFilter = { taskDate: date };
   }
 
-  if (req.user.role === 'Admin') {
+  if (req.user.role === 'Admin' && !req.query.isWorkSubmission) {
     const filter = employeeId ? { assignedTo: employeeId, ...dateFilter } : { ...dateFilter };
     customers = await Customer.find(filter).populate('assignedTo', 'name email').sort({ createdAt: 1 });
   } else {
+    // Both Employees and Admins viewing work submissions use the updatedAt logic
+    const targetUserId = employeeId || req.user._id;
     // Employees only export their own assigned customers that they have worked on (not pending)
     // Filter specifically by the date they were updated (in IST) to match "what I did today"
     const targetDateStr = date 
@@ -174,7 +176,7 @@ const exportCustomersExcel = asyncHandler(async (req, res) => {
       : new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
       
     const allAssigned = await Customer.find({ 
-      assignedTo: req.user._id, 
+      assignedTo: targetUserId, 
       status: { $ne: 'Pending' }
     }).populate('assignedTo', 'name email').sort({ updatedAt: -1 });
 

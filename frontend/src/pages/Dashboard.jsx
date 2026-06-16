@@ -57,16 +57,18 @@ const Dashboard = () => {
 
   const handleDownloadEmployeeExcel = async (submission) => {
     try {
-      const baseUrl = api.defaults.baseURL ? api.defaults.baseURL.replace('/api', '') : 'http://localhost:5000';
-      const fullUrl = `${baseUrl}${submission.fileUrl}`;
+      // Dynamically generate the excel to avoid 404s caused by Render's ephemeral filesystem clearing uploads
+      const params = { employeeId: submission.employee, date: submission.submissionDate, isWorkSubmission: true };
+      const response = await api.get('/customers/export/excel', { responseType: 'blob', params });
       
+      const url = window.URL.createObjectURL(new Blob([response.data]));
       const a = document.createElement('a');
-      a.href = fullUrl;
-      a.target = '_blank';
-      a.download = submission.fileName || 'Work_Submission';
+      a.href = url;
+      a.download = submission.fileName || `Work_Submission_${submission.submissionDate}.xlsx`;
       document.body.appendChild(a);
       a.click();
       a.remove();
+      window.URL.revokeObjectURL(url);
       
       // Mark as read
       if (!submission.isRead) {
