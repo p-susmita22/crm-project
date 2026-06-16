@@ -22,6 +22,7 @@ const Team = () => {
   const [editingEmployeeId, setEditingEmployeeId] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [viewEmployeeModal, setViewEmployeeModal] = useState({ open: false, employee: null });
+  const [viewTasksModal, setViewTasksModal] = useState({ open: false, employee: null, date: null, file: null, tasks: [], loading: false });
 
   // ── Script Management ────────────────────────────────────────────────────────
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
@@ -142,48 +143,15 @@ const Team = () => {
     }
   };
 
-  const viewHistoryDate = (emp, row) => {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Task Summary - ${emp.name} - ${row.date}</title>
-          <style>
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
-            * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { font-family: 'Outfit', sans-serif; padding: 36px; color: #1f2937; background: #fff; }
-            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #6366f1; padding-bottom: 20px; margin-bottom: 28px; }
-            .title { font-size: 24px; font-weight: 800; color: #312e81; letter-spacing: -0.02em; }
-            .subtitle { font-size: 13px; color: #6b7280; margin-top: 4px; }
-            .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
-            .card { border-radius: 14px; padding: 16px; }
-            .card-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; opacity: 0.6; margin-bottom: 6px; }
-            .card-value { font-size: 26px; font-weight: 800; }
-            .blue { background: #eff6ff; color: #1d4ed8; }
-            .purple { background: #faf5ff; color: #7e22ce; }
-            .green { background: #f0fdf4; color: #15803d; }
-            .red { background: #fef2f2; color: #b91c1c; }
-            .gray { background: #f9fafb; color: #4b5563; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div>
-              <div class="title">📅 Date-Wise Task Summary</div>
-              <div class="subtitle">Employee: ${emp.name} &nbsp;·&nbsp; Date: ${row.date}</div>
-            </div>
-          </div>
-          <div class="grid">
-            <div class="card blue"><div class="card-label">Total Assigned</div><div class="card-value">${row.total}</div></div>
-            <div class="card purple"><div class="card-label">Pending</div><div class="card-value">${row.pending}</div></div>
-            <div class="card green"><div class="card-label">Interested</div><div class="card-value">${row.agree}</div></div>
-            <div class="card red"><div class="card-label">Rejected</div><div class="card-value">${row.reject}</div></div>
-            <div class="card gray"><div class="card-label">Others</div><div class="card-value">${row.others}</div></div>
-          </div>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+  const viewHistoryDate = async (emp, row) => {
+    setViewTasksModal({ open: true, employee: emp, date: row.date, file: row.file, tasks: [], loading: true });
+    try {
+      const { data } = await api.get(`/customers?employeeId=${emp._id}&date=${row.date}&file=${encodeURIComponent(row.file || '')}`);
+      setViewTasksModal(prev => ({ ...prev, tasks: data, loading: false }));
+    } catch (error) {
+      toast.error('Failed to load tasks');
+      setViewTasksModal(prev => ({ ...prev, loading: false }));
+    }
   };
 
 
@@ -875,6 +843,86 @@ const Team = () => {
                 className="px-5 py-2.5 bg-primary hover:bg-primary-dark disabled:opacity-70 text-white font-semibold rounded-xl transition-colors shadow-md flex items-center gap-2"
               >
                 {savingScripts ? 'Saving...' : 'Save Scripts'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Tasks Modal */}
+      {viewTasksModal.open && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-fade-in flex flex-col">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <FiFileText className="text-primary" /> Task List - {viewTasksModal.employee?.name}
+              </h3>
+              <button onClick={() => setViewTasksModal({ open: false, employee: null, date: null, file: null, tasks: [], loading: false })} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">✕</button>
+            </div>
+            
+            <div className="p-4 bg-gray-50 dark:bg-gray-900/20 border-b border-gray-100 dark:border-gray-700 flex gap-6">
+              <div>
+                <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Date</p>
+                <p className="font-semibold text-gray-800 dark:text-gray-200">{new Date(viewTasksModal.date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
+              </div>
+              <div>
+                <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">File</p>
+                <p className="font-semibold text-primary">{viewTasksModal.file || 'Manual Entry'}</p>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50 dark:bg-gray-900/10">
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
+                  <thead>
+                    <tr className="bg-gray-50 dark:bg-gray-700/50 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
+                      <th className="py-4 px-6">ID</th>
+                      <th className="py-4 px-6">Customer Name</th>
+                      <th className="py-4 px-6">Onboarding Type</th>
+                      <th className="py-4 px-6 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {viewTasksModal.loading ? (
+                      <tr><td colSpan={4} className="py-12 text-center"><div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></td></tr>
+                    ) : viewTasksModal.tasks.length > 0 ? (
+                      viewTasksModal.tasks.map((task) => (
+                        <tr key={task._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                          <td className="py-4 px-6 text-sm font-medium text-gray-900 dark:text-white">{task.customerId}</td>
+                          <td className="py-4 px-6 text-sm font-semibold text-gray-800 dark:text-gray-200">{task.name}</td>
+                          <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
+                            {task.onboarding && task.onboarding !== 'None' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                {task.onboarding}
+                              </span>
+                            ) : '-'}
+                          </td>
+                          <td className="py-4 px-6 text-center">
+                             <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                                task.status === 'Agree' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                task.status === 'Reject' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                task.status === 'Others' ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' :
+                                'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                             }`}>
+                                {task.status === 'Agree' ? 'Interested' : task.status}
+                             </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr><td colSpan={4} className="py-12 text-center text-gray-500 font-medium">No tasks found.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-end">
+              <button 
+                onClick={() => setViewTasksModal({ open: false, employee: null, date: null, file: null, tasks: [], loading: false })}
+                className="px-6 py-2.5 bg-white border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-xl transition-colors shadow-sm"
+              >
+                Close
               </button>
             </div>
           </div>

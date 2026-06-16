@@ -10,13 +10,30 @@ import https from 'https';
 // @route   GET /api/customers
 // @access  Private
 const getCustomers = asyncHandler(async (req, res) => {
-  let customers;
+  let query = {};
+  
+  if (req.query.employeeId) {
+    query.assignedTo = req.query.employeeId;
+  }
+  if (req.query.date) {
+    query.taskDate = req.query.date;
+  }
+  if (req.query.file !== undefined) {
+    if (req.query.file === '') {
+      query.$or = [{ sourceFile: '' }, { sourceFile: { $exists: false } }];
+    } else {
+      query.sourceFile = req.query.file;
+    }
+  }
+
   if (req.user.role === 'Admin') {
-    customers = await Customer.find({}).populate('assignedTo', 'name email');
+    // Admin uses the query filters if provided
   } else {
     // Employees see only assigned customers
-    customers = await Customer.find({ assignedTo: req.user._id }).populate('assignedTo', 'name email');
+    query.assignedTo = req.user._id;
   }
+  
+  const customers = await Customer.find(query).populate('assignedTo', 'name email');
   res.json(customers);
 });
 
