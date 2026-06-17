@@ -45,7 +45,6 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
     if (!customer) {
       setName('');
       setPhone('');
-      setEmail('');
       setCompanyName('');
       setJob('');
       setStatus('Pending');
@@ -61,7 +60,6 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
     } else {
       setName(customer.name || '');
       setPhone(customer.phone || '');
-      setEmail(customer.email || '');
       setCompanyName(customer.companyName || '');
       setJob(customer.job || '');
       setStatus(customer.status || 'Pending');
