@@ -208,8 +208,8 @@ const exportCustomersExcel = asyncHandler(async (req, res) => {
     'Customer ID':   c.customerId || '',
     'Name':          c.name || '',
     'Contact No':    c.phone || '',
-    'Mail ID':       c.email || '',
     'Company Name':  c.companyName || '',
+    'District':      c.district || c.address || '',
     'Onboarding As': c.onboarding || '',
     'Remarks':       c.notes || ''
   }));

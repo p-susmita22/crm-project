@@ -66,7 +66,7 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
     }
 
     // Determine column indices
-    let nameIdx = -1, phoneIdx = -1, emailIdx = -1, companyIdx = -1, addressIdx = -1, pincodeIdx = -1, stateIdx = -1;
+    let nameIdx = -1, phoneIdx = -1, emailIdx = -1, companyIdx = -1, addressIdx = -1, pincodeIdx = -1, stateIdx = -1, districtIdx = -1;
 
     if (hasHeaders) {
       const getIdx = (keys) => headerRow.findIndex(h => keys.includes(normalizeKey(h)));
@@ -74,9 +74,10 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
       phoneIdx = getIdx(['phone', 'phonenumber', 'mobile', 'contact', 'mobilenumber', 'mobileno', 'contactno', 'phoneno', 'telephone', 'contactnumber', 'phno', 'ph', 'tel', 'whatsapp', 'whatsappnumber', 'whatsappno', 'task', 'tasks']);
       emailIdx = getIdx(['email', 'emailaddress', 'mail', 'emailid']);
       companyIdx = getIdx(['company', 'companyname', 'organization', 'firm', 'business', 'agency']);
-      addressIdx = getIdx(['address', 'location', 'city', 'street', 'district', 'area', 'region']);
+      addressIdx = getIdx(['address', 'location', 'city', 'street', 'area', 'region']);
       pincodeIdx = getIdx(['pincode', 'pin', 'zip', 'zipcode', 'pinnumber']);
       stateIdx = getIdx(['state', 'province']);
+      districtIdx = getIdx(['district']);
     } else {
       // If no headers, guess: Col 0 is Name, Col 1 is Phone
       nameIdx = 0;
@@ -99,10 +100,11 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
       const address = addressIdx !== -1 && row[addressIdx] !== undefined ? String(row[addressIdx]).trim() : '';
       const pincode = pincodeIdx !== -1 && row[pincodeIdx] !== undefined ? String(row[pincodeIdx]).trim() : '';
       const state = stateIdx !== -1 && row[stateIdx] !== undefined ? String(row[stateIdx]).trim() : '';
+      const district = districtIdx !== -1 && row[districtIdx] !== undefined ? String(row[districtIdx]).trim() : '';
 
-      const finalName = name || `Customer ${startCount + importCount + 1}`;
+      const finalName = name; // Now optional
       const finalPhone = phone;
-      const finalEmail = email || `customer${startCount + importCount + 1}@temp.com`;
+      const finalEmail = email; // Now optional
 
       const customerId = `cus-${Date.now()}-${String(startCount + importCount + 1).padStart(3, '0')}`;
 
@@ -116,6 +118,7 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
           address,
           pincode,
           state,
+          district,
           status: 'Pending',
           assignedTo: employeeId,
           taskDate: today,

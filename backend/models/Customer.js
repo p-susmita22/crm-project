@@ -9,7 +9,7 @@ const customerSchema = mongoose.Schema(
     },
     name: {
       type: String,
-      required: [true, 'Please add a name'],
+      default: '',
     },
     phone: {
       type: String,
@@ -31,6 +31,9 @@ const customerSchema = mongoose.Schema(
       type: String,
     },
     state: {
+      type: String,
+    },
+    district: {
       type: String,
     },
     job: {

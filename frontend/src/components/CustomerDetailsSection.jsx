@@ -26,14 +26,13 @@ const STATUS_CONFIG = {
 const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCustomerUpdated }) => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [job, setJob] = useState('');
   const [status, setStatus] = useState('Pending');
   const [otherReason, setOtherReason] = useState('');
   const [notes, setNotes] = useState('');
   const [followUpDate, setFollowUpDate] = useState('');
-  const [address, setAddress] = useState('');
+  const [district, setDistrict] = useState('');
   const [fullAddress, setFullAddress] = useState('');
   const [pincode, setPincode] = useState('');
   const [state, setState] = useState('');
@@ -53,7 +52,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
       setOtherReason('');
       setNotes('');
       setFollowUpDate('');
-      setAddress('');
+      setDistrict('');
       setFullAddress('');
       setPincode('');
       setState('');
@@ -69,7 +68,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
       setOtherReason(customer.otherReason || '');
       setNotes(customer.notes || '');
       setFollowUpDate(customer.followUpDate ? customer.followUpDate.slice(0, 10) : '');
-      setAddress(customer.address || '');
+      setDistrict(customer.district || customer.address || '');
       setFullAddress(customer.fullAddress || '');
       setPincode(customer.pincode || '');
       setState(customer.state || '');
@@ -95,7 +94,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
           const postOffices = data[0].PostOffice;
           if (postOffices && postOffices.length > 0) {
             const po = postOffices.find(p => p.DeliveryStatus === 'Delivery') || postOffices[0];
-            setAddress(po.District);
+            setDistrict(po.District);
             setState(po.State);
             toast.success('District and State auto-resolved from Pin Code!');
           }
@@ -119,14 +118,13 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
       const payload = {
         name,
         phone,
-        email: email || `${phone || Date.now()}@temp.com`,
         companyName,
         job,
         status,
         notes,
         otherReason: status === 'Others' ? otherReason : '',
         followUpDate: status === 'Agree' ? (followUpDate || null) : null,
-        address,
+        district,
         fullAddress,
         pincode,
         state,
@@ -265,20 +263,6 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Mail ID</label>
-              <div className="relative">
-                <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
-                  placeholder="Email Address"
-                />
-              </div>
-            </div>
-
-            <div>
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Company</label>
               <div className="relative">
                 <FiBriefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
@@ -348,8 +332,8 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                 <FiMapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                 <input
                   type="text"
-                  value={address}
-                  onChange={e => setAddress(e.target.value)}
+                  value={district}
+                  onChange={e => setDistrict(e.target.value)}
                   className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
                   placeholder="District Name"
                 />
