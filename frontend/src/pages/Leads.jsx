@@ -11,6 +11,7 @@ const Leads = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+  const [selectedOnboardingType, setSelectedOnboardingType] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -99,8 +100,9 @@ const Leads = () => {
                           (l.companyName || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesEmployee = selectedEmployeeId === '' || (l.assignedTo?._id || l.assignedTo) === selectedEmployeeId;
+    const matchesOnboarding = selectedOnboardingType === '' || l.onboarding === selectedOnboardingType;
     
-    return matchesSearch && matchesEmployee;
+    return matchesSearch && matchesEmployee && matchesOnboarding;
   });
 
   const getStatusColor = (status) => {
@@ -160,7 +162,7 @@ const Leads = () => {
         </div>
         {/* Admin Assigned By Filter */}
         {user?.role === 'Admin' && (
-          <div className="w-full sm:w-64 shrink-0">
+          <div className="w-full sm:w-48 shrink-0">
             <select
               value={selectedEmployeeId}
               onChange={(e) => setSelectedEmployeeId(e.target.value)}
@@ -173,6 +175,20 @@ const Leads = () => {
             </select>
           </div>
         )}
+
+        {/* Onboarding Type Filter */}
+        <div className="w-full sm:w-48 shrink-0">
+          <select
+            value={selectedOnboardingType}
+            onChange={(e) => setSelectedOnboardingType(e.target.value)}
+            className="block w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm transition-all"
+          >
+            <option value="">All Onboarding Types</option>
+            <option value="District Partner">District Partner</option>
+            <option value="Seller">Seller</option>
+            <option value="Interview Call">Interview Call</option>
+          </select>
+        </div>
       </div>
 
       {/* Data Table */}
