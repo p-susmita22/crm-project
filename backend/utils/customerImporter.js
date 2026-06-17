@@ -8,7 +8,7 @@ const normalizeKey = (key) => key ? String(key).replace(/[^a-zA-Z0-9]/g, '').toL
 
 export const importCustomersFromFile = async (filePathOrBuffer, employeeId, taskDate, originalFileName = '') => {
   try {
-    const today = taskDate || new Date().toISOString().split('T')[0];
+    const today = taskDate || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 
     // 1. Read sheet data — supports both Buffer (memory storage) and file path (disk)
     const workbook = Buffer.isBuffer(filePathOrBuffer)

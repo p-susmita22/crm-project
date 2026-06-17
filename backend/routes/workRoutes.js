@@ -35,7 +35,7 @@ router.post('/', protect, upload.single('file'), asyncHandler(async (req, res) =
     throw new Error('Please select a file to upload (Excel, PDF, etc.)');
   }
 
-  const date = req.body.date || new Date().toISOString().slice(0, 10);
+  const date = req.body.date || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
   const existing = await WorkSubmission.findOne({ employee: req.user._id, submissionDate: date });
   
   if (existing) {

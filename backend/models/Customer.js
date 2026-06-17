@@ -67,7 +67,7 @@ const customerSchema = mongoose.Schema(
     },
     taskDate: {
       type: String, // stored as 'YYYY-MM-DD' for easy date-wise grouping
-      default: () => new Date().toISOString().split('T')[0],
+      default: () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }),
     },
     callHistory: [
       {

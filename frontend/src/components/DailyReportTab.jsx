@@ -17,7 +17,7 @@ const formatTime = (totalSeconds = 0) => {
   return `${s}s`;
 };
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => new Date().toLocaleDateString('en-CA');
 
 const StatBox = ({ icon, label, value, color }) => (
   <div className={`flex items-center gap-3 p-4 rounded-xl ${color}`}>

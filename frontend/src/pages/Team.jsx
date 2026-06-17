@@ -20,7 +20,7 @@ const Team = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingEmployeeId, setEditingEmployeeId] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(new Date().toLocaleDateString('en-CA'));
   const [viewEmployeeModal, setViewEmployeeModal] = useState({ open: false, employee: null });
   const [viewTasksModal, setViewTasksModal] = useState({ open: false, employee: null, date: null, file: null, tasks: [], loading: false });
 
@@ -58,7 +58,7 @@ const Team = () => {
   const [uploadModal, setUploadModal] = useState({ open: false, employee: null });
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadCalls, setUploadCalls] = useState(0);
-  const [uploadDate, setUploadDate] = useState(new Date().toISOString().split('T')[0]);
+  const [uploadDate, setUploadDate] = useState(new Date().toLocaleDateString('en-CA'));
   const [isUploading, setIsUploading] = useState(false);
   const [expandedEmployee, setExpandedEmployee] = useState(null); // employee _id
   const [taskHistory, setTaskHistory] = useState({}); // { empId: [...dates] }
@@ -66,7 +66,7 @@ const Team = () => {
 
   const openUploadModal = (emp) => {
     setUploadFile(null);
-    setUploadDate(new Date().toISOString().split('T')[0]);
+    setUploadDate(new Date().toLocaleDateString('en-CA'));
     setUploadModal({ open: true, employee: emp });
   };
 
@@ -272,7 +272,7 @@ const Team = () => {
           <input
             type="date"
             value={selectedDate}
-            max={new Date().toISOString().split('T')[0]}
+            max={new Date().toLocaleDateString('en-CA')}
             onChange={(e) => setSelectedDate(e.target.value)}
             className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary"
           />
@@ -566,7 +566,7 @@ const Team = () => {
                 </label>
                 <input
                   type="date" required
-                  max={new Date().toISOString().split('T')[0]}
+                  max={new Date().toLocaleDateString('en-CA')}
                   value={uploadDate}
                   onChange={e => setUploadDate(e.target.value)}
                   className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"

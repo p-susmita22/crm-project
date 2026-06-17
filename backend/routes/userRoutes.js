@@ -138,8 +138,8 @@ router.get('/status', protect, admin, asyncHandler(async (req, res) => {
   const { date } = req.query;
   const employees = await User.find({ role: 'Employee' }).select('-password').lean();
   const Customer = (await import('../models/Customer.js')).default;
-  const targetDate = date || new Date().toISOString().split('T')[0];
-  const today = new Date().toISOString().split('T')[0];
+  const targetDate = date || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 
   // Fetch the count of the latest assignment (most recent taskDate) for each employee
   const latestAssignments = await Customer.aggregate([
@@ -338,7 +338,7 @@ router.post('/:id/upload-tasks', protect, admin, upload.single('customerFile'), 
     throw new Error('Employee not found');
   }
 
-  const taskDate = req.body.taskDate || new Date().toISOString().split('T')[0];
+  const taskDate = req.body.taskDate || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 
   // Store file metadata (no disk path — using memory storage)
   user.customerFile = {
@@ -531,7 +531,7 @@ router.post('/history/archived/:id/restore', protect, admin, asyncHandler(async 
       companyName: c.companyName || '',
       status: c.status || 'Pending',
       onboarding: c.onboarding || '',
-      taskDate: c.taskDate || new Date().toISOString().split('T')[0],
+      taskDate: c.taskDate || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }),
       sourceFile: c.sourceFile || 'Restored',
       assignedTo: targetUser._id
     }));

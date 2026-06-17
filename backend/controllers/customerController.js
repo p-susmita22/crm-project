@@ -184,24 +184,28 @@ const exportCustomersExcel = asyncHandler(async (req, res) => {
     const filter = employeeId ? { assignedTo: employeeId, ...dateFilter } : { ...dateFilter };
     customers = await Customer.find(filter).populate('assignedTo', 'name email').sort({ createdAt: 1 });
   } else {
-    // Both Employees and Admins viewing work submissions use the updatedAt logic
     const targetUserId = employeeId || req.user._id;
-    // Employees only export their own assigned customers that they have worked on (not pending)
-    // Filter specifically by the date they were updated (in IST) to match "what I did today"
-    const targetDateStr = date 
-      ? new Date(date).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }) 
-      : new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
-      
-    const allAssigned = await Customer.find({ 
-      assignedTo: targetUserId, 
-      status: { $ne: 'Pending' }
-    }).populate('assignedTo', 'name email').sort({ updatedAt: -1 });
 
-    customers = allAssigned.filter(c => {
-      // Check if updatedAt matches target date
-      const updatedDateStr = new Date(c.updatedAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
-      return updatedDateStr === targetDateStr;
-    });
+    if (date) {
+      // If a specific date is requested, export the completed tasks ASSIGNED on that date
+      customers = await Customer.find({ 
+        assignedTo: targetUserId, 
+        taskDate: date,
+        status: { $ne: 'Pending' }
+      }).populate('assignedTo', 'name email').sort({ updatedAt: -1 });
+    } else {
+      // If no date provided (global export), fallback to exporting tasks UPDATED today
+      const targetDateStr = new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
+      const allAssigned = await Customer.find({ 
+        assignedTo: targetUserId, 
+        status: { $ne: 'Pending' }
+      }).populate('assignedTo', 'name email').sort({ updatedAt: -1 });
+
+      customers = allAssigned.filter(c => {
+        const updatedDateStr = new Date(c.updatedAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
+        return updatedDateStr === targetDateStr;
+      });
+    }
   }
 
   const rows = customers.map(c => ({

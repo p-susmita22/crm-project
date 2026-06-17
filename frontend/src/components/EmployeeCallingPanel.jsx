@@ -88,7 +88,7 @@ const EmployeeCallingPanel = () => {
     api.get('/customers')
       .then(r => {
         setTotalCustomersCount(r.data.length);
-        const todayDateStr = new Date().toISOString().slice(0, 10);
+        const todayDateStr = new Date().toLocaleDateString('en-CA');
         
         // Find the most recent date with assigned customers
         const allDates = [...new Set(r.data.map(c => c.taskDate).filter(Boolean))].sort((a, b) => b.localeCompare(a));
@@ -123,7 +123,7 @@ const EmployeeCallingPanel = () => {
   const interestedCount = customers.filter(c => c.status === 'Agree').length;
   const rejectedCount   = customers.filter(c => c.status === 'Reject').length;
 
-  const todayDateStr = new Date().toISOString().slice(0, 10);
+  const todayDateStr = new Date().toLocaleDateString('en-CA');
   const todayAssignedCount = customers.filter(c => c.taskDate === todayDateStr).length;
 
   if (loading) {
