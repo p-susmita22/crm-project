@@ -16,6 +16,14 @@ const indianStates = [
   "Delhi", "Lakshadweep", "Puducherry"
 ];
 
+const odishaDistricts = [
+  'Angul', 'Balangir', 'Balasore', 'Bargarh', 'Bhadrak', 'Boudh', 'Cuttack', 
+  'Deogarh', 'Dhenkanal', 'Gajapati', 'Ganjam', 'Jagatsinghpur', 'Jajpur', 
+  'Jharsuguda', 'Kalahandi', 'Kandhamal', 'Kendrapara', 'Keonjhar', 'Khordha', 
+  'Koraput', 'Malkangiri', 'Mayurbhanj', 'Nabarangpur', 'Nayagarh', 'Nuapada', 
+  'Puri', 'Rayagada', 'Sambalpur', 'Subarnapur', 'Sundargarh'
+];
+
 const STATUS_CONFIG = {
   Agree:   { label: 'Interested',     bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500', ring: 'ring-green-300 dark:ring-green-700' },
   Reject:  { label: 'Rejected',       bg: 'bg-red-100 dark:bg-red-900/30',     text: 'text-red-700 dark:text-red-400',   dot: 'bg-red-500',   ring: 'ring-red-300 dark:ring-red-700'   },
@@ -332,9 +340,17 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                   type="text"
                   value={district}
                   onChange={e => setDistrict(e.target.value)}
+                  list={state === 'Odisha' ? 'odisha-districts' : undefined}
                   className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
                   placeholder="District Name"
                 />
+                {state === 'Odisha' && (
+                  <datalist id="odisha-districts">
+                    {odishaDistricts.map(d => (
+                      <option key={d} value={d} />
+                    ))}
+                  </datalist>
+                )}
               </div>
             </div>
 

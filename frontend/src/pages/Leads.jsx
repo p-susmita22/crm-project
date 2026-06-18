@@ -15,6 +15,14 @@ const indianStates = [
   'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Lakshadweep', 'Puducherry'
 ];
 
+const odishaDistricts = [
+  'Angul', 'Balangir', 'Balasore', 'Bargarh', 'Bhadrak', 'Boudh', 'Cuttack', 
+  'Deogarh', 'Dhenkanal', 'Gajapati', 'Ganjam', 'Jagatsinghpur', 'Jajpur', 
+  'Jharsuguda', 'Kalahandi', 'Kandhamal', 'Kendrapara', 'Keonjhar', 'Khordha', 
+  'Koraput', 'Malkangiri', 'Mayurbhanj', 'Nabarangpur', 'Nayagarh', 'Nuapada', 
+  'Puri', 'Rayagada', 'Sambalpur', 'Subarnapur', 'Sundargarh'
+];
+
 const Leads = () => {
   const { user } = useContext(AuthContext);
   const [leads, setLeads] = useState([]);
@@ -729,9 +737,17 @@ const Leads = () => {
                     type="text" 
                     value={formData.address || ''} 
                     onChange={(e) => setFormData({...formData, address: e.target.value})}
+                    list={formData.state === 'Odisha' ? 'odisha-districts-lead' : undefined}
                     className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
                     placeholder="District Name"
                   />
+                  {formData.state === 'Odisha' && (
+                    <datalist id="odisha-districts-lead">
+                      {odishaDistricts.map(d => (
+                        <option key={d} value={d} />
+                      ))}
+                    </datalist>
+                  )}
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Address</label>
