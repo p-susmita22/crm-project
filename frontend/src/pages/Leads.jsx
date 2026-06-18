@@ -565,7 +565,7 @@ const Leads = () => {
         </div>
       </div>
 
-      {/* Add/Edit Lead Modal */}
+      {/* Add/Edit Customer Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-fade-in max-h-[90vh] flex flex-col">
@@ -573,70 +573,123 @@ const Leads = () => {
               <h3 className="text-xl font-bold text-gray-800 dark:text-white">
                 {formData._id ? 'Edit Lead' : 'Add New Lead'}
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">✕</button>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                ✕
+              </button>
             </div>
-
+            
             <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer Name</label>
-                  <input
-                    type="text" required
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer ID</label>
+                  <input 
+                    type="text" required readOnly={!!formData._id}
+                    value={formData.customerId} onChange={(e) => setFormData({...formData, customerId: e.target.value})}
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white opacity-70 cursor-not-allowed"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                  <input 
+                    type="text" required 
                     value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
                     className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mobile Number</label>
-                  <input
-                    type="tel" required
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
+                  <input 
+                    type="tel" required 
                     pattern="^[1-9][0-9]{9}$"
+                    maxLength={10}
                     title="Phone number must be exactly 10 digits and cannot start with 0"
                     placeholder="9876543210"
-                    value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    value={formData.phone} 
+                    onChange={(e) => {
+                      let val = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                      if (val.startsWith('0')) val = val.substring(1); // Remove leading zero
+                      setFormData({...formData, phone: val});
+                    }}
                     className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
-                  <input
-                    type="email"
+                  <input 
+                    type="email" required 
                     value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})}
                     className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company Name</label>
-                  <input
-                    type="text"
+                  <input 
+                    type="text" 
                     value={formData.companyName} onChange={(e) => setFormData({...formData, companyName: e.target.value})}
                     className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Job Title</label>
-                  <input
-                    type="text"
-                    value={formData.job} onChange={(e) => setFormData({...formData, job: e.target.value})}
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-                  <select
-                    value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})}
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Onboarding Option</label>
+                  <select 
+                    value={formData.onboarding || ''} 
+                    onChange={(e) => setFormData({...formData, onboarding: e.target.value})}
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white appearance-none"
                   >
-                    <option value="Pending">Pending</option>
-                    <option value="Agree">Agree (Interested)</option>
-                    <option value="Reject">Reject</option>
-                    <option value="Others">Others</option>
+                    <option value="">Select Onboarding Option</option>
+                    <option value="District Partner">District Partner</option>
+                    <option value="Seller">Seller</option>
+                    <option value="Interview Call">Interview Call</option>
                   </select>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State</label>
+                  <select 
+                    value={formData.state || ''} 
+                    onChange={(e) => setFormData({...formData, state: e.target.value})}
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                  >
+                    <option value="">Select State</option>
+                    {indianStates.map(state => (
+                      <option key={state} value={state}>{state}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pin Number</label>
+                  <input 
+                    type="text" 
+                    value={formData.pincode || ''} 
+                    onChange={(e) => handlePincodeChange(e.target.value)}
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                    placeholder="e.g. 700001"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">District</label>
+                  <input 
+                    type="text" 
+                    value={formData.address || ''} 
+                    onChange={(e) => setFormData({...formData, address: e.target.value})}
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                    placeholder="District Name"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Address</label>
+                  <input 
+                    type="text" 
+                    value={formData.fullAddress || ''} 
+                    onChange={(e) => setFormData({...formData, fullAddress: e.target.value})}
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                    placeholder="Full Address"
+                  />
+                </div>
                 {user?.role === 'Admin' && (
-                  <div>
+                  <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign to Employee</label>
-                    <select
+                    <select 
                       value={formData.assignedTo} onChange={(e) => setFormData({...formData, assignedTo: e.target.value})}
                       className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
                     >
@@ -647,23 +700,247 @@ const Leads = () => {
                     </select>
                   </div>
                 )}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
-                  <textarea
-                    value={formData.notes} onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                <div className="md:col-span-2 mt-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <h4 className="text-sm font-bold text-gray-800 dark:text-white mb-4">Call Status & Feedback</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer Status</label>
+                      <select 
+                        value={formData.status || 'Pending'} 
+                        onChange={(e) => setFormData({...formData, status: e.target.value})}
+                        className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Agree">Interested</option>
+                        <option value="Reject">Rejected</option>
+                        <option value="Others">Others</option>
+                      </select>
+                    </div>
+
+                    {formData.status === 'Others' && (
+                      <div className="animate-fade-in">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
+                        <input 
+                          type="text" 
+                          value={formData.otherReason || ''} 
+                          onChange={(e) => setFormData({...formData, otherReason: e.target.value})}
+                          placeholder="Why others?"
+                          className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                        />
+                      </div>
+                    )}
+
+                    {formData.status === 'Agree' && (
+                      <div className="animate-fade-in">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Follow-up Date</label>
+                        <input 
+                          type="date" 
+                          value={formData.followUpDate || ''} 
+                          onChange={(e) => setFormData({...formData, followUpDate: e.target.value})}
+                          className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="md:col-span-2 mt-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Remarks / Notes</label>
+                  <textarea 
+                    rows={3}
+                    value={formData.notes || ''} 
+                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                    placeholder="Enter discussion remarks..."
                     className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white resize-none"
-                    rows="3"
-                  ></textarea>
+                  />
                 </div>
               </div>
             </form>
-
+            
             <div className="p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex justify-end space-x-3">
               <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700">
                 Cancel
               </button>
               <button onClick={handleSubmit} className="px-4 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-medium shadow-sm shadow-primary/30">
                 {formData._id ? 'Save Changes' : 'Create Lead'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedViewCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-700 transform transition-all scale-100">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <h3 className="text-lg font-bold text-gray-800 dark:text-white">Lead Profile Report</h3>
+                <p className="text-xs text-gray-400 dark:text-gray-500 font-mono mt-0.5">ID: {selectedViewCustomer.customerId}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedViewCustomer(null)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
+              >
+                <FiXCircle size={22} />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Personal Info */}
+                <div className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                  <span className="text-xs font-bold text-primary dark:text-blue-400 uppercase tracking-wider block mb-3">Personal details</span>
+                  <div className="space-y-2.5">
+                    <div>
+                      <div className="text-xs text-gray-400 font-semibold uppercase">Name</div>
+                      <div className="text-sm font-bold text-gray-800 dark:text-gray-200">{selectedViewCustomer.name}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-400 font-semibold uppercase">Phone Number</div>
+                      <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{selectedViewCustomer.phone}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-400 font-semibold uppercase">Email Address</div>
+                      <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{selectedViewCustomer.email || '-'}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Company & Job */}
+                <div className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                  <span className="text-xs font-bold text-primary dark:text-blue-400 uppercase tracking-wider block mb-3">Employment details</span>
+                  <div className="space-y-2.5">
+                    <div>
+                      <div className="text-xs text-gray-400 font-semibold uppercase">Company Name</div>
+                      <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{selectedViewCustomer.companyName || '-'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-400 font-semibold uppercase">Job Title</div>
+                      <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{selectedViewCustomer.job || '-'}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Location Details */}
+                <div className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 md:col-span-2">
+                  <span className="text-xs font-bold text-primary dark:text-blue-400 uppercase tracking-wider block mb-3">Address & Geography</span>
+                  <div className="grid grid-cols-2 gap-4 mb-2">
+                    <div>
+                      <div className="text-xs text-gray-400 font-semibold uppercase">Pin Number</div>
+                      <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{selectedViewCustomer.pincode || '-'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-400 font-semibold uppercase">State</div>
+                      <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{selectedViewCustomer.state || '-'}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-400 font-semibold uppercase">District</div>
+                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{selectedViewCustomer.address || '-'}</div>
+                  </div>
+                  <div className="mt-4">
+                    <div className="text-xs text-gray-400 font-semibold uppercase">Full Address</div>
+                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{selectedViewCustomer.fullAddress || '-'}</div>
+                  </div>
+                </div>
+
+                {/* Status & Remarks */}
+                <div className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 md:col-span-2 space-y-4">
+                  <span className="text-xs font-bold text-primary dark:text-blue-400 uppercase tracking-wider block">Call Status & Remarks</span>
+                  
+                  <div className="flex flex-wrap gap-4 items-center border-b border-gray-100 dark:border-gray-700 pb-3">
+                    <div>
+                      <div className="text-xs text-gray-400 font-semibold uppercase mb-1">Status</div>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        selectedViewCustomer.status === 'Agree' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                        selectedViewCustomer.status === 'Reject' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                        selectedViewCustomer.status === 'Others' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                      }`}>
+                        {selectedViewCustomer.status === 'Agree' ? 'Interested' :
+                         selectedViewCustomer.status === 'Reject' ? 'Rejected' :
+                         selectedViewCustomer.status === 'Others' ? 'Others' :
+                         selectedViewCustomer.status}
+                      </span>
+                    </div>
+
+                    {selectedViewCustomer.status === 'Others' && selectedViewCustomer.otherReason && (
+                      <div>
+                        <div className="text-xs text-gray-400 font-semibold uppercase mb-0.5">Reason</div>
+                        <div className="text-sm font-semibold text-blue-600 dark:text-blue-400">{selectedViewCustomer.otherReason}</div>
+                      </div>
+                    )}
+
+                    {selectedViewCustomer.status === 'Agree' && selectedViewCustomer.followUpDate && (
+                      <div>
+                        <div className="text-xs text-gray-400 font-semibold uppercase mb-0.5">Follow-up Date</div>
+                        <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+                          {new Date(selectedViewCustomer.followUpDate).toLocaleDateString()}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="text-xs text-gray-400 font-semibold uppercase mb-1">Remarks / Conversation Notes</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800/80 p-3 rounded-xl border border-gray-100 dark:border-gray-700 italic">
+                      {selectedViewCustomer.notes ? `"${selectedViewCustomer.notes}"` : 'No remarks provided.'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Call History */}
+                <div className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 md:col-span-2 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-primary dark:text-blue-400 uppercase tracking-wider block">Call History Log</span>
+                    <span className="text-xs font-semibold bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full text-gray-700 dark:text-gray-300">
+                      Total Calls: {selectedViewCustomer.callHistory?.length || 0}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                    {selectedViewCustomer.callHistory && selectedViewCustomer.callHistory.length > 0 ? (
+                      [...selectedViewCustomer.callHistory].reverse().map((log, idx) => (
+                        <div key={idx} className="flex flex-col sm:flex-row gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
+                          <div className="flex flex-col min-w-[140px]">
+                            <span className="text-xs font-bold text-gray-800 dark:text-gray-200">{new Date(log.date).toLocaleDateString()}</span>
+                            <span className="text-xs text-gray-400 flex items-center gap-1"><FiClock size={10} />{new Date(log.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                          </div>
+                          <div className="flex flex-col flex-1">
+                            <span className={`text-xs font-bold mb-1 ${
+                              log.status === 'Agree' ? 'text-green-600' :
+                              log.status === 'Reject' ? 'text-red-500' :
+                              log.status === 'Others' ? 'text-blue-600' :
+                              'text-yellow-600'
+                            }`}>{log.status === 'Agree' ? 'Interested' : log.status === 'Reject' ? 'Rejected' : log.status}</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-300">"{log.remark || 'No specific remark'}"</span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center p-4 text-sm text-gray-500 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 italic">No call history recorded yet.</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex justify-end space-x-3">
+              <button 
+                type="button" 
+                onClick={() => setSelectedViewCustomer(null)} 
+                className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+              >
+                Close
+              </button>
+              <button 
+                onClick={() => handleDownloadPDF(selectedViewCustomer)} 
+                className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-medium shadow-sm shadow-primary/30 cursor-pointer"
+              >
+                <FiDownload size={16} /> Download PDF
               </button>
             </div>
           </div>
