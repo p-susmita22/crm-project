@@ -2,7 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
-import { FiEdit2, FiTrash2, FiTarget, FiSearch, FiPlus, FiEye } from 'react-icons/fi';
+
+import { FiEdit2, FiTrash2, FiTarget, FiSearch, FiPlus, FiEye , FiXCircle, FiClock, FiDownload } from 'react-icons/fi';
 
 const Leads = () => {
   const { user } = useContext(AuthContext);
@@ -14,9 +15,10 @@ const Leads = () => {
   const [selectedOnboardingType, setSelectedOnboardingType] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '', phone: '', email: '', companyName: '', job: '',
-    source: 'Website', status: 'New', notes: '', assignedTo: ''
+    const [formData, setFormData] = useState({
+    customerId: '', name: '', phone: '', email: '', companyName: '', job: '',
+    source: 'Website', status: 'Pending', notes: '', assignedTo: '',
+    pincode: '', state: '', address: '', fullAddress: '', onboarding: '', otherReason: '', followUpDate: ''
   });
 
   const fetchData = async () => {
@@ -66,18 +68,26 @@ const Leads = () => {
     }
   };
 
-  const openEditModal = (lead) => {
+    const openEditModal = (lead) => {
     setFormData({
       _id: lead._id,
-      name: lead.name,
-      phone: lead.phone,
+      customerId: lead.customerId || '',
+      name: lead.name || '',
+      phone: lead.phone || '',
       email: lead.email || '',
       companyName: lead.companyName || '',
       job: lead.job || '',
       source: lead.source || 'Website',
-      status: lead.status || 'New',
+      status: lead.status || 'Pending',
       notes: lead.notes || '',
-      assignedTo: lead.assignedTo?._id || ''
+      assignedTo: lead.assignedTo?._id || lead.assignedTo || '',
+      pincode: lead.pincode || '',
+      state: lead.state || '',
+      address: lead.address || lead.district || '',
+      fullAddress: lead.fullAddress || '',
+      onboarding: lead.onboarding || '',
+      otherReason: lead.otherReason || '',
+      followUpDate: lead.followUpDate ? new Date(lead.followUpDate).toLocaleDateString('en-CA') : ''
     });
     setIsModalOpen(true);
   };
@@ -93,6 +103,260 @@ const Leads = () => {
       }
     }
   };
+
+  const handlePincodeChange = async (val) => {
+    setFormData(prev => ({ ...prev, pincode: val }));
+    if (val.length === 6 && /^\d+$/.test(val)) {
+      try {
+        const response = await api.get(`/customers/pincode/${val}`);
+        const data = response.data;
+        if (data && data[0] && data[0].Status === 'Success') {
+          const postOffices = data[0].PostOffice;
+          if (postOffices && postOffices.length > 0) {
+            const po = postOffices.find(p => p.DeliveryStatus === 'Delivery') || postOffices[0];
+            setFormData(prev => ({
+              ...prev,
+              address: po.District,
+              state: po.State
+            }));
+            toast.success('District and State auto-resolved from Pin Code!');
+          }
+        }
+      } catch (err) {
+        console.error('Failed to resolve pincode:', err);
+      }
+    }
+  }
+
+  const handleDownloadPDF = (customer) => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Customer Profile Report - ${customer.customerId}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+            body {
+              font-family: 'Outfit', sans-serif;
+              padding: 40px;
+              color: #1f2937;
+              background-color: #ffffff;
+            }
+            .report-card {
+              border: 1px solid #e5e7eb;
+              border-radius: 24px;
+              padding: 40px;
+              max-width: 800px;
+              margin: 0 auto;
+              box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            }
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              border-bottom: 2px solid #3b82f6;
+              padding-bottom: 24px;
+              margin-bottom: 32px;
+            }
+            .logo-text {
+              font-size: 28px;
+              font-weight: 800;
+              color: #1e3a8a;
+              letter-spacing: -0.025em;
+            }
+            .title-badge {
+              background-color: #eff6ff;
+              color: #1e40af;
+              font-weight: 700;
+              padding: 6px 14px;
+              border-radius: 9999px;
+              font-size: 13px;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+            }
+            .meta-section {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 24px;
+              margin-bottom: 32px;
+            }
+            .meta-block {
+              background-color: #f9fafb;
+              border: 1px solid #f3f4f6;
+              border-radius: 16px;
+              padding: 20px;
+            }
+            .meta-title {
+              font-size: 12px;
+              font-weight: 700;
+              color: #3b82f6;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              margin-bottom: 12px;
+            }
+            .meta-field {
+              margin-bottom: 12px;
+            }
+            .meta-field:last-child {
+              margin-bottom: 0;
+            }
+            .meta-label {
+              font-size: 11px;
+              color: #6b7280;
+              font-weight: 600;
+              text-transform: uppercase;
+            }
+            .meta-value {
+              font-size: 14px;
+              color: #111827;
+              font-weight: 600;
+              margin-top: 2px;
+            }
+            .address-section {
+              background-color: #f9fafb;
+              border: 1px solid #f3f4f6;
+              border-radius: 16px;
+              padding: 20px;
+              margin-bottom: 32px;
+            }
+            .notes-section {
+              background-color: #fefeff;
+              border: 1px dashed #d1d5db;
+              border-radius: 16px;
+              padding: 20px;
+              margin-top: 12px;
+            }
+            .badge {
+              display: inline-block;
+              padding: 4px 10px;
+              border-radius: 9999px;
+              font-size: 12px;
+              font-weight: 700;
+              text-transform: uppercase;
+            }
+            .badge-interested { background: #d1fae5; color: #065f46; }
+            .badge-rejected { background: #fee2e2; color: #991b1b; }
+            .badge-others { background: #dbeafe; color: #1e3a8a; }
+            .badge-pending { background: #fef3c7; color: #92400e; }
+          </style>
+        </head>
+        <body>
+          <div class="report-card">
+            <div class="header">
+              <div class="logo-text">CRM REPORT</div>
+              <div class="title-badge">Customer ID: ${customer.customerId}</div>
+            </div>
+            
+            <div class="meta-section">
+              <div class="meta-block">
+                <div class="meta-title">Personal Information</div>
+                <div class="meta-field">
+                  <div class="meta-label">Customer Name</div>
+                  <div class="meta-value">${customer.name}</div>
+                </div>
+                <div class="meta-field">
+                  <div class="meta-label">Phone Number</div>
+                  <div class="meta-value">${customer.phone}</div>
+                </div>
+                <div class="meta-field">
+                  <div class="meta-label">Email Address</div>
+                  <div class="meta-value">${customer.email || '-'}</div>
+                </div>
+              </div>
+              
+              <div class="meta-block">
+                <div class="meta-title">Employment Info</div>
+                <div class="meta-field">
+                  <div class="meta-label">Company Name</div>
+                  <div class="meta-value">${customer.companyName || '-'}</div>
+                </div>
+                <div class="meta-field">
+                  <div class="meta-label">Job Title</div>
+                  <div class="meta-value">${customer.job || '-'}</div>
+                </div>
+                <div class="meta-field">
+                  <div class="meta-label">Onboarding Option</div>
+                  <div class="meta-value">${customer.onboarding || '-'}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="address-section">
+              <div class="meta-title">Location & Address</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px;">
+                <div>
+                  <div class="meta-label">Pin Number</div>
+                  <div class="meta-value">${customer.pincode || '-'}</div>
+                </div>
+                <div>
+                  <div class="meta-label">State</div>
+                  <div class="meta-value">${customer.state || '-'}</div>
+                </div>
+              </div>
+              <div>
+                <div class="meta-label">District</div>
+                <div class="meta-value">${customer.address || '-'}</div>
+              </div>
+              <div style="margin-top: 12px;">
+                <div class="meta-label">Full Address</div>
+                <div class="meta-value">${customer.fullAddress || '-'}</div>
+              </div>
+            </div>
+
+            <div class="meta-block" style="grid-template-columns: 1fr; margin-bottom: 0;">
+              <div class="meta-title">Interaction Details</div>
+              <div style="display: flex; gap: 24px; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 16px; margin-bottom: 16px;">
+                <div>
+                  <div class="meta-label" style="margin-bottom: 4px;">Status</div>
+                  <span class="badge badge-${
+                    customer.status === 'Agree' ? 'interested' :
+                    customer.status === 'Reject' ? 'rejected' :
+                    customer.status === 'Others' ? 'others' :
+                    'pending'
+                  }">
+                    ${customer.status === 'Agree' ? 'Interested' :
+                      customer.status === 'Reject' ? 'Rejected' :
+                      customer.status === 'Others' ? 'Others' :
+                      customer.status}
+                  </span>
+                </div>
+                \${customer.status === 'Others' && customer.otherReason ? \`
+                <div>
+                  <div class="meta-label">Reason</div>
+                  <div class="meta-value" style="color: #6b21a8;">\${customer.otherReason}</div>
+                </div>
+                \` : ''}
+                \${customer.status === 'Agree' && customer.followUpDate ? \`
+                <div>
+                  <div class="meta-label">Follow-up Date</div>
+                  <div class="meta-value" style="color: #047857;">\${new Date(customer.followUpDate).toLocaleDateString()}</div>
+                </div>
+                \` : ''}
+              </div>
+              <div>
+                <div class="meta-label">Remarks & Notes</div>
+                <div class="notes-section">
+                  \${customer.notes ? \`"\${customer.notes}"\` : 'No remarks recorded.'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <script>
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() {
+                window.close();
+              };
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  }
+
+  const [selectedViewCustomer, setSelectedViewCustomer] = useState(null);
 
   const filteredLeads = leads.filter(l => {
     const matchesSearch = l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -263,7 +527,7 @@ const Leads = () => {
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-center space-x-3">
                         <button
-                          onClick={() => openEditModal(lead)}
+                          onClick={() => setSelectedViewCustomer(lead)}
                           className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors cursor-pointer border border-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 dark:border-blue-800 dark:text-blue-400"
                           title="View / Edit Details"
                         >
