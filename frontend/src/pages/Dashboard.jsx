@@ -64,7 +64,10 @@ const Dashboard = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const a = document.createElement('a');
       a.href = url;
-      a.download = submission.fileName || `Work_Submission_${submission.submissionDate}.xlsx`;
+      const empName = submission.employeeName || 'employee';
+      const d = submission.submissionDate ? new Date(submission.submissionDate) : new Date();
+      const dateString = `${d.getDate().toString().padStart(2, '0')}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      a.download = `${empName} work submission ${dateString}.xlsx`;
       document.body.appendChild(a);
       a.click();
       a.remove();

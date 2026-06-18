@@ -216,7 +216,9 @@ const Reports = () => {
       const a = document.createElement('a');
       a.href = url;
       const dateStr = date || new Date().toLocaleDateString('en-CA');
-      a.download = `${employeeName.replace(/\s+/g, '_')}_Tasks_${dateStr}.xlsx`;
+      const d = date ? new Date(date) : new Date();
+      const formattedDate = `${d.getDate().toString().padStart(2, '0')}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      a.download = `${employeeName} work submission ${formattedDate}.xlsx`;
       document.body.appendChild(a);
       a.click();
       a.remove();
