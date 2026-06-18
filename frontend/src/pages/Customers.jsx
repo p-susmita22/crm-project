@@ -889,6 +889,7 @@ const Customers = () => {
                           <tr className="bg-gray-50 dark:bg-gray-700/50 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
                             <th className="py-4 px-6">ID</th>
                             <th className="py-4 px-6">Customer Name</th>
+                            <th className="py-4 px-6">District</th>
                             <th className="py-4 px-6">Onboarding Type</th>
                             <th className="py-4 px-6 text-center">Actions</th>
                           </tr>
@@ -899,6 +900,7 @@ const Customers = () => {
                               <tr key={customer._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                 <td className="py-4 px-6 text-sm font-medium text-gray-900 dark:text-white">{customer.customerId}</td>
                                 <td className="py-4 px-6 text-sm font-semibold text-gray-800 dark:text-gray-200">{customer.name}</td>
+                                <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">{customer.district || customer.address || '-'}</td>
                                 <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
                                   {customer.onboarding && customer.onboarding !== 'None' ? (
                                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
@@ -965,6 +967,7 @@ const Customers = () => {
                   <tr className="bg-gray-50 dark:bg-gray-700/50 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
                     <th className="py-4 px-6">ID</th>
                     <th className="py-4 px-6">Customer Name</th>
+                    <th className="py-4 px-6">District</th>
                     <th className="py-4 px-6">Onboarding Type</th>
                     <th className="py-4 px-6 text-center">Actions</th>
                   </tr>
@@ -977,6 +980,7 @@ const Customers = () => {
                     <tr key={customer._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                       <td className="py-4 px-6 text-sm font-medium text-gray-900 dark:text-white">{customer.customerId}</td>
                       <td className="py-4 px-6 text-sm font-semibold text-gray-800 dark:text-gray-200">{customer.name}</td>
+                      <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">{customer.district || customer.address || '-'}</td>
                       <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
                         {customer.onboarding && customer.onboarding !== 'None' ? (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
