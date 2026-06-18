@@ -408,9 +408,12 @@ const Customers = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const a = document.createElement('a');
       a.href = url;
-      a.download = date
-        ? `Customer_Tasks_${date}.xlsx`
-        : `My_Customer_Tasks_${new Date().toLocaleDateString('en-CA')}.xlsx`;
+      
+      const empName = user?.name || 'employee';
+      const d = date ? new Date(date) : new Date();
+      const dateString = `${d.getDate().toString().padStart(2, '0')}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      a.download = `${empName} work submission ${dateString}.xlsx`;
+      
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -426,7 +429,12 @@ const Customers = () => {
       const params = dateStr ? { date: dateStr } : {};
       const response = await api.get('/customers/export/excel', { responseType: 'blob', params });
       
-      const file = new File([response.data], dateStr ? `Work_Submission_${dateStr}.xlsx` : `Work_Submission_${new Date().toLocaleDateString('en-CA')}.xlsx`, {
+      const empName = user?.name || 'employee';
+      const d = dateStr ? new Date(dateStr) : new Date();
+      const dateString = `${d.getDate().toString().padStart(2, '0')}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      const fileName = `${empName} work submission ${dateString}.xlsx`;
+
+      const file = new File([response.data], fileName, {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
       

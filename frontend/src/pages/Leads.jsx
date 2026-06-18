@@ -414,8 +414,18 @@ const Leads = () => {
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Leads');
+    let fileName = 'Total_Leads_Export';
+    if (selectedEmployeeId) {
+      const emp = employees.find(e => e._id === selectedEmployeeId);
+      if (emp) fileName = `${emp.name} lead filter`;
+    } else if (user?.role === 'Employee') {
+      fileName = `${user.name} lead filter`;
+    }
     
-    XLSX.writeFile(workbook, `Leads_Export_${new Date().toLocaleDateString('en-CA')}.xlsx`);
+    const d = new Date();
+    const dateString = `${d.getDate().toString().padStart(2, '0')}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+    
+    XLSX.writeFile(workbook, `${fileName} ${dateString}.xlsx`);
   };
 
   return (
