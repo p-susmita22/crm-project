@@ -470,9 +470,9 @@ const Leads = () => {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-700/50 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
+                <th className="py-4 px-6">Date</th>
                 <th className="py-4 px-6">Customer Name</th>
                 <th className="py-4 px-6">Mobile Number</th>
-                <th className="py-4 px-6">Company Name</th>
                 <th className="py-4 px-6">District</th>
                 <th className="py-4 px-6">Onboarding Type</th>
                 <th className="py-4 px-6">Status</th>
@@ -489,6 +489,10 @@ const Leads = () => {
               ) : filteredLeads.length > 0 ? (
                 filteredLeads.map((lead) => (
                   <tr key={lead._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                    {/* Date */}
+                    <td className="py-4 px-6 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                      {lead.taskDate ? new Date(lead.taskDate).toLocaleDateString('en-GB') : new Date(lead.updatedAt || lead.createdAt).toLocaleDateString('en-GB')}
+                    </td>
                     {/* Customer Name */}
                     <td className="py-4 px-6">
                       <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{lead.name}</div>
@@ -497,10 +501,6 @@ const Leads = () => {
                     {/* Mobile Number */}
                     <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400 font-mono">
                       {lead.phone}
-                    </td>
-                    {/* Company Name */}
-                    <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
-                      {lead.companyName || <span className="text-gray-400 italic">—</span>}
                     </td>
                     {/* District */}
                     <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
