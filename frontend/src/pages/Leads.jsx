@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
-import { FiEdit2, FiTrash2, FiTarget, FiSearch, FiPlus } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiTarget, FiSearch, FiPlus, FiEye } from 'react-icons/fi';
 
 const Leads = () => {
   const { user } = useContext(AuthContext);
@@ -200,7 +200,7 @@ const Leads = () => {
                 <th className="py-4 px-6">Customer Name</th>
                 <th className="py-4 px-6">Mobile Number</th>
                 <th className="py-4 px-6">Company Name</th>
-                <th className="py-4 px-6">Job</th>
+                <th className="py-4 px-6">District</th>
                 <th className="py-4 px-6">Onboarding Type</th>
                 <th className="py-4 px-6">Status</th>
                 <th className="py-4 px-6 text-center">Actions</th>
@@ -229,9 +229,9 @@ const Leads = () => {
                     <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
                       {lead.companyName || <span className="text-gray-400 italic">—</span>}
                     </td>
-                    {/* Job */}
+                    {/* District */}
                     <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
-                      {lead.job || <span className="text-gray-400 italic">—</span>}
+                      {lead.district || lead.address || <span className="text-gray-400 italic">—</span>}
                     </td>
                     {/* Onboarding Type */}
                     <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
@@ -262,6 +262,13 @@ const Leads = () => {
                     {/* Actions — edit always shown; delete only for admin */}
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-center space-x-3">
+                        <button
+                          onClick={() => openEditModal(lead)}
+                          className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors cursor-pointer border border-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 dark:border-blue-800 dark:text-blue-400"
+                          title="View / Edit Details"
+                        >
+                          <FiEye size={14} /> View
+                        </button>
                         <button
                           onClick={() => openEditModal(lead)}
                           className="text-gray-400 hover:text-primary transition-colors cursor-pointer"
