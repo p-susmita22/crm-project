@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 
 import { FiEdit2, FiTrash2, FiTarget, FiSearch, FiPlus, FiEye , FiXCircle, FiClock, FiDownload } from 'react-icons/fi';
 
@@ -392,6 +393,31 @@ const Leads = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    const dataToExport = filteredLeads.map((lead) => ({
+      'Date': lead.taskDate ? new Date(lead.taskDate).toLocaleDateString('en-GB') : new Date(lead.updatedAt || lead.createdAt).toLocaleDateString('en-GB'),
+      'Customer Name': lead.name || '',
+      'Mobile Number': lead.phone || '',
+      'District': lead.district || lead.address || '',
+      'Onboarding Type': lead.onboarding || '',
+      'Status': lead.status === 'Agree' ? 'Interested' : lead.status === 'Reject' ? 'Rejected' : lead.status,
+      'Remarks': lead.notes || ''
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    
+    // Set column widths
+    worksheet['!cols'] = [
+      { wch: 12 }, { wch: 25 }, { wch: 15 }, { wch: 20 },
+      { wch: 20 }, { wch: 15 }, { wch: 40 }
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Leads');
+    
+    XLSX.writeFile(workbook, `Leads_Export_${new Date().toLocaleDateString('en-CA')}.xlsx`);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -405,18 +431,30 @@ const Leads = () => {
           </p>
         </div>
 
-        {/* Only employees can add leads, not admin */}
-        {user?.role === 'Employee' && (
-          <button
-            onClick={() => {
-              setFormData({ name: '', phone: '', email: '', companyName: '', job: '', source: 'Website', status: 'New', notes: '', assignedTo: '' });
-              setIsModalOpen(true);
-            }}
-            className="bg-primary hover:bg-primary-dark text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center shadow-sm"
-          >
-            <FiPlus className="mr-2" /> Add Lead
-          </button>
-        )}
+        {/* Action buttons */}
+        <div className="flex gap-3">
+          {user?.role === 'Admin' && (
+            <button
+              onClick={handleExportExcel}
+              className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center shadow-sm dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 dark:border-emerald-800 dark:text-emerald-400"
+            >
+              <FiDownload className="mr-2" /> Download Excel
+            </button>
+          )}
+
+          {/* Only employees can add leads, not admin */}
+          {user?.role === 'Employee' && (
+            <button
+              onClick={() => {
+                setFormData({ name: '', phone: '', email: '', companyName: '', job: '', source: 'Website', status: 'New', notes: '', assignedTo: '' });
+                setIsModalOpen(true);
+              }}
+              className="bg-primary hover:bg-primary-dark text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center shadow-sm"
+            >
+              <FiPlus className="mr-2" /> Add Lead
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Search Bar */}
