@@ -79,7 +79,7 @@ const Leads = () => {
         toast.success('Interested customer added successfully');
       }
       setIsModalOpen(false);
-      setFormData({ name: '', phone: '', email: '', companyName: '', job: '', source: 'Website', status: 'New', notes: '', assignedTo: '' });
+      setFormData({ name: '', phone: '', email: '', companyName: '', job: '', source: 'Website', status: 'New', notes: '', assignedTo: '', address: '', district: '', fullAddress: '', pincode: '', state: '', onboarding: '', otherReason: '', followUpDate: '' });
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to save lead');
@@ -101,7 +101,8 @@ const Leads = () => {
       assignedTo: lead.assignedTo?._id || lead.assignedTo || '',
       pincode: lead.pincode || '',
       state: lead.state || '',
-      address: lead.address || lead.district || '',
+      address: lead.address || '',
+      district: lead.district || lead.address || '',
       fullAddress: lead.fullAddress || '',
       onboarding: lead.onboarding || '',
       otherReason: lead.otherReason || '',
@@ -735,8 +736,8 @@ const Leads = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">District</label>
                   <input 
                     type="text" 
-                    value={formData.address || ''} 
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
+                    value={formData.district || formData.address || ''} 
+                    onChange={(e) => setFormData({...formData, district: e.target.value})}
                     list={formData.state === 'Odisha' ? 'odisha-districts-lead' : undefined}
                     className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
                     placeholder="District Name"
