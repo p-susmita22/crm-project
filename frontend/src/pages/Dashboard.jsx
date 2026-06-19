@@ -238,6 +238,7 @@ const Dashboard = () => {
                   <th className="py-3 px-4">Employee</th>
                   <th className="py-3 px-4">Customers</th>
                   <th className="py-3 px-4">Leads</th>
+                  <th className="py-3 px-4">Conversion Rate</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -246,11 +247,14 @@ const Dashboard = () => {
                     <td className="py-3 px-4 text-sm font-medium text-gray-800 dark:text-gray-200">{emp.name}</td>
                     <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{emp.customerCount}</td>
                     <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{emp.leadCount}</td>
+                    <td className="py-3 px-4 text-sm font-bold text-primary">
+                      {emp.customerCount > 0 ? Math.round((emp.leadCount / emp.customerCount) * 100) : 0}%
+                    </td>
                   </tr>
                 ))}
                 {(!stats?.employeePerformance || stats.employeePerformance.length === 0) && (
                   <tr>
-                    <td colSpan="3" className="py-4 text-center text-sm text-gray-500">No employee data found</td>
+                    <td colSpan="4" className="py-4 text-center text-sm text-gray-500">No employee data found</td>
                   </tr>
                 )}
               </tbody>
