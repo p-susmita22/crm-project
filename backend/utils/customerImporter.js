@@ -52,16 +52,16 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
     // 2. We no longer delete the existing customers for this date.
     // The new excel data will be appended to the existing list.
 
-    // Re-index remaining database entries to close any gaps from deleted customers
-    await reindexCustomers();
-
-    // Find the highest existing customer ID to avoid duplicates if re-indexing missed something
-    const lastCustomer = await Customer.findOne().sort({ customerId: -1 });
-    let startCount = 0;
-    if (lastCustomer && lastCustomer.customerId) {
-      const match = lastCustomer.customerId.match(/\d+/);
-      if (match) {
-        startCount = parseInt(match[0], 10);
+    // Find the highest existing customer ID to avoid duplicates
+    const allCustomers = await Customer.find({}, 'customerId').lean();
+    let maxCount = 0;
+    for (const c of allCustomers) {
+      if (c.customerId) {
+        const match = c.customerId.match(/-(\d+)$/);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (num > maxCount) maxCount = num;
+        }
       }
     }
 
@@ -106,7 +106,7 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
       const finalPhone = phone;
       const finalEmail = email; // Now optional
 
-      const customerId = `cus-${Date.now()}-${String(startCount + importCount + 1).padStart(3, '0')}`;
+      const customerId = `cus-${String(maxCount + importCount + 1).padStart(3, '0')}`;
 
       try {
         await Customer.create({
@@ -134,8 +134,7 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
     const totalRemaining = await Customer.countDocuments({ assignedTo: employeeId });
     await User.findByIdAndUpdate(employeeId, { assignedCallsCount: totalRemaining });
 
-    // Perform a final re-indexing pass
-    await reindexCustomers();
+
 
     return importCount;
   } catch (error) {

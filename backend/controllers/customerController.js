@@ -62,12 +62,19 @@ const getCustomerById = asyncHandler(async (req, res) => {
 const createCustomer = asyncHandler(async (req, res) => {
   const { name, phone, email, companyName, address, fullAddress, notes, assignedTo, job, otherReason, status, followUpDate, pincode, state, onboarding, district } = req.body;
 
-  // Make sure the existing IDs are fully re-indexed (no gaps, etc.)
-  await reindexCustomers();
-
-  // The next ID includes a timestamp to prevent duplicate key collisions
-  const count = await Customer.countDocuments();
-  const finalId = `cus-M${Date.now().toString().slice(-6)}-${String(count + 1).padStart(3, '0')}`;
+  // Get highest customer ID
+  const allCustomers = await Customer.find({}, 'customerId').lean();
+  let maxCount = 0;
+  for (const c of allCustomers) {
+    if (c.customerId) {
+      const match = c.customerId.match(/-(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxCount) maxCount = num;
+      }
+    }
+  }
+  const finalId = `cus-${String(maxCount + 1).padStart(3, '0')}`;
 
   const formatter = new Intl.DateTimeFormat('en-CA', { 
     timeZone: 'Asia/Kolkata', 
