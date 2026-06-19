@@ -144,7 +144,7 @@ const Customers = () => {
       phone: customer.phone,
       email: customer.email,
       companyName: customer.companyName || '',
-      address: customer.address || '',
+      address: customer.district || customer.address || '',
       fullAddress: customer.fullAddress || '',
       assignedTo: customer.assignedTo?._id || '',
       job: customer.job || '',
