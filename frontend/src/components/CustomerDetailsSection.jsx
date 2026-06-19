@@ -203,14 +203,27 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                 onSelectCustomer(customers.find(c => c._id === e.target.value));
               }
             }}
-            value={customer?._id || 'new'}
+            value={customer ? customer._id : 'new'}
           >
             <option value="new">New Customer / Manual Entry</option>
-            {customers.map(c => (
-              <option key={c._id} value={c._id}>
-                {c.name} — {c.phone}
-              </option>
-            ))}
+            {customers?.filter(c => c.status === 'Pending').length > 0 && (
+              <optgroup label="Pending Calls">
+                {customers?.filter(c => c.status === 'Pending').map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.name} — {c.phone}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {customers?.filter(c => c.status !== 'Pending').length > 0 && (
+              <optgroup label="Completed Calls">
+                {customers?.filter(c => c.status !== 'Pending').map((c) => (
+                  <option key={c._id} value={c._id}>
+                    🔴 {c.name} — {c.phone}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
           <FiChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
         </div>
