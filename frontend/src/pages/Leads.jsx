@@ -31,6 +31,7 @@ const Leads = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [selectedOnboardingType, setSelectedOnboardingType] = useState('');
+  const [filterCallStatus, setFilterCallStatus] = useState('All');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
@@ -45,8 +46,7 @@ const Leads = () => {
         api.get('/customers'),
         user?.role === 'Admin' ? api.get('/users') : Promise.resolve({ data: [] })
       ]);
-      const interestedCustomers = leadRes.data.filter(c => c.status === 'Agree' || c.status === 'Interested');
-      setLeads(interestedCustomers);
+      setLeads(leadRes.data);
       if (user?.role === 'Admin') {
         setEmployees(empRes.data.filter(e => e.role === 'Employee'));
       }
@@ -385,7 +385,12 @@ const Leads = () => {
     const matchesEmployee = selectedEmployeeId === '' || (l.assignedTo?._id || l.assignedTo) === selectedEmployeeId;
     const matchesOnboarding = selectedOnboardingType === '' || l.onboarding === selectedOnboardingType;
     
-    return matchesSearch && matchesEmployee && matchesOnboarding;
+    let matchesCallStatus = true;
+    if (filterCallStatus === 'Interested') matchesCallStatus = (l.status === 'Agree' || l.status === 'Interested');
+    else if (filterCallStatus === 'Not Interested') matchesCallStatus = (l.status === 'Reject' || l.status === 'Not Interested');
+    else if (filterCallStatus === 'Others') matchesCallStatus = l.status === 'Others';
+    
+    return matchesSearch && matchesEmployee && matchesOnboarding && matchesCallStatus;
   });
 
   const getStatusColor = (status) => {
@@ -517,6 +522,20 @@ const Leads = () => {
             <option value="District Partner">District Partner</option>
             <option value="Seller">Seller</option>
             <option value="Interview Call">Interview Call</option>
+          </select>
+        </div>
+
+        {/* Call Status Filter */}
+        <div className="w-full sm:w-48 shrink-0">
+          <select
+            value={filterCallStatus}
+            onChange={(e) => setFilterCallStatus(e.target.value)}
+            className="block w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm transition-all"
+          >
+            <option value="All">All Statuses</option>
+            <option value="Interested">Interested</option>
+            <option value="Not Interested">Not Interested</option>
+            <option value="Others">Others</option>
           </select>
         </div>
       </div>
