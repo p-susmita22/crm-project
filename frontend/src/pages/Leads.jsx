@@ -414,6 +414,7 @@ const Leads = () => {
       'Mobile Number': lead.phone || '',
       'District': lead.district || lead.address || '',
       'Onboarding Type': lead.onboarding || '',
+      'Assigned To': lead.assignedTo?.name || 'Unassigned',
       'Status': lead.status === 'Agree' ? 'Interested' : lead.status === 'Reject' ? 'Rejected' : lead.status,
       'Remarks': lead.notes || ''
     }));
@@ -423,7 +424,7 @@ const Leads = () => {
     // Set column widths
     worksheet['!cols'] = [
       { wch: 12 }, { wch: 25 }, { wch: 15 }, { wch: 20 },
-      { wch: 20 }, { wch: 15 }, { wch: 40 }
+      { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 40 }
     ];
 
     const workbook = XLSX.utils.book_new();
@@ -560,6 +561,7 @@ const Leads = () => {
                 <th className="py-4 px-6">Mobile Number</th>
                 <th className="py-4 px-6">District</th>
                 <th className="py-4 px-6">Onboarding Type</th>
+                <th className="py-4 px-6">Assigned To</th>
                 <th className="py-4 px-6">Status</th>
                 <th className="py-4 px-6 text-center">Actions</th>
               </tr>
@@ -600,6 +602,10 @@ const Leads = () => {
                       ) : (
                         <span className="text-gray-400 italic">—</span>
                       )}
+                    </td>
+                    {/* Assigned To */}
+                    <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
+                      {lead.assignedTo?.name || <span className="text-gray-400 italic">Unassigned</span>}
                     </td>
                     {/* Status badge & Reason */}
                     <td className="py-4 px-6">
