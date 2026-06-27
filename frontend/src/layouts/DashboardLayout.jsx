@@ -62,7 +62,8 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
       badge: notifications.unreadReports
     });
     navItems.push({ name: 'History', path: `${basePath}/history`, icon: <span className="text-xl leading-none">🕒</span> });
-    navItems.push({ name: 'WhatsApp', path: `${basePath}/whatsapp-leads`, icon: <span className="text-xl leading-none">💬</span> });
+    navItems.push({ name: 'WhatsApp Leads', path: `${basePath}/whatsapp-leads`, icon: <span className="text-xl leading-none">💬</span> });
+    navItems.push({ name: 'WhatsApp Chat', path: `${basePath}/whatsapp-chat`, icon: <span className="text-xl leading-none">💬</span> });
   }
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
