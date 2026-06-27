@@ -24,6 +24,7 @@ import Team from './pages/Team';
 import Reports from './pages/Reports';
 import Profile from './pages/Profile';
 import EmployeeHistory from './pages/EmployeeHistory';
+import WhatsAppLeads from './pages/WhatsAppLeads';
 
 const RootRedirect = () => {
   const { user, loading } = useContext(AuthContext);
@@ -60,6 +61,7 @@ function App() {
           <Route path="reports" element={<Reports />} />
           <Route path="history" element={<EmployeeHistory />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="whatsapp-leads" element={<WhatsAppLeads />} />
         </Route>
 
         <Route path="/employee" element={<ProtectedRoute><DashboardLayout panelType="employee" /></ProtectedRoute>}>

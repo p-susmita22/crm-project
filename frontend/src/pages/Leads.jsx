@@ -531,6 +531,7 @@ const Leads = () => {
             <option value="">All Onboarding Types</option>
             <option value="District Partner">District Partner</option>
             <option value="Seller">Seller</option>
+            <option value="Profile Inquiry">Profile Inquiry</option>
             <option value="Interview Call">Interview Call</option>
           </select>
         </div>
@@ -740,6 +741,7 @@ const Leads = () => {
                     <option value="">Select Onboarding Option</option>
                     <option value="District Partner">District Partner</option>
                     <option value="Seller">Seller</option>
+                    <option value="Profile Inquiry">Profile Inquiry</option>
                     <option value="Interview Call">Interview Call</option>
                   </select>
                 </div>

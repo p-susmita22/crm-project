@@ -59,6 +59,7 @@ import userRoutes from './routes/userRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import workRoutes from './routes/workRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
+import whatsappRoutes from './routes/whatsappRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 // Base Route
@@ -76,6 +77,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/work-submissions', workRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 
 // Error handling middleware
 app.use(notFound);

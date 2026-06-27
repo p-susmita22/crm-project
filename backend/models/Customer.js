@@ -41,7 +41,7 @@ const customerSchema = mongoose.Schema(
     },
     onboarding: {
       type: String,
-      enum: ['District Partner', 'Seller', 'Interview Call', ''],
+      enum: ['District Partner', 'Seller', 'Interview Call', 'Profile Inquiry', ''],
       default: '',
     },
     status: {
