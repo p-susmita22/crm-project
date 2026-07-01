@@ -210,7 +210,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
               <optgroup label="Pending Calls">
                 {customers?.filter(c => c.status === 'Pending').map((c) => (
                   <option key={c._id} value={c._id}>
-                    {c.name} — {c.phone}
+                    {c.name} — {c.phone} {c.callHistory && c.callHistory.length > 1 ? `(${c.callHistory.length})` : ''}
                   </option>
                 ))}
               </optgroup>
@@ -219,7 +219,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
               <optgroup label="Completed Calls">
                 {customers?.filter(c => c.status !== 'Pending').map((c) => (
                   <option key={c._id} value={c._id}>
-                    🔴 {c.name} — {c.phone}
+                    🔴 {c.name} — {c.phone} {c.callHistory && c.callHistory.length > 1 ? `(${c.callHistory.length})` : ''}
                   </option>
                 ))}
               </optgroup>

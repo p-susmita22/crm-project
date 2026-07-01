@@ -60,9 +60,61 @@ const getCustomerById = asyncHandler(async (req, res) => {
 // @route   POST /api/customers
 // @access  Private
 const createCustomer = asyncHandler(async (req, res) => {
-  const { name, phone, email, companyName, address, fullAddress, notes, assignedTo, job, otherReason, status, followUpDate, pincode, state, onboarding, district } = req.body;
+  const { name, phone, email, companyName, address, fullAddress, notes, assignedTo, job, otherReason, status, followUpDate, pincode, state, onboarding, district, newCallLog } = req.body;
 
-  // Get highest customer ID
+  const formatter = new Intl.DateTimeFormat('en-CA', { 
+    timeZone: 'Asia/Kolkata', 
+    year: 'numeric', 
+    month: '2-digit', 
+    day: '2-digit' 
+  });
+  const today = formatter.format(new Date());
+
+  let existingCustomer = await Customer.findOne({ phone });
+
+  if (existingCustomer) {
+    const fields = ['name', 'email', 'companyName', 'address', 'district', 'fullAddress', 'notes', 'status', 'followUpDate', 'job', 'otherReason', 'pincode', 'state', 'onboarding'];
+    fields.forEach(field => {
+      if (req.body[field] !== undefined && req.body[field] !== '') {
+        existingCustomer[field] = req.body[field];
+      }
+    });
+
+    existingCustomer.taskDate = today;
+    if (assignedTo) {
+      existingCustomer.assignedTo = assignedTo;
+    } else if (req.user && req.user.role === 'Employee') {
+      existingCustomer.assignedTo = req.user._id;
+    }
+
+    if (newCallLog) {
+      existingCustomer.callHistory.push(newCallLog);
+    } else if (status) {
+      existingCustomer.callHistory.push({
+        status: status,
+        remark: notes || otherReason || 'Manually updated'
+      });
+    } else {
+      existingCustomer.callHistory.push({
+        status: existingCustomer.status,
+        remark: 'Called'
+      });
+    }
+
+    const updatedCustomer = await existingCustomer.save();
+    
+    // Recalculate assignedCallsCount
+    const assignedEmpId = updatedCustomer.assignedTo;
+    if (assignedEmpId) {
+      const totalCount = await Customer.countDocuments({ assignedTo: assignedEmpId });
+      await User.findByIdAndUpdate(assignedEmpId, { assignedCallsCount: totalCount });
+    }
+
+    res.status(200).json(updatedCustomer);
+    return;
+  }
+
+  // Get highest customer ID for new customer
   const allCustomers = await Customer.find({}, 'customerId').lean();
   let maxCount = 0;
   for (const c of allCustomers) {
@@ -75,14 +127,6 @@ const createCustomer = asyncHandler(async (req, res) => {
     }
   }
   const finalId = `cus-${String(maxCount + 1).padStart(3, '0')}`;
-
-  const formatter = new Intl.DateTimeFormat('en-CA', { 
-    timeZone: 'Asia/Kolkata', 
-    year: 'numeric', 
-    month: '2-digit', 
-    day: '2-digit' 
-  });
-  const today = formatter.format(new Date());
 
   const customerData = {
     customerId: finalId,
@@ -110,6 +154,15 @@ const createCustomer = asyncHandler(async (req, res) => {
   }
 
   const customer = new Customer(customerData);
+  
+  if (newCallLog) {
+    customer.callHistory.push(newCallLog);
+  } else {
+    customer.callHistory.push({
+      status: status || 'Pending',
+      remark: notes || otherReason || 'Created Manually'
+    });
+  }
 
   const createdCustomer = await customer.save();
 

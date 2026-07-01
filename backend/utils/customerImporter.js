@@ -106,25 +106,43 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
       const finalPhone = phone;
       const finalEmail = email; // Now optional
 
-      const customerId = `cus-${String(maxCount + importCount + 1).padStart(3, '0')}`;
-
       try {
-        await Customer.create({
-          customerId,
-          name: finalName,
-          phone: finalPhone,
-          email: finalEmail,
-          companyName,
-          address,
-          pincode,
-          state,
-          district,
-          status: 'Pending',
-          assignedTo: employeeId,
-          taskDate: today,
-          sourceFile: originalFileName,
-        });
-        importCount++;
+        let existingCustomer = await Customer.findOne({ phone: finalPhone });
+
+        if (existingCustomer) {
+          existingCustomer.name = finalName || existingCustomer.name;
+          existingCustomer.email = finalEmail || existingCustomer.email;
+          existingCustomer.companyName = companyName || existingCustomer.companyName;
+          existingCustomer.address = address || existingCustomer.address;
+          existingCustomer.pincode = pincode || existingCustomer.pincode;
+          existingCustomer.state = state || existingCustomer.state;
+          existingCustomer.district = district || existingCustomer.district;
+          existingCustomer.assignedTo = employeeId;
+          existingCustomer.taskDate = today;
+          existingCustomer.sourceFile = originalFileName || existingCustomer.sourceFile;
+          
+          await existingCustomer.save();
+          importCount++;
+        } else {
+          const customerId = `cus-${String(maxCount + importCount + 1).padStart(3, '0')}`;
+          await Customer.create({
+            customerId,
+            name: finalName,
+            phone: finalPhone,
+            email: finalEmail,
+            companyName,
+            address,
+            pincode,
+            state,
+            district,
+            status: 'Pending',
+            assignedTo: employeeId,
+            taskDate: today,
+            sourceFile: originalFileName,
+            callHistory: [{ status: 'Pending', remark: 'Imported from Excel' }]
+          });
+          importCount++;
+        }
       } catch (rowErr) {
         console.error(`Failed to import row for ${name}:`, rowErr.message);
       }

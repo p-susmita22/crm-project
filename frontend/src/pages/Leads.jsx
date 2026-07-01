@@ -588,7 +588,18 @@ const Leads = () => {
                     </td>
                     {/* Mobile Number */}
                     <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400 font-mono">
-                      {lead.phone}
+                      <button 
+                        onClick={() => setSelectedViewCustomer(lead)}
+                        className="flex items-center gap-2 hover:text-primary transition-colors focus:outline-none"
+                        title="Click to view call history and remarks"
+                      >
+                        {lead.phone}
+                        {lead.callHistory && lead.callHistory.length > 1 && (
+                          <span className="text-[10px] font-bold text-red-500 bg-red-100 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded-full" title={`${lead.callHistory.length} calls made`}>
+                            ({lead.callHistory.length})
+                          </span>
+                        )}
+                      </button>
                     </td>
                     {/* District */}
                     <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">

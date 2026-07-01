@@ -900,7 +900,21 @@ const Customers = () => {
                             dayCustomers.map((customer) => (
                               <tr key={customer._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                 <td className="py-4 px-6 text-sm font-medium text-gray-900 dark:text-white">{customer.customerId}</td>
-                                <td className="py-4 px-6 text-sm font-semibold text-gray-800 dark:text-gray-200">{customer.name}</td>
+                                <td className="py-4 px-6">
+                                  <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{customer.name}</div>
+                                  <button 
+                                    onClick={() => setSelectedViewCustomer(customer)}
+                                    className="text-xs text-gray-500 dark:text-gray-400 font-mono flex items-center gap-1 mt-0.5 hover:text-primary transition-colors focus:outline-none"
+                                    title="Click to view call history and remarks"
+                                  >
+                                    {customer.phone}
+                                    {customer.callHistory && customer.callHistory.length > 1 && (
+                                      <span className="text-[10px] font-bold text-red-500 bg-red-100 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded-full" title={`${customer.callHistory.length} calls made`}>
+                                        ({customer.callHistory.length})
+                                      </span>
+                                    )}
+                                  </button>
+                                </td>
                                 <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">{customer.district || customer.address || '-'}</td>
                                 <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
                                   {customer.onboarding && customer.onboarding !== 'None' ? (
@@ -980,7 +994,21 @@ const Customers = () => {
                   filteredCustomers.map((customer) => (
                     <tr key={customer._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                       <td className="py-4 px-6 text-sm font-medium text-gray-900 dark:text-white">{customer.customerId}</td>
-                      <td className="py-4 px-6 text-sm font-semibold text-gray-800 dark:text-gray-200">{customer.name}</td>
+                      <td className="py-4 px-6">
+                        <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{customer.name}</div>
+                        <button 
+                          onClick={() => setSelectedViewCustomer(customer)}
+                          className="text-xs text-gray-500 dark:text-gray-400 font-mono flex items-center gap-1 mt-0.5 hover:text-primary transition-colors focus:outline-none"
+                          title="Click to view call history and remarks"
+                        >
+                          {customer.phone}
+                          {customer.callHistory && customer.callHistory.length > 1 && (
+                            <span className="text-[10px] font-bold text-red-500 bg-red-100 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded-full" title={`${customer.callHistory.length} calls made`}>
+                              ({customer.callHistory.length})
+                            </span>
+                          )}
+                        </button>
+                      </td>
                       <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">{customer.district || customer.address || '-'}</td>
                       <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
                         {customer.onboarding && customer.onboarding !== 'None' ? (
