@@ -1414,6 +1414,11 @@ const Customers = () => {
                               'text-yellow-600'
                             }`}>{log.status === 'Agree' ? 'Interested' : log.status === 'Reject' ? 'Rejected' : log.status}</span>
                             <span className="text-sm text-gray-600 dark:text-gray-300">"{log.remark || 'No specific remark'}"</span>
+                            {log.employeeName && (
+                              <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-1.5 font-semibold bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md w-max border border-gray-200 dark:border-gray-600">
+                                Caller: {log.employeeName}
+                              </span>
+                            )}
                           </div>
                         </div>
                       ))

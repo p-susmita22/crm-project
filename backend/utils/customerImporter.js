@@ -139,7 +139,7 @@ export const importCustomersFromFile = async (filePathOrBuffer, employeeId, task
             assignedTo: employeeId,
             taskDate: today,
             sourceFile: originalFileName,
-            callHistory: [{ status: 'Pending', remark: 'Imported from Excel' }]
+            callHistory: [{ status: 'Pending', remark: 'Imported from Excel', employeeName: 'Admin (Import)' }]
           });
           importCount++;
         }

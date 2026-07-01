@@ -88,16 +88,19 @@ const createCustomer = asyncHandler(async (req, res) => {
     }
 
     if (newCallLog) {
+      newCallLog.employeeName = req.user ? req.user.name : 'Unknown';
       existingCustomer.callHistory.push(newCallLog);
     } else if (status) {
       existingCustomer.callHistory.push({
         status: status,
-        remark: notes || otherReason || 'Manually updated'
+        remark: notes || otherReason || 'Manually updated',
+        employeeName: req.user ? req.user.name : 'Unknown'
       });
     } else {
       existingCustomer.callHistory.push({
         status: existingCustomer.status,
-        remark: 'Called'
+        remark: 'Called',
+        employeeName: req.user ? req.user.name : 'Unknown'
       });
     }
 
@@ -156,11 +159,13 @@ const createCustomer = asyncHandler(async (req, res) => {
   const customer = new Customer(customerData);
   
   if (newCallLog) {
+    newCallLog.employeeName = req.user ? req.user.name : 'Unknown';
     customer.callHistory.push(newCallLog);
   } else {
     customer.callHistory.push({
       status: status || 'Pending',
-      remark: notes || otherReason || 'Created Manually'
+      remark: notes || otherReason || 'Created Manually',
+      employeeName: req.user ? req.user.name : 'Unknown'
     });
   }
 
@@ -199,6 +204,7 @@ const updateCustomer = asyncHandler(async (req, res) => {
   });
 
   if (req.body.newCallLog) {
+    req.body.newCallLog.employeeName = req.user ? req.user.name : 'Unknown';
     customer.callHistory.push(req.body.newCallLog);
   }
 

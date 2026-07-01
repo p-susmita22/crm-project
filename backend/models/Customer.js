@@ -74,6 +74,7 @@ const customerSchema = mongoose.Schema(
         date: { type: Date, default: Date.now },
         status: String,
         remark: String,
+        employeeName: String,
       }
     ],
   },
