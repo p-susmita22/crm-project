@@ -59,6 +59,9 @@ const Leads = () => {
 
   useEffect(() => {
     fetchData();
+    const handleUpdate = () => fetchData();
+    window.addEventListener('customersUpdated', handleUpdate);
+    return () => window.removeEventListener('customersUpdated', handleUpdate);
   }, [user]);
 
   const handleSubmit = async (e) => {

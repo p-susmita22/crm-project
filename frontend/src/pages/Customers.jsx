@@ -80,7 +80,14 @@ const Customers = () => {
     fetchData();
     // Auto-refresh every 30 seconds so admin sees employee-added customers
     const interval = setInterval(() => fetchData(true), 30000);
-    return () => clearInterval(interval);
+    
+    const handleUpdate = () => fetchData(true);
+    window.addEventListener('customersUpdated', handleUpdate);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('customersUpdated', handleUpdate);
+    };
   }, [user]);
 
   const handleDownloadEmployeeExcel = async (submission) => {

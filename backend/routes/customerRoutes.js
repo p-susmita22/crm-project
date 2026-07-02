@@ -7,6 +7,7 @@ import {
   deleteCustomer,
   exportCustomersExcel,
   getPincodeInfo,
+  getReminders,
 } from '../controllers/customerController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 
@@ -20,6 +21,8 @@ router.route('/')
 router.get('/export/excel', protect, exportCustomersExcel);
 
 router.get('/pincode/:pincode', protect, getPincodeInfo);
+
+router.get('/reminders/today', protect, getReminders);
 
 router.route('/:id')
   .get(protect, getCustomerById)

@@ -9,6 +9,7 @@ import {
 import multimaartLogo from '../assets/multimaart-logo.png';
 import api from '../api/axios';
 import { toast } from 'react-hot-toast';
+import ReminderNotification from '../components/ReminderNotification';
 
 const DashboardLayout = ({ panelType = 'employee' }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -149,6 +150,7 @@ const DashboardLayout = ({ panelType = 'employee' }) => {
           </div>
 
           <div className="flex items-center space-x-4 relative">
+            <ReminderNotification />
             <div 
               className="flex items-center space-x-3 bg-gray-50 dark:bg-gray-700/50 py-1.5 px-3 rounded-full border border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               onClick={() => setProfileDropdownOpen(!isProfileDropdownOpen)}

@@ -37,6 +37,23 @@ const getCustomers = asyncHandler(async (req, res) => {
   res.json(customers);
 });
 
+// @desc    Get today's reminders
+// @route   GET /api/customers/reminders/today
+// @access  Private
+const getReminders = asyncHandler(async (req, res) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const query = {
+    assignedTo: req.user._id,
+    status: 'Agree',
+    followUpDate: { $lte: new Date(today.getTime() + 24 * 60 * 60 * 1000) },
+  };
+
+  const reminders = await Customer.find(query).populate('assignedTo', 'name email');
+  res.json(reminders);
+});
+
 // @desc    Get single customer
 // @route   GET /api/customers/:id
 // @access  Private
@@ -196,7 +213,7 @@ const updateCustomer = asyncHandler(async (req, res) => {
   }
 
   // Explicitly update only fields that were sent in the request body
-  const fields = ['name', 'phone', 'email', 'companyName', 'address', 'district', 'fullAddress', 'notes', 'status', 'followUpDate', 'job', 'otherReason', 'pincode', 'state', 'onboarding'];
+  const fields = ['name', 'phone', 'email', 'companyName', 'address', 'district', 'fullAddress', 'notes', 'status', 'followUpDate', 'job', 'otherReason', 'pincode', 'state', 'onboarding', 'taskDate'];
   fields.forEach(field => {
     if (req.body.hasOwnProperty(field)) {
       customer[field] = req.body[field];
@@ -337,4 +354,5 @@ export {
   deleteCustomer,
   exportCustomersExcel,
   getPincodeInfo,
+  getReminders,
 };
