@@ -3,7 +3,7 @@ import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx';
-import { FiMessageCircle, FiSearch, FiDownload, FiFilter, FiX } from 'react-icons/fi';
+import { FiMessageCircle, FiSearch, FiDownload, FiFilter, FiX, FiTrash2 } from 'react-icons/fi';
 
 const INTEREST_OPTIONS = ['All', 'Seller', 'District Partner', 'Profile Inquiry'];
 
@@ -15,6 +15,8 @@ const WhatsAppLeads = () => {
   const [interestFilter, setInterestFilter] = useState('All');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -32,6 +34,48 @@ const WhatsAppLeads = () => {
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredLeads.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredLeads.map((l) => l._id));
+    }
+  };
+
+  const handleDeleteSingle = async (id) => {
+    if (!window.confirm('Is lead ko delete karna chahte hain?')) return;
+    try {
+      await api.delete(`/customers/${id}`);
+      setLeads((prev) => prev.filter((l) => l._id !== id));
+      setSelectedIds((prev) => prev.filter((x) => x !== id));
+      toast.success('Lead deleted!');
+    } catch (err) {
+      toast.error('Delete failed!');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(`${selectedIds.length} leads delete karna chahte hain?`)) return;
+    setDeleting(true);
+    try {
+      await Promise.all(selectedIds.map((id) => api.delete(`/customers/${id}`)));
+      setLeads((prev) => prev.filter((l) => !selectedIds.includes(l._id)));
+      setSelectedIds([]);
+      toast.success(`${selectedIds.length} leads deleted!`);
+    } catch (err) {
+      toast.error('Some deletes failed!');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const getLeadDate = (lead) =>
     new Date(lead.taskDate || lead.updatedAt || lead.createdAt);
@@ -135,18 +179,30 @@ const WhatsAppLeads = () => {
             Real-time leads automatically captured from your WhatsApp bot
           </p>
         </div>
-        <button
-          onClick={handleExportExcel}
-          className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center shadow-sm dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 dark:border-emerald-800 dark:text-emerald-400 whitespace-nowrap"
-        >
-          <FiDownload className="mr-2" />
-          Download Excel
-          {isFiltered && (
-            <span className="ml-2 bg-emerald-200 dark:bg-emerald-700 text-emerald-800 dark:text-emerald-200 text-xs px-1.5 py-0.5 rounded-full">
-              Filtered
-            </span>
+        <div className="flex gap-2">
+          {selectedIds.length > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              disabled={deleting}
+              className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center shadow-sm disabled:opacity-50"
+            >
+              <FiTrash2 className="mr-2" />
+              {deleting ? 'Deleting...' : `Delete (${selectedIds.length})`}
+            </button>
           )}
-        </button>
+          <button
+            onClick={handleExportExcel}
+            className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center shadow-sm dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 dark:border-emerald-800 dark:text-emerald-400 whitespace-nowrap"
+          >
+            <FiDownload className="mr-2" />
+            Download Excel
+            {isFiltered && (
+              <span className="ml-2 bg-emerald-200 dark:bg-emerald-700 text-emerald-800 dark:text-emerald-200 text-xs px-1.5 py-0.5 rounded-full">
+                Filtered
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -230,11 +286,20 @@ const WhatsAppLeads = () => {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-700/50 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
-                <th className="py-4 px-6">Date</th>
+                <th className="py-4 px-4">
+                  <input
+                    type="checkbox"
+                    checked={filteredLeads.length > 0 && selectedIds.length === filteredLeads.length}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-400 cursor-pointer"
+                  />
+                </th>
+                <th className="py-4 px-4">Date</th>
                 <th className="py-4 px-6">Customer Info</th>
                 <th className="py-4 px-6">Selected Interest</th>
                 <th className="py-4 px-6">Status</th>
                 <th className="py-4 px-6">Remarks</th>
+                <th className="py-4 px-4">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -246,8 +311,21 @@ const WhatsAppLeads = () => {
                 </tr>
               ) : filteredLeads.length > 0 ? (
                 filteredLeads.map((lead) => (
-                  <tr key={lead._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                    <td className="py-4 px-6 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                  <tr
+                    key={lead._id}
+                    className={`hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors ${
+                      selectedIds.includes(lead._id) ? 'bg-red-50/40 dark:bg-red-900/10' : ''
+                    }`}
+                  >
+                    <td className="py-4 px-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(lead._id)}
+                        onChange={() => toggleSelect(lead._id)}
+                        className="w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-400 cursor-pointer"
+                      />
+                    </td>
+                    <td className="py-4 px-4 text-sm font-semibold text-gray-800 dark:text-gray-200">
                       {getLeadDate(lead).toLocaleDateString('en-GB')}
                     </td>
                     <td className="py-4 px-6">
@@ -277,11 +355,20 @@ const WhatsAppLeads = () => {
                     <td className="py-4 px-6 text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
                       {lead.notes || 'Captured via WhatsApp Auto-reply'}
                     </td>
+                    <td className="py-4 px-4">
+                      <button
+                        onClick={() => handleDeleteSingle(lead._id)}
+                        className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete this lead"
+                      >
+                        <FiTrash2 size={15} />
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="py-10 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={7} className="py-10 text-center text-gray-500 dark:text-gray-400">
                     {isFiltered ? (
                       <>No leads match your filters. <button onClick={clearFilters} className="text-green-500 underline">Clear filters</button></>
                     ) : (
