@@ -87,29 +87,41 @@ const WhatsAppChat = () => {
     const file = e.target.files[0];
     if (!file || !activeChat) return;
 
-    // In a real scenario, you would upload this file to your server or S3 first,
-    // get a public URL, and then send that URL to Meta API.
-    // For now, we will simulate this by asking for a URL directly.
-    const url = prompt("Enter the public URL of the PDF/Image to send (Meta requires a public URL):");
-    if (!url) return;
+    // Reset input so same file can be picked again
+    e.target.value = '';
 
     const isImage = file.type.startsWith('image/');
     const type = isImage ? 'image' : 'document';
 
     setSending(true);
+    const toastId = toast.loading(`Uploading ${type}...`);
+
     try {
-      const response = await api.post(`/whatsapp/chats/${activeChat.phone}/send`, {
-        text: file.name,
-        type: type,
-        mediaUrl: url
+      // Step 1: Upload file to Meta via our backend
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadRes = await api.post('/whatsapp/upload-media', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      
-      setMessages([...messages, response.data]);
+
+      const { mediaId, filename } = uploadRes.data;
+
+      // Step 2: Send message using the media_id
+      const sendRes = await api.post(`/whatsapp/chats/${activeChat.phone}/send`, {
+        text: filename,
+        type,
+        mediaId,
+      });
+
+      setMessages([...messages, sendRes.data]);
       scrollToBottom();
       fetchChats();
-      toast.success(`${type} sent successfully!`);
+      toast.success(`${type === 'image' ? 'Image' : 'Document'} sent!`, { id: toastId });
     } catch (error) {
-      toast.error(`Failed to send ${type}`);
+      const errMsg = error.response?.data?.details?.error?.message || `Failed to send ${type}`;
+      toast.error(errMsg, { id: toastId });
+      console.error('File upload error:', error.response?.data || error.message);
     } finally {
       setSending(false);
     }

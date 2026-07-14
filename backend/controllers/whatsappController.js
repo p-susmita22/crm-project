@@ -281,7 +281,7 @@ export const getChatHistory = async (req, res) => {
 // @route   POST /api/whatsapp/chats/:phone/send
 // @access  Private (Admin)
 export const sendManualMessage = async (req, res) => {
-  const { text, type, mediaUrl } = req.body; // type can be 'text' or 'document'
+  const { text, type, mediaId, mediaUrl } = req.body;
   const recipientPhone = req.params.phone;
 
   if (!WHATSAPP_API_TOKEN || !WHATSAPP_PHONE_NUMBER_ID) {
@@ -295,10 +295,14 @@ export const sendManualMessage = async (req, res) => {
     type: type || 'text',
   };
 
-  if (type === 'document' && mediaUrl) {
-    data.document = { link: mediaUrl, caption: text || '' };
-  } else if (type === 'image' && mediaUrl) {
-    data.image = { link: mediaUrl, caption: text || '' };
+  if ((type === 'document') && (mediaId || mediaUrl)) {
+    data.document = mediaId
+      ? { id: mediaId, caption: text || '', filename: text || 'document.pdf' }
+      : { link: mediaUrl, caption: text || '' };
+  } else if ((type === 'image') && (mediaId || mediaUrl)) {
+    data.image = mediaId
+      ? { id: mediaId, caption: text || '' }
+      : { link: mediaUrl, caption: text || '' };
   } else {
     data.text = { body: text };
   }
@@ -328,5 +332,41 @@ export const sendManualMessage = async (req, res) => {
   } catch (error) {
     console.error("Manual send error:", error.response?.data || error.message);
     res.status(500).json({ message: "Error sending message via API", details: error.response?.data });
+  }
+};
+
+// @desc    Upload media to Meta servers and get media_id
+// @route   POST /api/whatsapp/upload-media
+// @access  Private (Admin)
+export const uploadMedia = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+  if (!WHATSAPP_API_TOKEN || !WHATSAPP_PHONE_NUMBER_ID) {
+    return res.status(500).json({ message: 'WhatsApp API credentials missing' });
+  }
+
+  try {
+    const FormData = (await import('form-data')).default;
+    const form = new FormData();
+    form.append('file', req.file.buffer, {
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+    });
+    form.append('messaging_product', 'whatsapp');
+    form.append('type', req.file.mimetype);
+
+    const uploadUrl = `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_NUMBER_ID}/media`;
+    const response = await axios.post(uploadUrl, form, {
+      headers: {
+        'Authorization': `Bearer ${WHATSAPP_API_TOKEN}`,
+        ...form.getHeaders(),
+      },
+    });
+
+    res.json({ mediaId: response.data.id, filename: req.file.originalname });
+  } catch (error) {
+    console.error('Media upload error:', error.response?.data || error.message);
+    res.status(500).json({ message: 'Failed to upload media to Meta', details: error.response?.data });
   }
 };
