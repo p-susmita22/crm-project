@@ -150,31 +150,24 @@ const WhatsAppLeads = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-3">
-        <div className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300">
-          <FiFilter size={14} /> Filters
-          {isFiltered && (
-            <button
-              onClick={clearFilters}
-              className="ml-auto text-xs text-red-500 hover:text-red-700 flex items-center gap-1"
-            >
-              <FiX size={12} /> Clear All
-            </button>
-          )}
-        </div>
+      <div className="bg-white dark:bg-gray-800 px-4 py-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Filter Icon Label */}
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mr-1">
+            <FiFilter size={13} /> Filters
+          </span>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Search */}
-          <div className="relative">
+          <div className="relative flex-1 min-w-[160px]">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiSearch className="text-gray-400" size={14} />
+              <FiSearch className="text-gray-400" size={13} />
             </div>
             <input
               type="text"
               placeholder="Search name or phone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 text-sm"
+              className="block w-full pl-8 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 text-sm h-9"
             />
           </div>
 
@@ -182,64 +175,54 @@ const WhatsAppLeads = () => {
           <select
             value={interestFilter}
             onChange={(e) => setInterestFilter(e.target.value)}
-            className="block w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-400 text-sm"
+            className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-400 text-sm h-9 min-w-[170px]"
           >
             {INTEREST_OPTIONS.map((opt) => (
-              <option key={opt} value={opt}>{opt === 'All' ? '🔍 All Interest Types' : opt}</option>
+              <option key={opt} value={opt}>{opt === 'All' ? 'All Interest Types' : opt}</option>
             ))}
           </select>
 
           {/* Date From */}
-          <div>
-            <label className="block text-xs text-gray-400 mb-1 ml-1">From Date</label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="block w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-400 text-sm"
-            />
-          </div>
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            title="From Date"
+            className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-400 text-sm h-9"
+          />
+
+          {/* Separator */}
+          <span className="text-gray-400 text-sm">→</span>
 
           {/* Date To */}
-          <div>
-            <label className="block text-xs text-gray-400 mb-1 ml-1">To Date</label>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              min={dateFrom}
-              className="block w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-400 text-sm"
-            />
-          </div>
-        </div>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            min={dateFrom}
+            title="To Date"
+            className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-400 text-sm h-9"
+          />
 
-        {/* Active filter summary */}
-        {isFiltered && (
-          <div className="flex flex-wrap gap-2 pt-1">
-            {interestFilter !== 'All' && (
-              <span className="bg-blue-50 text-blue-700 border border-blue-100 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                Interest: {interestFilter}
-                <button onClick={() => setInterestFilter('All')}><FiX size={10} /></button>
-              </span>
-            )}
-            {dateFrom && (
-              <span className="bg-purple-50 text-purple-700 border border-purple-100 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                From: {new Date(dateFrom).toLocaleDateString('en-GB')}
-                <button onClick={() => setDateFrom('')}><FiX size={10} /></button>
-              </span>
-            )}
-            {dateTo && (
-              <span className="bg-purple-50 text-purple-700 border border-purple-100 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                To: {new Date(dateTo).toLocaleDateString('en-GB')}
-                <button onClick={() => setDateTo('')}><FiX size={10} /></button>
-              </span>
-            )}
-            <span className="text-xs text-gray-500 self-center">
-              Showing {filteredLeads.length} of {leads.length} leads
+          {/* Clear Button */}
+          {isFiltered && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 border border-red-200 hover:border-red-300 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition-colors h-9 whitespace-nowrap"
+            >
+              <FiX size={12} /> Clear
+            </button>
+          )}
+
+          {/* Count badge */}
+          {isFiltered && (
+            <span className="text-xs text-gray-400 ml-1">
+              {filteredLeads.length}/{leads.length} leads
             </span>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
 
       {/* Data Table */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
