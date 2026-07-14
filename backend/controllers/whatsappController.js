@@ -25,7 +25,7 @@ const sendInteractiveMessage = async (recipientPhone) => {
     interactive: {
       type: "button",
       body: {
-        text: "Welcome to Multi Mart! Please select your interest so we can assist you better:"
+        text: `🌟 Welcome to Multimaart! 🌟\n🙏 A Heartfelt Welcome from the Multimaart Family!\n\nThank you for reaching out to us. We are truly delighted to connect with you and sincerely appreciate your interest in becoming a part of the Multimaart family.\n\nPlease select your interest so we can assist you better:`
       },
       action: {
         buttons: [
