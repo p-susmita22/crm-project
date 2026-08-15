@@ -25,10 +25,13 @@ const odishaDistricts = [
 ];
 
 const STATUS_CONFIG = {
-  Agree:   { label: 'Interested',     bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500', ring: 'ring-green-300 dark:ring-green-700' },
-  Reject:  { label: 'Rejected',       bg: 'bg-red-100 dark:bg-red-900/30',     text: 'text-red-700 dark:text-red-400',   dot: 'bg-red-500',   ring: 'ring-red-300 dark:ring-red-700'   },
-  Others:  { label: 'Others',         bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400', dot: 'bg-purple-500', ring: 'ring-purple-300 dark:ring-purple-700' },
-  Pending: { label: 'Pending',        bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400', dot: 'bg-yellow-400', ring: 'ring-yellow-300 dark:ring-yellow-700' },
+  'Not picking':   { label: 'Not picking',     bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-700 dark:text-gray-400', dot: 'bg-gray-500', ring: 'ring-gray-300 dark:ring-gray-700' },
+  'Interested':    { label: 'Interested',      bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500', ring: 'ring-green-300 dark:ring-green-700' },
+  'Follow up':     { label: 'Follow up',       bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400', dot: 'bg-yellow-400', ring: 'ring-yellow-300 dark:ring-yellow-700' },
+  'Document pending': { label: 'Document pending', bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400', dot: 'bg-purple-500', ring: 'ring-purple-300 dark:ring-purple-700' },
+  'Rejected':      { label: 'Rejected',        bg: 'bg-red-100 dark:bg-red-900/30',     text: 'text-red-700 dark:text-red-400',   dot: 'bg-red-500',   ring: 'ring-red-300 dark:ring-red-700'   },
+  'Onboarded':     { label: 'Onboarded',       bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500', ring: 'ring-emerald-300 dark:ring-emerald-700' },
+  'Pending':       { label: 'Pending',         bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-400', ring: 'ring-blue-300 dark:ring-blue-700' },
 };
 
 const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCustomerUpdated }) => {
@@ -128,8 +131,8 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
         job,
         status,
         notes,
-        otherReason: status === 'Others' ? otherReason : '',
-        followUpDate: status === 'Agree' ? (followUpDate || null) : null,
+        otherReason: status === 'Rejected' ? otherReason : '',
+        followUpDate: (status === 'Interested' || status === 'Follow up') ? (followUpDate || null) : null,
         district,
         fullAddress,
         pincode,
@@ -235,7 +238,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
         {/* ── Current Status Badge ─────────────────────── */}
         <div className={`flex items-center justify-between p-3 rounded-xl ring-1 ${cfg.bg} ${cfg.ring}`}>
           <div className="flex items-center gap-2">
-            <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot} ${displayStatus === 'Agree' ? 'animate-pulse' : ''}`} />
+            <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot} ${displayStatus === 'Interested' ? 'animate-pulse' : ''}`} />
             <span className={`text-sm font-bold ${cfg.text}`}>Current Status: {cfg.label}</span>
           </div>
           <span className="text-xs text-gray-400 font-mono">ID: {customer?.customerId || 'New'}</span>
@@ -384,7 +387,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
         </div>
 
         {/* ── Conditional Response Section ── */}
-        {customer && customer.status === 'Agree' && (customer.onboarding === 'Seller' || customer.onboarding === 'District Partner' || customer.onboarding === 'Interview Call') ? (
+        {customer && customer.status === 'Onboarded' && (customer.onboarding === 'Seller' || customer.onboarding === 'District Partner' || customer.onboarding === 'Interview Call') ? (
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex flex-col items-center justify-center text-center">
             <FiCheckCircle className="text-blue-500 mb-2" size={24} />
             <p className="text-sm font-bold text-blue-800 dark:text-blue-300">
@@ -393,53 +396,29 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
           </div>
         ) : (
           <>
-            {/* ── Mark Response ────────────────────────────── */}
+            {/* ── Mark Customer Response ────────────────────────────── */}
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Mark Customer Response</p>
-              <div className="grid grid-cols-3 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => handleStatusClick('Agree')}
-                  className={`flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-xl text-xs font-bold transition-all border-2 ${
-                    status === 'Agree'
-                      ? 'bg-green-500 border-green-500 text-white shadow-lg shadow-green-200 dark:shadow-none'
-                      : 'bg-white dark:bg-gray-700 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/10'
-                  }`}
-                >
-                  <FiCheckCircle size={18} />
-                  <span>Interested</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleStatusClick('Reject')}
-                  className={`flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-xl text-xs font-bold transition-all border-2 ${
-                    status === 'Reject'
-                      ? 'bg-red-500 border-red-500 text-white shadow-lg shadow-red-200 dark:shadow-none'
-                      : 'bg-white dark:bg-gray-700 border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10'
-                  }`}
-                >
-                  <FiXCircle size={18} />
-                  <span>Rejected</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleStatusClick('Others')}
-                  className={`flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-xl text-xs font-bold transition-all border-2 ${
-                    status === 'Others'
-                      ? 'bg-purple-500 border-purple-500 text-white shadow-lg shadow-purple-200 dark:shadow-none'
-                      : 'bg-white dark:bg-gray-700 border-purple-200 dark:border-purple-800 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/10'
-                  }`}
-                >
-                  <FiAlertCircle size={18} />
-                  <span>Others</span>
-                </button>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
+                {['Not picking', 'Interested', 'Follow up', 'Document pending', 'Rejected', 'Onboarded'].map(opt => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => handleStatusClick(opt)}
+                    className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-bold transition-all border-2 ${
+                      status === opt
+                        ? 'bg-primary border-primary text-white shadow-md shadow-primary/20'
+                        : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <span>{opt}</span>
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* ── Reason Field (Only shown when status is Others) ── */}
-            {status === 'Others' && (
+            {/* ── Reason Field (Only shown when status is Rejected) ── */}
+            {status === 'Rejected' && (
               <div className="animate-fade-in">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
                   Reason
@@ -454,8 +433,8 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
               </div>
             )}
 
-            {/* ── Follow-up Date (Only shown when status is Interested / Agree) ── */}
-            {status === 'Agree' && (
+            {/* ── Follow-up Date (Only shown when status is Interested or Follow up) ── */}
+            {(status === 'Interested' || status === 'Follow up') && (
               <div className="animate-fade-in">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
                   <FiCalendar size={12} /> Follow-up Date

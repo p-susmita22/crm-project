@@ -46,7 +46,7 @@ const customerSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Pending', 'Agree', 'Reject', 'Others'],
+      enum: ['Pending', 'Not picking', 'Interested', 'Follow up', 'Document pending', 'Rejected', 'Onboarded'],
       default: 'Pending',
     },
     otherReason: {
