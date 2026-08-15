@@ -331,24 +331,21 @@ const Leads = () => {
                 <div>
                   <div class="meta-label" style="margin-bottom: 4px;">Status</div>
                   <span class="badge badge-${
-                    customer.status === 'Agree' ? 'interested' :
-                    customer.status === 'Reject' ? 'rejected' :
-                    customer.status === 'Others' ? 'others' :
+                    customer.status === 'Interested' || customer.status === 'Onboarded' ? 'interested' :
+                    customer.status === 'Rejected' ? 'rejected' :
+                    customer.status === 'Follow up' || customer.status === 'Document pending' ? 'others' :
                     'pending'
                   }">
-                    ${customer.status === 'Agree' ? 'Interested' :
-                      customer.status === 'Reject' ? 'Rejected' :
-                      customer.status === 'Others' ? 'Others' :
-                      customer.status}
+                    ${customer.status || 'Pending'}
                   </span>
                 </div>
-                \${customer.status === 'Others' && customer.otherReason ? \`
+                \${customer.status === 'Rejected' && customer.otherReason ? \`
                 <div>
                   <div class="meta-label">Reason</div>
                   <div class="meta-value" style="color: #6b21a8;">\${customer.otherReason}</div>
                 </div>
                 \` : ''}
-                \${customer.status === 'Agree' && customer.followUpDate ? \`
+                \${(customer.status === 'Interested' || customer.status === 'Follow up') && customer.followUpDate ? \`
                 <div>
                   <div class="meta-label">Follow-up Date</div>
                   <div class="meta-value" style="color: #047857;">\${new Date(customer.followUpDate).toLocaleDateString()}</div>
@@ -389,23 +386,20 @@ const Leads = () => {
     const matchesOnboarding = selectedOnboardingType === '' || l.onboarding === selectedOnboardingType;
     
     let matchesCallStatus = true;
-    if (filterCallStatus === 'Interested') matchesCallStatus = (l.status === 'Agree' || l.status === 'Interested');
-    else if (filterCallStatus === 'Not Interested') matchesCallStatus = (l.status === 'Reject' || l.status === 'Not Interested');
-    else if (filterCallStatus === 'Others') matchesCallStatus = l.status === 'Others';
+    if (filterCallStatus !== 'All') matchesCallStatus = l.status === filterCallStatus;
     
     return matchesSearch && matchesEmployee && matchesOnboarding && matchesCallStatus;
   });
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'New': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'Contacted': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-      case 'Interested':
-      case 'Agree': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-      case 'Pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-      case 'Others': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'Reject':
-      case 'Lost': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      case 'Pending': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'Not picking': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+      case 'Interested': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+      case 'Follow up': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'Document pending': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+      case 'Rejected': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      case 'Onboarded': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
@@ -418,7 +412,7 @@ const Leads = () => {
       'District': lead.district || lead.address || '',
       'Onboarding Type': lead.onboarding || '',
       'Assigned To': lead.assignedTo?.name || 'Unassigned',
-      'Status': lead.status === 'Agree' ? 'Interested' : lead.status === 'Reject' ? 'Rejected' : lead.status,
+      'Status': lead.status,
       'Remarks': lead.notes || ''
     }));
 
@@ -547,9 +541,13 @@ const Leads = () => {
             className="block w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm transition-all"
           >
             <option value="All">All Statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="Not picking">Not picking</option>
             <option value="Interested">Interested</option>
-            <option value="Not Interested">Not Interested</option>
-            <option value="Others">Others</option>
+            <option value="Follow up">Follow up</option>
+            <option value="Document pending">Document pending</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Onboarded">Onboarded</option>
           </select>
         </div>
       </div>
@@ -628,7 +626,7 @@ const Leads = () => {
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(lead.status)}`}>
                           {lead.status}
                         </span>
-                        {lead.status === 'Agree' && lead.notes && (
+                        {(lead.status === 'Interested' || lead.status === 'Follow up') && lead.notes && (
                           <span 
                             className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600 max-w-[200px] truncate"
                             title={lead.notes}
@@ -835,13 +833,16 @@ const Leads = () => {
                         className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-white"
                       >
                         <option value="Pending">Pending</option>
-                        <option value="Agree">Interested</option>
-                        <option value="Reject">Rejected</option>
-                        <option value="Others">Others</option>
+                        <option value="Not picking">Not picking</option>
+                        <option value="Interested">Interested</option>
+                        <option value="Follow up">Follow up</option>
+                        <option value="Document pending">Document pending</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Onboarded">Onboarded</option>
                       </select>
                     </div>
 
-                    {formData.status === 'Others' && (
+                    {formData.status === 'Rejected' && (
                       <div className="animate-fade-in">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
                         <input 
@@ -854,7 +855,7 @@ const Leads = () => {
                       </div>
                     )}
 
-                    {formData.status === 'Agree' && (
+                    {(formData.status === 'Interested' || formData.status === 'Follow up') && (
                       <div className="animate-fade-in">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Follow-up Date</label>
                         <input 
@@ -978,26 +979,23 @@ const Leads = () => {
                     <div>
                       <div className="text-xs text-gray-400 font-semibold uppercase mb-1">Status</div>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        selectedViewCustomer.status === 'Agree' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                        selectedViewCustomer.status === 'Reject' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                        selectedViewCustomer.status === 'Others' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                        selectedViewCustomer.status === 'Interested' || selectedViewCustomer.status === 'Onboarded' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                        selectedViewCustomer.status === 'Rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                        selectedViewCustomer.status === 'Follow up' || selectedViewCustomer.status === 'Document pending' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
                         'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                       }`}>
-                        {selectedViewCustomer.status === 'Agree' ? 'Interested' :
-                         selectedViewCustomer.status === 'Reject' ? 'Rejected' :
-                         selectedViewCustomer.status === 'Others' ? 'Others' :
-                         selectedViewCustomer.status}
+                        {selectedViewCustomer.status || 'Pending'}
                       </span>
                     </div>
 
-                    {selectedViewCustomer.status === 'Others' && selectedViewCustomer.otherReason && (
+                    {selectedViewCustomer.status === 'Rejected' && selectedViewCustomer.otherReason && (
                       <div>
                         <div className="text-xs text-gray-400 font-semibold uppercase mb-0.5">Reason</div>
                         <div className="text-sm font-semibold text-blue-600 dark:text-blue-400">{selectedViewCustomer.otherReason}</div>
                       </div>
                     )}
 
-                    {selectedViewCustomer.status === 'Agree' && selectedViewCustomer.followUpDate && (
+                    {(selectedViewCustomer.status === 'Interested' || selectedViewCustomer.status === 'Follow up') && selectedViewCustomer.followUpDate && (
                       <div>
                         <div className="text-xs text-gray-400 font-semibold uppercase mb-0.5">Follow-up Date</div>
                         <div className="text-sm font-semibold text-green-600 dark:text-green-400">
@@ -1034,11 +1032,11 @@ const Leads = () => {
                           </div>
                           <div className="flex flex-col flex-1">
                             <span className={`text-xs font-bold mb-1 ${
-                              log.status === 'Agree' ? 'text-green-600' :
-                              log.status === 'Reject' ? 'text-red-500' :
-                              log.status === 'Others' ? 'text-blue-600' :
+                              log.status === 'Interested' || log.status === 'Onboarded' ? 'text-green-600' :
+                              log.status === 'Rejected' ? 'text-red-500' :
+                              log.status === 'Follow up' || log.status === 'Document pending' ? 'text-blue-600' :
                               'text-yellow-600'
-                            }`}>{log.status === 'Agree' ? 'Interested' : log.status === 'Reject' ? 'Rejected' : log.status}</span>
+                            }`}>{log.status}</span>
                             <span className="text-sm text-gray-600 dark:text-gray-300">"{log.remark || 'No specific remark'}"</span>
                             {log.employeeName && (
                               <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-1.5 font-semibold bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md w-max border border-gray-200 dark:border-gray-600">
