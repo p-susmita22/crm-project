@@ -3,15 +3,15 @@ import api from '../api/axios';
 import { toast } from 'react-hot-toast';
 import { FiTarget, FiPlus, FiEdit2, FiCalendar, FiClock, FiBell, FiFileText, FiTag } from 'react-icons/fi';
 
-const STATUS_OPTIONS = ['New', 'Contacted', 'Interested', 'Converted', 'Lost', 'Follow-up Pending'];
+const STATUS_OPTIONS = ['Not picking', 'Interested', 'Follow up', 'Document pending', 'Rejected', 'Onboarded'];
 
 const statusColor = {
-  'New': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  'Contacted': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  'Not picking': 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
   'Interested': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  'Converted': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  'Lost': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  'Follow-up Pending': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  'Follow up': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  'Document pending': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  'Rejected': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  'Onboarded': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
 };
 
 const LeadManagementSection = () => {
@@ -35,7 +35,7 @@ const LeadManagementSection = () => {
       followUpDate: lead.followUpDate ? lead.followUpDate.slice(0, 10) : '',
       callScheduledAt: lead.callScheduledAt ? lead.callScheduledAt.slice(0, 16) : '',
       reminder: lead.reminder || '',
-      status: lead.status || 'New',
+      status: lead.status || 'Not picking',
     });
   };
 
@@ -91,7 +91,7 @@ const LeadManagementSection = () => {
                   <p className="font-semibold text-sm text-gray-800 dark:text-gray-100 truncate">{lead.name}</p>
                   <p className="text-xs text-gray-400 truncate">{lead.phone}</p>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${statusColor[lead.status] || statusColor['New']}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${statusColor[lead.status] || statusColor['Not picking']}`}>
                   {lead.status}
                 </span>
               </button>
