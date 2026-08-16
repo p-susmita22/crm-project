@@ -370,3 +370,21 @@ export const uploadMedia = async (req, res) => {
     res.status(500).json({ message: 'Failed to upload media to Meta', details: error.response?.data });
   }
 };
+
+// @desc    Delete multiple chats
+// @route   DELETE /api/whatsapp/chats
+// @access  Private (Admin)
+export const deleteChats = async (req, res) => {
+  const { phoneNumbers } = req.body;
+
+  if (!phoneNumbers || !Array.isArray(phoneNumbers) || phoneNumbers.length === 0) {
+    return res.status(400).json({ message: 'No phone numbers provided for deletion' });
+  }
+
+  try {
+    await WhatsAppMessage.deleteMany({ customerPhone: { $in: phoneNumbers } });
+    res.json({ message: 'Chats deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

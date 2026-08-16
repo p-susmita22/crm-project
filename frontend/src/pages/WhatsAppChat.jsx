@@ -14,6 +14,8 @@ const WhatsAppChat = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedChats, setSelectedChats] = useState([]);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
   
   const messagesEndRef = useRef(null);
 
@@ -137,6 +139,38 @@ const WhatsAppChat = () => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const toggleSelection = (phone, e) => {
+    e.stopPropagation();
+    if (selectedChats.includes(phone)) {
+      setSelectedChats(selectedChats.filter(p => p !== phone));
+    } else {
+      setSelectedChats([...selectedChats, phone]);
+    }
+  };
+
+  const toggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    setSelectedChats([]);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedChats.length === 0) return;
+    if (window.confirm(`Are you sure you want to delete ${selectedChats.length} chat(s)?`)) {
+      try {
+        await api.delete('/whatsapp/chats', { data: { phoneNumbers: selectedChats } });
+        toast.success('Chats deleted successfully');
+        setIsSelectionMode(false);
+        setSelectedChats([]);
+        fetchChats();
+        if (selectedChats.includes(activeChat?.phone)) {
+          setActiveChat(null);
+        }
+      } catch (error) {
+        toast.error('Failed to delete chats');
+      }
+    }
+  };
+
   return (
     <div className="h-[calc(100vh-6rem)] -m-4 sm:-m-6 flex bg-white dark:bg-gray-900 border-t dark:border-gray-800 shadow-inner rounded-xl overflow-hidden animate-fade-in">
       {/* Sidebar - Chat List */}
@@ -145,6 +179,24 @@ const WhatsAppChat = () => {
           <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
             <FiMessageCircle className="text-green-500" /> WhatsApp Inbox
           </h2>
+          {user?.role === 'Admin' && (
+            <div className="flex gap-2">
+              {isSelectionMode && selectedChats.length > 0 && (
+                <button
+                  onClick={handleDeleteSelected}
+                  className="text-xs bg-red-100 hover:bg-red-200 text-red-600 px-2.5 py-1 rounded-lg font-semibold transition"
+                >
+                  Delete
+                </button>
+              )}
+              <button
+                onClick={toggleSelectionMode}
+                className="text-xs bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-2.5 py-1 rounded-lg font-semibold transition"
+              >
+                {isSelectionMode ? 'Cancel' : 'Select'}
+              </button>
+            </div>
+          )}
         </div>
         <div className="p-3 border-b border-gray-200 dark:border-gray-700">
           <div className="relative">
@@ -172,11 +224,24 @@ const WhatsAppChat = () => {
             filteredChats.map((chat) => (
               <div
                 key={chat.phone}
-                onClick={() => setActiveChat(chat)}
+                onClick={() => {
+                  if (isSelectionMode) toggleSelection(chat.phone, { stopPropagation: () => {} });
+                  else setActiveChat(chat);
+                }}
                 className={`flex items-center gap-3 p-3 cursor-pointer transition-colors border-b border-gray-100 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800 ${
                   activeChat?.phone === chat.phone ? 'bg-green-50 dark:bg-green-900/20' : ''
-                }`}
+                } ${selectedChats.includes(chat.phone) ? 'bg-green-50/50 dark:bg-green-900/10' : ''}`}
               >
+                {isSelectionMode && (
+                  <div className="mr-1" onClick={(e) => toggleSelection(chat.phone, e)}>
+                    <input 
+                      type="checkbox" 
+                      checked={selectedChats.includes(chat.phone)}
+                      readOnly
+                      className="w-4 h-4 text-green-500 rounded border-gray-300 focus:ring-green-500 cursor-pointer"
+                    />
+                  </div>
+                )}
                 <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 font-bold flex-shrink-0">
                   {chat.name.charAt(0).toUpperCase()}
                 </div>
