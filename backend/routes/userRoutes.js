@@ -218,10 +218,10 @@ const archiveAndDeleteUser = async (user) => {
   let otherCustomers = 0;
 
   const archivedCustomers = customers.map(c => {
-    if (c.status === 'Agree') convertedLeads++;
-    else if (c.status === 'Reject') rejectedCustomers++;
+    if (c.status === 'Agree' || c.status === 'Interested' || c.status === 'Onboarded') convertedLeads++;
+    else if (c.status === 'Reject' || c.status === 'Rejected') rejectedCustomers++;
     else if (c.status === 'Pending') pendingCustomers++;
-    else if (c.status === 'Others') otherCustomers++;
+    else otherCustomers++;
 
     return {
       customerId: c.customerId,
@@ -232,7 +232,11 @@ const archiveAndDeleteUser = async (user) => {
       status: c.status,
       onboarding: c.onboarding,
       taskDate: c.taskDate,
-      sourceFile: c.sourceFile
+      sourceFile: c.sourceFile,
+      callHistory: c.callHistory || [],
+      notes: c.notes || '',
+      otherReason: c.otherReason || '',
+      followUpDate: c.followUpDate || null
     };
   });
 
@@ -281,10 +285,6 @@ router.put('/:id', protect, admin, upload.single('customerFile'), asyncHandler(a
   }
   if (isActive !== undefined) {
     user.isActive = isActive === 'true' || isActive === true;
-    if (user.isActive === false && user.role !== 'Admin') {
-      await archiveAndDeleteUser(user);
-      return res.json({ message: 'Employee deactivated and archived' });
-    }
   }
 
   if (password && password.trim() !== '') {
@@ -387,9 +387,9 @@ router.get('/:id/task-history', protect, admin, asyncHandler(async (req, res) =>
         _id:     { date: '$taskDate', file: { $ifNull: ['$sourceFile', ''] } },
         total:   { $sum: 1 },
         pending: { $sum: { $cond: [{ $eq: ['$status', 'Pending'] },  1, 0] } },
-        agree:   { $sum: { $cond: [{ $eq: ['$status', 'Agree'] },    1, 0] } },
-        reject:  { $sum: { $cond: [{ $eq: ['$status', 'Reject'] },   1, 0] } },
-        others:  { $sum: { $cond: [{ $eq: ['$status', 'Others'] },   1, 0] } },
+        agree:   { $sum: { $cond: [{ $in: ['$status', ['Agree', 'Interested', 'Onboarded']] }, 1, 0] } },
+        reject:  { $sum: { $cond: [{ $in: ['$status', ['Reject', 'Rejected']] }, 1, 0] } },
+        others:  { $sum: { $cond: [{ $in: ['$status', ['Others', 'Not picking', 'Follow up', 'Document pending']] }, 1, 0] } },
       },
     },
     { $sort: { '_id.date': -1, '_id.file': 1 } }, // newest date first, then by file name
@@ -533,7 +533,11 @@ router.post('/history/archived/:id/restore', protect, admin, asyncHandler(async 
       onboarding: c.onboarding || '',
       taskDate: c.taskDate || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }),
       sourceFile: c.sourceFile || 'Restored',
-      assignedTo: targetUser._id
+      assignedTo: targetUser._id,
+      notes: c.notes || '',
+      otherReason: c.otherReason || '',
+      followUpDate: c.followUpDate || null,
+      callHistory: c.callHistory && c.callHistory.length > 0 ? c.callHistory : [{ status: c.status || 'Pending', remark: 'Restored from archive', employeeName: targetUser.name }]
     }));
 
     await Customer.insertMany(customersToInsert);

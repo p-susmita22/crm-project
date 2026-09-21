@@ -117,6 +117,41 @@ const registerUser = asyncHandler(async (req, res) => {
       }
     }
 
+    // If this employee was previously archived, restore their customer data automatically
+    try {
+      const ArchivedEmployee = (await import('../models/ArchivedEmployee.js')).default;
+      const Customer = (await import('../models/Customer.js')).default;
+      const archived = await ArchivedEmployee.findOne({ email: new RegExp(`^${email.trim()}$`, 'i') });
+      if (archived) {
+        if (archived.customers && archived.customers.length > 0) {
+          const customersToInsert = archived.customers.map(c => ({
+            customerId: `CUST-RESTORE-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+            name: c.name || 'Unknown',
+            phone: c.phone || '0000000000',
+            email: c.email || '',
+            companyName: c.companyName || '',
+            status: c.status || 'Pending',
+            onboarding: c.onboarding || '',
+            taskDate: c.taskDate || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }),
+            sourceFile: c.sourceFile || 'Restored',
+            assignedTo: user._id,
+            notes: c.notes || '',
+            otherReason: c.otherReason || '',
+            followUpDate: c.followUpDate || null,
+            callHistory: c.callHistory && c.callHistory.length > 0 ? c.callHistory : [{ status: c.status || 'Pending', remark: 'Restored from archive', employeeName: user.name }]
+          }));
+          await Customer.insertMany(customersToInsert);
+          const { reindexCustomers } = await import('../utils/reindexer.js');
+          await reindexCustomers();
+          user.assignedCallsCount = await Customer.countDocuments({ assignedTo: user._id });
+          await user.save();
+        }
+        await archived.deleteOne();
+      }
+    } catch (archiveErr) {
+      console.error('Failed to auto-restore archived data for registered employee:', archiveErr);
+    }
+
     res.status(201).json({
       _id: user._id,
       name: user.name,
