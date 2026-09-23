@@ -256,7 +256,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
                   placeholder="Customer Name"
                 />
               </div>
@@ -278,7 +278,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                     if (val.startsWith('0')) val = val.substring(1); // Remove leading zero
                     setPhone(val);
                   }}
-                  className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
                   placeholder="9876543210"
                 />
               </div>
@@ -292,7 +292,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                   type="text"
                   value={companyName}
                   onChange={e => setCompanyName(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
                   placeholder="Company Name"
                 />
               </div>
@@ -305,7 +305,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                 <select
                   value={onboarding}
                   onChange={e => setOnboarding(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold appearance-none"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold appearance-none"
                 >
                   <option value="">Select Onboarding Option</option>
                   <option value="District Partner">District Partner</option>
@@ -323,7 +323,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                 <select
                   value={state}
                   onChange={e => setState(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold appearance-none"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold appearance-none"
                 >
                   <option value="">Select State</option>
                   {indianStates.map(st => (
@@ -342,7 +342,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                   type="text"
                   value={pincode}
                   onChange={e => handlePincodeChange(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
                   placeholder="Enter Pin Number (e.g. 700001)"
                 />
               </div>
@@ -357,7 +357,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                   value={district}
                   onChange={e => setDistrict(e.target.value)}
                   list={state === 'Odisha' ? 'odisha-districts' : undefined}
-                  className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
                   placeholder="District Name"
                 />
                 {state === 'Odisha' && (
@@ -378,7 +378,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
                   type="text"
                   value={fullAddress}
                   onChange={e => setFullAddress(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-gray-800 dark:text-gray-200 transition-all font-semibold"
                   placeholder="Enter Full Address"
                 />
               </div>
