@@ -109,7 +109,7 @@ const EmployeeCallingPanel = () => {
   }, []);
 
   const handleCustomerUpdated = (updated) => {
-    setActiveCustomer(updated);
+    setActiveCustomer(null);
     setCustomers(prev => {
       const exists = prev.some(c => c._id === updated._id);
       if (exists) {
