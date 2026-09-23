@@ -40,6 +40,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
   const [companyName, setCompanyName] = useState('');
   const [job, setJob] = useState('');
   const [status, setStatus] = useState('Pending');
+  const [isFollowUp, setIsFollowUp] = useState(false);
   const [otherReason, setOtherReason] = useState('');
   const [notes, setNotes] = useState('');
   const [followUpDate, setFollowUpDate] = useState('');
@@ -59,6 +60,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
       setCompanyName('');
       setJob('');
       setStatus('Pending');
+      setIsFollowUp(false);
       setOtherReason('');
       setNotes('');
       setFollowUpDate('');
@@ -74,6 +76,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
       setCompanyName(customer.companyName || '');
       setJob(customer.job || '');
       setStatus(customer.status || 'Pending');
+      setIsFollowUp(customer.status === 'Follow up' || (customer.status === 'Interested' && !!customer.followUpDate));
       setOtherReason(customer.otherReason || '');
       setNotes(customer.notes || '');
       setFollowUpDate(customer.followUpDate ? customer.followUpDate.slice(0, 10) : '');
@@ -90,7 +93,11 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
   const cfg = STATUS_CONFIG[displayStatus] || STATUS_CONFIG.Pending;
 
   const handleStatusClick = (newStatus) => {
-    setStatus(newStatus);
+    if (newStatus === 'Follow up') {
+      setIsFollowUp(prev => !prev);
+    } else {
+      setStatus(newStatus);
+    }
   };
 
   const handlePincodeChange = async (val) => {
@@ -124,21 +131,22 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
     
     setSaving(true);
     try {
+      const finalStatus = (status === 'Pending' && isFollowUp) ? 'Follow up' : status;
       const payload = {
         name,
         phone,
         companyName,
         job,
-        status,
+        status: finalStatus,
         notes,
-        otherReason: status === 'Rejected' ? otherReason : '',
-        followUpDate: (status === 'Interested' || status === 'Follow up') ? (followUpDate || null) : null,
+        otherReason: finalStatus === 'Rejected' ? otherReason : '',
+        followUpDate: (finalStatus === 'Interested' || isFollowUp || finalStatus === 'Follow up') ? (followUpDate || null) : null,
         district,
         fullAddress,
         pincode,
         state,
         onboarding,
-        newCallLog: { status, remark: notes || otherReason || 'Status updated' }
+        newCallLog: { status: finalStatus, remark: notes || otherReason || 'Status updated' }
       };
 
       let customerIdToUse = customer?._id;
@@ -400,20 +408,23 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Mark Customer Response</p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
-                {['Not picking', 'Interested', 'Follow up', 'Document pending', 'Rejected', 'Onboarded'].map(opt => (
+                {['Not picking', 'Interested', 'Follow up', 'Document pending', 'Rejected', 'Onboarded'].map(opt => {
+                  const isSelected = opt === 'Follow up' ? (isFollowUp || status === 'Follow up') : status === opt;
+                  return (
                   <button
                     key={opt}
                     type="button"
                     onClick={() => handleStatusClick(opt)}
                     className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-bold transition-all border-2 ${
-                      status === opt
+                      isSelected
                         ? 'bg-primary border-primary text-white shadow-md shadow-primary/20'
                         : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                     }`}
                   >
                     <span>{opt}</span>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -434,7 +445,7 @@ const CustomerDetailsSection = ({ customer, customers, onSelectCustomer, onCusto
             )}
 
             {/* ── Follow-up Date (Only shown when status is Interested or Follow up) ── */}
-            {(status === 'Interested' || status === 'Follow up') && (
+            {(status === 'Interested' || isFollowUp || status === 'Follow up') && (
               <div className="animate-fade-in">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
                   <FiCalendar size={12} /> Follow-up Date
