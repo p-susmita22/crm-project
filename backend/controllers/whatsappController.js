@@ -121,6 +121,9 @@ export const receiveMessage = async (req, res) => {
             customerName = body.entry[0].changes[0].value.contacts[0].profile.name;
         }
 
+        // Check for existing customer to manage state
+        let customer = await Customer.findOne({ phone: senderPhone });
+
         // Log inbound message
         await WhatsAppMessage.create({
           customerPhone: senderPhone,
@@ -131,14 +134,88 @@ export const receiveMessage = async (req, res) => {
           status: 'received'
         });
 
-        // 1. If it's a simple text message, send the menu
+        // 1. If it's a simple text message, send the menu or process state
         if (message.type === 'text') {
-            await sendInteractiveMessage(senderPhone);
+            const textContent = message.text.body.trim();
+            
+            // If they are a District Partner and haven't given a district yet, they are answering the district question
+            if (customer && customer.onboarding === 'District Partner' && (!customer.district || customer.district === '')) {
+                customer.district = textContent;
+                await customer.save();
+
+                // Ask if they are interested in the franchise
+                const url = `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
+                const data = {
+                    messaging_product: "whatsapp",
+                    recipient_type: "individual",
+                    to: senderPhone,
+                    type: "interactive",
+                    interactive: {
+                        type: "button",
+                        body: { text: "District Partner franchise is investable. Are you interested?" },
+                        action: {
+                            buttons: [{ type: "reply", reply: { id: "DP_INTERESTED_YES", title: "Yes" } }]
+                        }
+                    }
+                };
+
+                try {
+                    const response = await axios.post(url, data, {
+                        headers: { 'Authorization': `Bearer ${WHATSAPP_API_TOKEN}`, 'Content-Type': 'application/json' }
+                    });
+                    if (response.data && response.data.messages && response.data.messages[0]) {
+                        await WhatsAppMessage.create({
+                            customerPhone: senderPhone,
+                            messageId: response.data.messages[0].id,
+                            direction: 'outbound',
+                            type: 'interactive',
+                            content: data.interactive.body.text,
+                            status: 'sent'
+                        });
+                    }
+                } catch (e) {
+                    console.error("Error sending Yes button", e.message);
+                }
+            } else {
+                await sendInteractiveMessage(senderPhone);
+            }
         }
         
         // 2. If it's a button reply, process the response and save to DB
         if (message.type === 'interactive' && message.interactive.type === 'button_reply') {
             const buttonId = message.interactive.button_reply.id;
+            
+            if (buttonId === 'DP_INTERESTED_YES') {
+                if (customer) {
+                    customer.status = 'Interested';
+                    customer.notes = customer.notes ? `${customer.notes} | Interested in DP` : 'Interested in DP';
+                    await customer.save();
+                }
+                
+                // Send final confirmation
+                const url = `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
+                const confText = `Thank you! We have noted your interest as a District Partner. Our team will contact you shortly.`;
+                const confRes = await axios.post(url, {
+                    messaging_product: "whatsapp",
+                    to: senderPhone,
+                    text: { body: confText }
+                }, {
+                    headers: { 'Authorization': `Bearer ${WHATSAPP_API_TOKEN}` }
+                }).catch(err => console.error("Error sending confirmation:", err.message));
+                
+                if (confRes && confRes.data && confRes.data.messages) {
+                  await WhatsAppMessage.create({
+                    customerPhone: senderPhone,
+                    messageId: confRes.data.messages[0].id,
+                    direction: 'outbound',
+                    type: 'text',
+                    content: confText,
+                    status: 'sent'
+                  });
+                }
+                return res.sendStatus(200); // Exit early since this is handled
+            }
+
             let onboardingType = '';
             
             if (buttonId === 'SELLER') onboardingType = 'Seller';
@@ -146,9 +223,6 @@ export const receiveMessage = async (req, res) => {
             else if (buttonId === 'PROFILE_INQUIRY') onboardingType = 'Profile Inquiry';
             
             if (onboardingType) {
-                // Check if customer already exists based on phone
-                let customer = await Customer.findOne({ phone: senderPhone });
-                
                 if (!customer) {
                     // Get highest customer ID
                     const allCustomers = await Customer.find({}, 'customerId').lean();
@@ -172,38 +246,64 @@ export const receiveMessage = async (req, res) => {
                         onboarding: onboardingType,
                         status: 'Pending', // Using Pending as it is valid enum
                         notes: 'Captured via WhatsApp Auto-reply',
-                        sourceFile: 'WhatsApp API'
+                        sourceFile: 'WhatsApp API',
+                        district: '' // ensure district is empty
                     });
                     console.log(`Saved new WhatsApp lead: ${senderPhone}`);
                 } else {
                     // Update existing
                     customer.onboarding = onboardingType;
                     customer.status = 'Pending';
+                    customer.district = ''; // reset district to ask again
                     customer.notes = customer.notes ? `${customer.notes} | Interacted via WhatsApp` : 'Interacted via WhatsApp';
                     await customer.save();
                     console.log(`Updated existing WhatsApp lead: ${senderPhone}`);
                 }
                 
-                // Send a confirmation message
-                const url = `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
-                const confText = `Thank you! We have noted your interest as a ${onboardingType}. Our team will contact you shortly.`;
-                const confRes = await axios.post(url, {
-                    messaging_product: "whatsapp",
-                    to: senderPhone,
-                    text: { body: confText }
-                }, {
-                    headers: { 'Authorization': `Bearer ${WHATSAPP_API_TOKEN}` }
-                }).catch(err => console.error("Error sending confirmation:", err.message));
-                
-                if (confRes && confRes.data && confRes.data.messages) {
-                  await WhatsAppMessage.create({
-                    customerPhone: senderPhone,
-                    messageId: confRes.data.messages[0].id,
-                    direction: 'outbound',
-                    type: 'text',
-                    content: confText,
-                    status: 'sent'
-                  });
+                if (onboardingType === 'District Partner') {
+                    // Send "From which district?"
+                    const url = `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
+                    const askDistrictText = `From which district?`;
+                    const confRes = await axios.post(url, {
+                        messaging_product: "whatsapp",
+                        to: senderPhone,
+                        text: { body: askDistrictText }
+                    }, {
+                        headers: { 'Authorization': `Bearer ${WHATSAPP_API_TOKEN}` }
+                    }).catch(err => console.error("Error asking district:", err.message));
+                    
+                    if (confRes && confRes.data && confRes.data.messages) {
+                      await WhatsAppMessage.create({
+                        customerPhone: senderPhone,
+                        messageId: confRes.data.messages[0].id,
+                        direction: 'outbound',
+                        type: 'text',
+                        content: askDistrictText,
+                        status: 'sent'
+                      });
+                    }
+                } else {
+                    // Send a confirmation message for Seller and Profile Inquiry
+                    const url = `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
+                    const confText = `Thank you! We have noted your interest as a ${onboardingType}. Our team will contact you shortly.`;
+                    const confRes = await axios.post(url, {
+                        messaging_product: "whatsapp",
+                        to: senderPhone,
+                        text: { body: confText }
+                    }, {
+                        headers: { 'Authorization': `Bearer ${WHATSAPP_API_TOKEN}` }
+                    }).catch(err => console.error("Error sending confirmation:", err.message));
+                    
+                    if (confRes && confRes.data && confRes.data.messages) {
+                      await WhatsAppMessage.create({
+                        customerPhone: senderPhone,
+                        messageId: confRes.data.messages[0].id,
+                        direction: 'outbound',
+                        type: 'text',
+                        content: confText,
+                        status: 'sent'
+                      });
+                    }
                 }
             }
         }
