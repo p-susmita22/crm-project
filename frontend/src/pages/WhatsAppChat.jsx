@@ -323,9 +323,18 @@ const WhatsAppChat = () => {
                         <div className="flex flex-col">
                           <p className="text-[15px] leading-relaxed whitespace-pre-wrap mb-2">{msg.content}</p>
                           <div className="flex flex-col gap-1.5 mt-2 border-t border-black/10 dark:border-white/10 pt-2">
-                            <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">Seller</div>
-                            <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">District Partner</div>
-                            <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">Profile Inquiry</div>
+                            {msg.content.toLowerCase().includes('investable') ? (
+                              <>
+                                <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">Yes</div>
+                                <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">No</div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">Seller</div>
+                                <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">District Partner</div>
+                                <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">Profile Inquiry</div>
+                              </>
+                            )}
                           </div>
                         </div>
                       ) : (
