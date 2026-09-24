@@ -154,7 +154,10 @@ export const receiveMessage = async (req, res) => {
                         type: "button",
                         body: { text: "District Partner franchise is investable. Are you interested?" },
                         action: {
-                            buttons: [{ type: "reply", reply: { id: "DP_INTERESTED_YES", title: "Yes" } }]
+                            buttons: [
+                                { type: "reply", reply: { id: "DP_INTERESTED_YES", title: "Yes" } },
+                                { type: "reply", reply: { id: "DP_INTERESTED_NO", title: "No" } }
+                            ]
                         }
                     }
                 };
@@ -195,6 +198,37 @@ export const receiveMessage = async (req, res) => {
                 // Send final confirmation
                 const url = `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
                 const confText = `Thank you! We have noted your interest as a District Partner. Our team will contact you shortly.`;
+                const confRes = await axios.post(url, {
+                    messaging_product: "whatsapp",
+                    to: senderPhone,
+                    text: { body: confText }
+                }, {
+                    headers: { 'Authorization': `Bearer ${WHATSAPP_API_TOKEN}` }
+                }).catch(err => console.error("Error sending confirmation:", err.message));
+                
+                if (confRes && confRes.data && confRes.data.messages) {
+                  await WhatsAppMessage.create({
+                    customerPhone: senderPhone,
+                    messageId: confRes.data.messages[0].id,
+                    direction: 'outbound',
+                    type: 'text',
+                    content: confText,
+                    status: 'sent'
+                  });
+                }
+                return res.sendStatus(200); // Exit early since this is handled
+            }
+
+            if (buttonId === 'DP_INTERESTED_NO') {
+                if (customer) {
+                    customer.status = 'Rejected';
+                    customer.notes = customer.notes ? `${customer.notes} | Not interested in DP` : 'Not interested in DP';
+                    await customer.save();
+                }
+                
+                // Send final confirmation for No
+                const url = `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
+                const confText = `thank you for contacting multimaart`;
                 const confRes = await axios.post(url, {
                     messaging_product: "whatsapp",
                     to: senderPhone,
