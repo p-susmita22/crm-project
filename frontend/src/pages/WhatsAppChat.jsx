@@ -328,6 +328,11 @@ const WhatsAppChat = () => {
                                 <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">Yes</div>
                                 <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">No</div>
                               </>
+                            ) : msg.content.toLowerCase().includes('what type of product') ? (
+                              <div className="bg-white dark:bg-[#111b21] flex justify-between items-center px-4 py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">
+                                <span>Select Options</span>
+                                <span className="text-xl">≡</span>
+                              </div>
                             ) : (
                               <>
                                 <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">Seller</div>

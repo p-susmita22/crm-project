@@ -130,7 +130,7 @@ export const receiveMessage = async (req, res) => {
           messageId: message.id,
           direction: 'inbound',
           type: message.type,
-          content: message.type === 'text' ? message.text.body : (message.type === 'interactive' ? message.interactive.button_reply.title : 'Media/Other'),
+          content: message.type === 'text' ? message.text.body : (message.type === 'interactive' ? (message.interactive.button_reply ? message.interactive.button_reply.title : (message.interactive.list_reply ? message.interactive.list_reply.title : 'Media/Other')) : 'Media/Other'),
           status: 'received'
         });
 
@@ -184,9 +184,44 @@ export const receiveMessage = async (req, res) => {
             }
         }
         
-        // 2. If it's a button reply, process the response and save to DB
-        if (message.type === 'interactive' && message.interactive.type === 'button_reply') {
-            const buttonId = message.interactive.button_reply.id;
+        // 2. Handle interactive replies (buttons and lists)
+        if (message.type === 'interactive') {
+            if (message.interactive.type === 'list_reply') {
+                const listId = message.interactive.list_reply.id;
+                
+                if (listId.startsWith('PROD_')) {
+                    if (customer) {
+                        customer.status = 'Interested';
+                        customer.notes = customer.notes ? `${customer.notes} | Seller Product: ${message.interactive.list_reply.title}` : `Seller Product: ${message.interactive.list_reply.title}`;
+                        await customer.save();
+                    }
+
+                    const url = `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
+                    const confText = `Thank you! We have noted your interest as a Seller. Our team will contact you shortly.\n\nwww.multimaart.com`;
+                    const confRes = await axios.post(url, {
+                        messaging_product: "whatsapp",
+                        to: senderPhone,
+                        text: { body: confText }
+                    }, {
+                        headers: { 'Authorization': `Bearer ${WHATSAPP_API_TOKEN}` }
+                    }).catch(err => console.error("Error sending confirmation:", err.message));
+                    
+                    if (confRes && confRes.data && confRes.data.messages) {
+                      await WhatsAppMessage.create({
+                        customerPhone: senderPhone,
+                        messageId: confRes.data.messages[0].id,
+                        direction: 'outbound',
+                        type: 'text',
+                        content: confText,
+                        status: 'sent'
+                      });
+                    }
+                    return res.sendStatus(200);
+                }
+            }
+
+            if (message.interactive.type === 'button_reply') {
+                const buttonId = message.interactive.button_reply.id;
             
             if (buttonId === 'DP_INTERESTED_YES') {
                 if (customer) {
@@ -316,8 +351,56 @@ export const receiveMessage = async (req, res) => {
                         status: 'sent'
                       });
                     }
+                } else if (onboardingType === 'Seller') {
+                    // Send list message with product types
+                    const url = `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
+                    const listData = {
+                        messaging_product: "whatsapp",
+                        recipient_type: "individual",
+                        to: senderPhone,
+                        type: "interactive",
+                        interactive: {
+                            type: "list",
+                            header: { type: "text", text: "Product Type" },
+                            body: { text: "what type of product do you have" },
+                            footer: { text: "Multimaart" },
+                            action: {
+                                button: "Select Options",
+                                sections: [
+                                    {
+                                        title: "Categories",
+                                        rows: [
+                                            { id: "PROD_GARMENTS", title: "Garments" },
+                                            { id: "PROD_FOOTWEAR", title: "Footwear" },
+                                            { id: "PROD_ELECTRONICS", title: "Electronics" },
+                                            { id: "PROD_ACCESSORIES", title: "Accessories" },
+                                            { id: "PROD_COSMETICS", title: "Cosmetics" }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    };
+
+                    try {
+                        const response = await axios.post(url, listData, {
+                            headers: { 'Authorization': `Bearer ${WHATSAPP_API_TOKEN}`, 'Content-Type': 'application/json' }
+                        });
+                        if (response.data && response.data.messages && response.data.messages[0]) {
+                            await WhatsAppMessage.create({
+                                customerPhone: senderPhone,
+                                messageId: response.data.messages[0].id,
+                                direction: 'outbound',
+                                type: 'interactive',
+                                content: listData.interactive.body.text,
+                                status: 'sent'
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Error sending Seller list menu", e.message);
+                    }
                 } else {
-                    // Send a confirmation message for Seller and Profile Inquiry
+                    // Send a confirmation message for Profile Inquiry
                     const url = `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
                     const confText = `Thank you! We have noted your interest as a ${onboardingType}. Our team will contact you shortly.`;
                     const confRes = await axios.post(url, {
