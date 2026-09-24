@@ -102,7 +102,8 @@ const EmployeeCallingPanel = () => {
 
         const targetCustomers = r.data.filter(c => c.taskDate === targetDateStr || (!c.taskDate && c.createdAt?.startsWith(targetDateStr)));
         setCustomers(targetCustomers);
-        if (targetCustomers.length > 0) setActiveCustomer(targetCustomers[0]);
+        // Auto-selecting first customer is removed as per request to keep form blank
+        // if (targetCustomers.length > 0) setActiveCustomer(targetCustomers[0]);
       })
       .catch(() => toast.error('Failed to load customers'))
       .finally(() => setLoading(false));
