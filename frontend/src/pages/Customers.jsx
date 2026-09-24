@@ -805,6 +805,9 @@ const Customers = () => {
           ) : (
             sortedDates.map(dateKey => {
               const dayCustomers = customersByDate[dateKey];
+              // Don't show empty date sections when searching
+              if (dayCustomers.length === 0 && searchTerm.trim() !== '') return null;
+              
               const label = new Date(dateKey).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
               return (
                 <div key={dateKey}>
