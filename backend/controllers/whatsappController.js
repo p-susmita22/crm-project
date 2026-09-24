@@ -122,7 +122,7 @@ export const receiveMessage = async (req, res) => {
         }
 
         // Check for existing customer to manage state
-        let customer = await Customer.findOne({ phone: senderPhone });
+        let customer = await Customer.findOne({ phone: senderPhone }).sort({ createdAt: -1 });
 
         // Log inbound message
         await WhatsAppMessage.create({
@@ -292,7 +292,7 @@ export const receiveMessage = async (req, res) => {
             else if (buttonId === 'PROFILE_INQUIRY') onboardingType = 'Profile Inquiry';
             
             if (onboardingType) {
-                if (!customer) {
+                if (!customer || (customer && customer.onboarding && customer.onboarding !== onboardingType)) {
                     // Get highest customer ID
                     const allCustomers = await Customer.find({}, 'customerId').lean();
                     let maxCount = 0;
