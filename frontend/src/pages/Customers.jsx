@@ -933,7 +933,12 @@ const Customers = () => {
                                     customer.status === 'Follow up' || customer.status === 'Document pending' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
                                     'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                                   }`}>
-                                    {customer.status || 'Pending'}
+                                    {customer.status === 'Interested' && customer.followUpDate ? (
+                                      <span className="flex flex-col items-center">
+                                        Interested + Follow up
+                                        <span className="text-[9px] opacity-75">{new Date(customer.followUpDate).toLocaleDateString('en-GB')}</span>
+                                      </span>
+                                    ) : (customer.status || 'Pending')}
                                   </span>
                                 </td>
                                 <td className="py-4 px-6">
@@ -1038,7 +1043,12 @@ const Customers = () => {
                           customer.status === 'Follow up' || customer.status === 'Document pending' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
                           'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                         }`}>
-                          {customer.status || 'Pending'}
+                          {customer.status === 'Interested' && customer.followUpDate ? (
+                            <span className="flex flex-col items-center">
+                              Interested + Follow up
+                              <span className="text-[9px] opacity-75">{new Date(customer.followUpDate).toLocaleDateString('en-GB')}</span>
+                            </span>
+                          ) : (customer.status || 'Pending')}
                         </span>
                       </td>
                       <td className="py-4 px-6">
