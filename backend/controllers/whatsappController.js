@@ -422,6 +422,7 @@ export const receiveMessage = async (req, res) => {
                       });
                     }
                 }
+                }
             }
         }
       } else if (
