@@ -152,7 +152,7 @@ export const receiveMessage = async (req, res) => {
                     type: "interactive",
                     interactive: {
                         type: "button",
-                        body: { text: "District Partner franchise is investable. Are you interested?" },
+                        body: { text: "District Partner franchise is investable. Invested amount 50000 with 9000 gst which is refundable and you should get upto 10% profit on each order. Are you interested?" },
                         action: {
                             buttons: [
                                 { type: "reply", reply: { id: "DP_INTERESTED_YES", title: "Yes" } },
