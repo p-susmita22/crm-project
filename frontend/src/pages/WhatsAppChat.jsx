@@ -155,10 +155,10 @@ const WhatsAppChat = () => {
 
   const handleDeleteSelected = async () => {
     if (selectedChats.length === 0) return;
-    if (window.confirm(`Are you sure you want to delete ${selectedChats.length} chat(s)?`)) {
+    if (window.confirm(`Are you sure you want to move ${selectedChats.length} chat(s) to Trash Bin?`)) {
       try {
         await api.delete('/whatsapp/chats', { data: { phoneNumbers: selectedChats } });
-        toast.success('Chats deleted successfully');
+        toast.success('Chats moved to Trash Bin');
         setIsSelectionMode(false);
         setSelectedChats([]);
         fetchChats();
@@ -166,7 +166,7 @@ const WhatsAppChat = () => {
           setActiveChat(null);
         }
       } catch (error) {
-        toast.error('Failed to delete chats');
+        toast.error('Failed to move chats to Trash Bin');
       }
     }
   };

@@ -88,6 +88,17 @@ const customerSchema = mongoose.Schema(
         employeeName: String,
       }
     ],
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    deletedAt: {
+      type: Date,
+    },
+    deletedSource: {
+      type: String, // 'whatsapp_lead', 'whatsapp_chat', 'customer', 'lead'
+    },
   },
   {
     timestamps: true,

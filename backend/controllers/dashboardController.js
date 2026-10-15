@@ -11,7 +11,7 @@ import WorkSubmission from '../models/WorkSubmission.js';
 // @access  Private
 const getDashboardStats = asyncHandler(async (req, res) => {
   const isAdmin = req.user.role === 'Admin';
-  const query = isAdmin ? {} : { assignedTo: req.user._id };
+  const query = isAdmin ? { isDeleted: { $ne: true } } : { assignedTo: req.user._id, isDeleted: { $ne: true } };
 
   const totalCustomers = await Customer.countDocuments(query);
   const totalLeads = await Customer.countDocuments({ ...query, status: { $in: ['Agree', 'Interested'] } });

@@ -454,6 +454,7 @@ export const receiveMessage = async (req, res) => {
 export const getChats = async (req, res) => {
   try {
     const chats = await WhatsAppMessage.aggregate([
+      { $match: { isDeleted: { $ne: true } } },
       { $sort: { timestamp: -1 } },
       {
         $group: {
@@ -487,8 +488,10 @@ export const getChats = async (req, res) => {
 // @access  Private (Admin)
 export const getChatHistory = async (req, res) => {
   try {
-    const messages = await WhatsAppMessage.find({ customerPhone: req.params.phone })
-      .sort({ timestamp: 1 });
+    const messages = await WhatsAppMessage.find({ 
+      customerPhone: req.params.phone,
+      isDeleted: { $ne: true }
+    }).sort({ timestamp: 1 });
     res.json(messages);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -589,7 +592,7 @@ export const uploadMedia = async (req, res) => {
   }
 };
 
-// @desc    Delete multiple chats
+// @desc    Delete multiple chats (soft delete to Trash Bin)
 // @route   DELETE /api/whatsapp/chats
 // @access  Private (Admin)
 export const deleteChats = async (req, res) => {
@@ -600,8 +603,16 @@ export const deleteChats = async (req, res) => {
   }
 
   try {
-    await WhatsAppMessage.deleteMany({ customerPhone: { $in: phoneNumbers } });
-    res.json({ message: 'Chats deleted successfully' });
+    const now = new Date();
+    await WhatsAppMessage.updateMany(
+      { customerPhone: { $in: phoneNumbers } },
+      { $set: { isDeleted: true, deletedAt: now } }
+    );
+    await Customer.updateMany(
+      { phone: { $in: phoneNumbers } },
+      { $set: { isDeleted: true, deletedAt: now, deletedSource: 'whatsapp_chat' } }
+    );
+    res.json({ message: 'Chats moved to Trash Bin successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

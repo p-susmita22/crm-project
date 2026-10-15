@@ -50,26 +50,26 @@ const WhatsAppLeads = () => {
   };
 
   const handleDeleteSingle = async (id) => {
-    if (!window.confirm('Is lead ko delete karna chahte hain?')) return;
+    if (!window.confirm('Is lead ko Trash Bin mein move karna chahte hain?')) return;
     try {
       await api.delete(`/customers/${id}`);
       setLeads((prev) => prev.filter((l) => l._id !== id));
       setSelectedIds((prev) => prev.filter((x) => x !== id));
-      toast.success('Lead deleted!');
+      toast.success('Lead moved to Trash Bin!');
     } catch (err) {
-      toast.error('Delete failed!');
+      toast.error('Move to Trash Bin failed!');
     }
   };
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
-    if (!window.confirm(`${selectedIds.length} leads delete karna chahte hain?`)) return;
+    if (!window.confirm(`${selectedIds.length} leads Trash Bin mein move karna chahte hain?`)) return;
     setDeleting(true);
     try {
       await Promise.all(selectedIds.map((id) => api.delete(`/customers/${id}`)));
       setLeads((prev) => prev.filter((l) => !selectedIds.includes(l._id)));
       setSelectedIds([]);
-      toast.success(`${selectedIds.length} leads deleted!`);
+      toast.success(`${selectedIds.length} leads moved to Trash Bin!`);
     } catch (err) {
       toast.error('Some deletes failed!');
     } finally {

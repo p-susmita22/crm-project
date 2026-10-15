@@ -26,6 +26,7 @@ import Profile from './pages/Profile';
 import EmployeeHistory from './pages/EmployeeHistory';
 import WhatsAppLeads from './pages/WhatsAppLeads';
 import WhatsAppChat from './pages/WhatsAppChat';
+import TrashBin from './pages/TrashBin';
 
 const RootRedirect = () => {
   const { user, loading } = useContext(AuthContext);
@@ -64,6 +65,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="whatsapp-leads" element={<WhatsAppLeads />} />
           <Route path="whatsapp-chat" element={<WhatsAppChat />} />
+          <Route path="trash" element={<TrashBin />} />
         </Route>
 
         <Route path="/employee" element={<ProtectedRoute><DashboardLayout panelType="employee" /></ProtectedRoute>}>

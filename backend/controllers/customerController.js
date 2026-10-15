@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import Customer from '../models/Customer.js';
 import User from '../models/User.js';
+import WhatsAppMessage from '../models/WhatsAppMessage.js';
 import { reindexCustomers } from '../utils/reindexer.js';
 import xlsx from 'xlsx';
 import axios from 'axios';
@@ -10,7 +11,7 @@ import https from 'https';
 // @route   GET /api/customers
 // @access  Private
 const getCustomers = asyncHandler(async (req, res) => {
-  let query = {};
+  let query = { isDeleted: { $ne: true } };
   
   if (req.query.employeeId) {
     query.assignedTo = req.query.employeeId;
@@ -234,17 +235,34 @@ const updateCustomer = asyncHandler(async (req, res) => {
   res.json(updatedCustomer);
 });
 
-// @desc    Delete a customer
+// @desc    Delete a customer (soft delete to Trash Bin)
 // @route   DELETE /api/customers/:id
 // @access  Private/Admin
 const deleteCustomer = asyncHandler(async (req, res) => {
   const customer = await Customer.findById(req.params.id);
 
   if (customer) {
-    await customer.deleteOne();
-    // Collapse the sequence gap immediately after delete
-    await reindexCustomers();
-    res.json({ message: 'Customer removed' });
+    const now = new Date();
+    customer.isDeleted = true;
+    customer.deletedAt = now;
+    customer.deletedSource = customer.sourceFile === 'WhatsApp API' ? 'whatsapp_lead' : 'customer';
+    await customer.save();
+
+    // Soft delete WhatsApp messages for this customer's phone
+    if (customer.phone) {
+      await WhatsAppMessage.updateMany(
+        { customerPhone: customer.phone },
+        { $set: { isDeleted: true, deletedAt: now } }
+      );
+    }
+
+    // Recalculate assigned employee count if needed
+    if (customer.assignedTo) {
+      const totalCount = await Customer.countDocuments({ assignedTo: customer.assignedTo, isDeleted: { $ne: true } });
+      await User.findByIdAndUpdate(customer.assignedTo, { assignedCallsCount: totalCount });
+    }
+
+    res.json({ message: 'Customer moved to Trash Bin' });
   } else {
     res.status(404);
     throw new Error('Customer not found');
@@ -265,7 +283,7 @@ const exportCustomersExcel = asyncHandler(async (req, res) => {
   }
 
   if (req.user.role === 'Admin' && !req.query.isWorkSubmission) {
-    const filter = employeeId ? { assignedTo: employeeId, ...dateFilter } : { ...dateFilter };
+    const filter = employeeId ? { assignedTo: employeeId, isDeleted: { $ne: true }, ...dateFilter } : { isDeleted: { $ne: true }, ...dateFilter };
     customers = await Customer.find(filter).populate('assignedTo', 'name email').sort({ createdAt: 1 });
   } else {
     const targetUserId = employeeId || req.user._id;
@@ -275,14 +293,16 @@ const exportCustomersExcel = asyncHandler(async (req, res) => {
       customers = await Customer.find({ 
         assignedTo: targetUserId, 
         taskDate: date,
-        status: { $ne: 'Pending' }
+        status: { $ne: 'Pending' },
+        isDeleted: { $ne: true }
       }).populate('assignedTo', 'name email').sort({ updatedAt: -1 });
     } else {
       // If no date provided (global export), fallback to exporting tasks UPDATED today
       const targetDateStr = new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
       const allAssigned = await Customer.find({ 
         assignedTo: targetUserId, 
-        status: { $ne: 'Pending' }
+        status: { $ne: 'Pending' },
+        isDeleted: { $ne: true }
       }).populate('assignedTo', 'name email').sort({ updatedAt: -1 });
 
       customers = allAssigned.filter(c => {
