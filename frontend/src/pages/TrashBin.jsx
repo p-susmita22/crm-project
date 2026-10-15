@@ -580,7 +580,7 @@ const TrashBin = () => {
                           <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                         )}
                         <div className="text-[10px] text-gray-400 mt-1 text-right">
-                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {formatDateTime(msg.timestamp)}
                         </div>
                       </div>
                     </div>

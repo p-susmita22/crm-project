@@ -134,9 +134,29 @@ const WhatsAppChat = () => {
     chat.phone.includes(searchTerm)
   );
 
-  const formatTime = (dateString) => {
+  const formatDateTime = (dateString) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = date.toLocaleString('en-IN', { month: 'short' });
+    const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return `${day} ${month}, ${time}`;
+  };
+
+  const formatDateHeader = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
   };
 
   const toggleSelection = (phone, e) => {
@@ -249,7 +269,7 @@ const WhatsAppChat = () => {
                   <div className="flex justify-between items-baseline mb-0.5">
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">{chat.name}</h3>
                     <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
-                      {chat.lastMessage ? formatTime(chat.lastMessage.timestamp) : ''}
+                      {chat.lastMessage ? formatDateTime(chat.lastMessage.timestamp) : ''}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -287,7 +307,14 @@ const WhatsAppChat = () => {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-800 dark:text-white">{activeChat.name}</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">+{activeChat.phone}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  +{activeChat.phone}
+                  {activeChat.lastMessage && (
+                    <span className="ml-2 text-gray-400">
+                      • Last active: {formatDateTime(activeChat.lastMessage.timestamp)}
+                    </span>
+                  )}
+                </p>
               </div>
               <div>
                 <span className={`text-xs px-2.5 py-1 rounded-full border ${activeChat.status === 'Agree' || activeChat.status === 'Interested' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
@@ -300,65 +327,75 @@ const WhatsAppChat = () => {
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[url('https://web.whatsapp.com/img/bg-chat-tile-dark_a4be512e7195b6b733d9110b408f075d.png')] bg-repeat dark:bg-[url('https://web.whatsapp.com/img/bg-chat-tile-dark_a4be512e7195b6b733d9110b408f075d.png')] dark:opacity-90">
               {messages.map((msg, idx) => {
                 const isOutbound = msg.direction === 'outbound';
+                const showDateHeader = idx === 0 || new Date(msg.timestamp).toDateString() !== new Date(messages[idx - 1].timestamp).toDateString();
                 return (
-                  <div key={msg._id || idx} className={`flex ${isOutbound ? 'justify-end' : 'justify-start'}`}>
-                    <div 
-                      className={`max-w-[75%] sm:max-w-md rounded-2xl p-2.5 shadow-sm relative group ${
-                        isOutbound 
-                          ? 'bg-[#d9fdd3] dark:bg-[#005c4b] text-gray-800 dark:text-gray-100 rounded-tr-sm' 
-                          : 'bg-white dark:bg-[#202c33] text-gray-800 dark:text-gray-100 rounded-tl-sm'
-                      }`}
-                    >
-                      {msg.type === 'document' ? (
-                        <a href={msg.mediaUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-black/5 dark:bg-black/20 p-2 rounded-xl mb-1 hover:bg-black/10 transition">
-                          <div className="bg-red-500 text-white p-2 rounded-lg"><FiFileText size={20} /></div>
-                          <span className="text-sm font-medium underline underline-offset-2">{msg.content || 'Document'}</span>
-                        </a>
-                      ) : msg.type === 'image' ? (
-                        <div className="mb-1">
-                          <img src={msg.mediaUrl} alt="Media" className="rounded-xl max-h-60 object-cover" />
-                          {msg.content && <p className="text-sm mt-2 px-1">{msg.content}</p>}
-                        </div>
-                      ) : msg.type === 'interactive' && isOutbound ? (
-                        <div className="flex flex-col">
-                          <p className="text-[15px] leading-relaxed whitespace-pre-wrap mb-2">{msg.content}</p>
-                          <div className="flex flex-col gap-1.5 mt-2 border-t border-black/10 dark:border-white/10 pt-2">
-                            {msg.content.toLowerCase().includes('investable') ? (
-                              <>
-                                <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">Yes</div>
-                                <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">No</div>
-                              </>
-                            ) : msg.content.toLowerCase().includes('what type of product') ? (
-                              <div className="bg-white dark:bg-[#111b21] flex justify-between items-center px-4 py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">
-                                <span>Select Options</span>
-                                <span className="text-xl">≡</span>
-                              </div>
-                            ) : (
-                              <>
-                                <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">Seller</div>
-                                <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">District Partner</div>
-                                <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">Profile Inquiry</div>
-                              </>
-                            )}
+                  <React.Fragment key={msg._id || idx}>
+                    {showDateHeader && (
+                      <div className="flex justify-center my-3 sticky top-2 z-10">
+                        <span className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-600 dark:text-gray-300 text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm border border-gray-200/60 dark:border-gray-700/60">
+                          {formatDateHeader(msg.timestamp)}
+                        </span>
+                      </div>
+                    )}
+                    <div className={`flex ${isOutbound ? 'justify-end' : 'justify-start'}`}>
+                      <div 
+                        className={`max-w-[75%] sm:max-w-md rounded-2xl p-2.5 shadow-sm relative group ${
+                          isOutbound 
+                            ? 'bg-[#d9fdd3] dark:bg-[#005c4b] text-gray-800 dark:text-gray-100 rounded-tr-sm' 
+                            : 'bg-white dark:bg-[#202c33] text-gray-800 dark:text-gray-100 rounded-tl-sm'
+                        }`}
+                      >
+                        {msg.type === 'document' ? (
+                          <a href={msg.mediaUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-black/5 dark:bg-black/20 p-2 rounded-xl mb-1 hover:bg-black/10 transition">
+                            <div className="bg-red-500 text-white p-2 rounded-lg"><FiFileText size={20} /></div>
+                            <span className="text-sm font-medium underline underline-offset-2">{msg.content || 'Document'}</span>
+                          </a>
+                        ) : msg.type === 'image' ? (
+                          <div className="mb-1">
+                            <img src={msg.mediaUrl} alt="Media" className="rounded-xl max-h-60 object-cover" />
+                            {msg.content && <p className="text-sm mt-2 px-1">{msg.content}</p>}
                           </div>
-                        </div>
-                      ) : (
-                        <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                      )}
-                      
-                      <div className={`flex items-center justify-end gap-1 mt-1 ${isOutbound ? 'text-[#667781] dark:text-[#8696a0]' : 'text-gray-400 dark:text-gray-500'}`}>
-                        <span className="text-[10px] uppercase font-medium">{formatTime(msg.timestamp)}</span>
-                        {isOutbound && (
-                          <span className="ml-1">
-                            {msg.status === 'read' ? <IoCheckmarkDoneOutline size={14} className="text-[#53bdeb]" /> :
-                             msg.status === 'delivered' ? <IoCheckmarkDoneOutline size={14} /> :
-                             msg.status === 'sent' ? <IoCheckmarkOutline size={14} /> :
-                             <IoTimeOutline size={14} />}
-                          </span>
+                        ) : msg.type === 'interactive' && isOutbound ? (
+                          <div className="flex flex-col">
+                            <p className="text-[15px] leading-relaxed whitespace-pre-wrap mb-2">{msg.content}</p>
+                            <div className="flex flex-col gap-1.5 mt-2 border-t border-black/10 dark:border-white/10 pt-2">
+                              {msg.content.toLowerCase().includes('investable') ? (
+                                <>
+                                  <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">Yes</div>
+                                  <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">No</div>
+                                </>
+                              ) : msg.content.toLowerCase().includes('what type of product') ? (
+                                <div className="bg-white dark:bg-[#111b21] flex justify-between items-center px-4 py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">
+                                  <span>Select Options</span>
+                                  <span className="text-xl">≡</span>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">Seller</div>
+                                  <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">District Partner</div>
+                                  <div className="bg-white dark:bg-[#111b21] flex justify-center items-center py-2.5 rounded-lg text-[#00a884] font-medium shadow-sm">Profile Inquiry</div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                         )}
+                        
+                        <div className={`flex items-center justify-end gap-1 mt-1 ${isOutbound ? 'text-[#667781] dark:text-[#8696a0]' : 'text-gray-400 dark:text-gray-500'}`}>
+                          <span className="text-[10px] font-medium">{formatDateTime(msg.timestamp)}</span>
+                          {isOutbound && (
+                            <span className="ml-1">
+                              {msg.status === 'read' ? <IoCheckmarkDoneOutline size={14} className="text-[#53bdeb]" /> :
+                               msg.status === 'delivered' ? <IoCheckmarkDoneOutline size={14} /> :
+                               msg.status === 'sent' ? <IoCheckmarkOutline size={14} /> :
+                               <IoTimeOutline size={14} />}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </React.Fragment>
                 );
               })}
               <div ref={messagesEndRef} />
